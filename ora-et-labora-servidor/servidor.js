@@ -1,0 +1,315 @@
+'use strict';
+/*
+ * Ora et Labora — servidor da equipe.
+ * Guarda tudo num arquivo JSON (sem banco externo), cuida do login de cada pessoa,
+ * esconde a área privada de quem não é o dono, guarda os anexos e manda o resumo diário no WhatsApp.
+ */
+const express = require('express');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
+const PORTA = process.env.PORT || 3000;
+const DADOS = path.resolve(process.env.ORA_DADOS || process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'dados'));
+const ARQ = path.join(DADOS, 'ora.json');
+const ANEXOS = path.join(DADOS, 'anexos');
+const BACKUPS = path.join(DADOS, 'backups');
+const FUSO = process.env.FUSO || 'America/Sao_Paulo';
+const APP_URL = (process.env.APP_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN : '')).replace(/\/$/, '');
+const COLS = new Set(['missoes', 'reunioes', 'tags', 'criativos', 'habitos', 'registros', 'revisoes', 'exames', 'oferecimentos', 'meta', 'prefs']);
+const SEMPRE_PRIVADAS = new Set(['habitos', 'registros', 'revisoes', 'exames', 'oferecimentos', 'prefs']);
+const DIAS_SESSAO = 60;
+
+/* ---------- Armazenamento ---------- */
+fs.mkdirSync(ANEXOS, { recursive: true });
+fs.mkdirSync(BACKUPS, { recursive: true });
+let db = { usuarios: [], sessoes: {}, itens: {}, anexos: {}, seq: 0, enviados: {} };
+if (fs.existsSync(ARQ)) {
+  try { db = Object.assign(db, JSON.parse(fs.readFileSync(ARQ, 'utf8'))); }
+  catch (e) { console.error('Não consegui ler ' + ARQ + '. Corrija ou restaure um backup da pasta backups/. Nada foi apagado.', e.message); process.exit(1); }
+}
+let timerGravar = null;
+function gravar() { clearTimeout(timerGravar); timerGravar = setTimeout(gravarAgora, 300); }
+function gravarAgora() {
+  timerGravar = null;
+  const tmp = ARQ + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(db));
+  fs.renameSync(tmp, ARQ);
+}
+function encerrar() { if (timerGravar) gravarAgora(); process.exit(0); }
+process.on('SIGTERM', encerrar);
+process.on('SIGINT', encerrar);
+
+function backupDiario() {
+  const { data } = agoraNoFuso();
+  const alvo = path.join(BACKUPS, 'ora-' + data + '.json');
+  if (!fs.existsSync(alvo) && db.usuarios.length) {
+    if (timerGravar) gravarAgora();
+    if (fs.existsSync(ARQ)) fs.copyFileSync(ARQ, alvo);
+    const antigos = fs.readdirSync(BACKUPS).filter(f => /^ora-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort();
+    antigos.slice(0, Math.max(0, antigos.length - 14)).forEach(f => fs.unlinkSync(path.join(BACKUPS, f)));
+  }
+}
+
+/* ---------- Utilidades ---------- */
+function agoraNoFuso() {
+  const p = new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
+  const g = t => (p.find(x => x.type === t) || {}).value;
+  return { data: g('year') + '-' + g('month') + '-' + g('day'), hora: g('hour') + ':' + g('minute') };
+}
+function id(prefixo) { return prefixo + crypto.randomBytes(9).toString('base64url'); }
+function normNome(n) { return String(n || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function hashSenha(senha) { const sal = crypto.randomBytes(16).toString('hex'); return sal + ':' + crypto.scryptSync(String(senha), sal, 64).toString('hex'); }
+function senhaConfere(senha, guardado) {
+  const [sal, h] = String(guardado || '').split(':'); if (!sal || !h) return false;
+  const x = crypto.scryptSync(String(senha), sal, 64), y = Buffer.from(h, 'hex');
+  return x.length === y.length && crypto.timingSafeEqual(x, y);
+}
+function cookies(req) {
+  const o = {}; (req.headers.cookie || '').split(';').forEach(c => { const i = c.indexOf('='); if (i > 0) o[c.slice(0, i).trim()] = decodeURIComponent(c.slice(i + 1).trim()); });
+  return o;
+}
+function perfil(u) { return { id: u.id, nome: u.nome, admin: !!u.admin, whatsapp: u.whatsapp || '', resumoHora: u.resumoHora || '07:30', resumoAtivo: !!u.resumoAtivo }; }
+function equipePublica() { return db.usuarios.map(u => ({ id: u.id, nome: u.nome, admin: !!u.admin })); }
+function validarNome(n) { n = String(n || '').trim(); if (n.length < 1 || n.length > 40) throw new Erro('O nome precisa ter entre 1 e 40 letras.'); return n; }
+function validarSenha(s) { s = String(s || ''); if (s.length < 4 || s.length > 100) throw new Erro('A senha precisa ter pelo menos 4 caracteres.'); return s; }
+class Erro extends Error { constructor(m, status) { super(m); this.status = status || 400; } }
+
+function abrirSessao(req, res, u) {
+  const t = crypto.randomBytes(32).toString('hex');
+  db.sessoes[t] = { uid: u.id, criada: Date.now() }; gravar();
+  res.set('Set-Cookie', 'ora_sessao=' + t + '; HttpOnly; Path=/; Max-Age=' + (DIAS_SESSAO * 86400) + '; SameSite=Lax' + (req.secure ? '; Secure' : ''));
+}
+function usuarioDe(req) {
+  const t = cookies(req).ora_sessao, s = t && db.sessoes[t];
+  if (!s) return null;
+  if (Date.now() - s.criada > DIAS_SESSAO * 864e5) { delete db.sessoes[t]; gravar(); return null; }
+  return db.usuarios.find(u => u.id === s.uid) || null;
+}
+
+/* ---------- Aplicação ---------- */
+const app = express();
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use((req, res, next) => { res.set('X-Content-Type-Options', 'nosniff'); res.set('Referrer-Policy', 'same-origin'); res.set('X-Frame-Options', 'SAMEORIGIN'); next(); });
+
+const ICONE = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1c1c1a"/><path d="M16 5v22M9 12h14" stroke="#fafaf8" stroke-width="3" stroke-linecap="round"/></svg>');
+function pagina() {
+  const corpo = fs.readFileSync(path.join(__dirname, 'publico', 'index.html'), 'utf8');
+  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="' + ICONE + '"><script>window.ORA_SERVIDOR=true</script>' + corpo + '</html>';
+}
+const PAGINA = pagina();
+app.get('/', (req, res) => { res.set('Cache-Control', 'no-cache'); res.type('html').send(PAGINA); });
+app.get('/saude', (req, res) => res.type('text').send('ok'));
+
+/* Proteção simples contra requisições de outros sites: toda chamada que altera algo precisa do cabeçalho X-Ora. */
+app.use('/api', (req, res, next) => { if (req.method !== 'GET' && req.get('X-Ora') !== '1') return res.status(403).json({ erro: 'Requisição recusada.' }); next(); });
+function exigir(req, res, next) { const u = usuarioDe(req); if (!u) return res.status(401).json({ erro: 'Sua sessão terminou. Entre de novo.' }); req.u = u; next(); }
+function exigirAdmin(req, res, next) { if (!req.u.admin) return res.status(403).json({ erro: 'Só o administrador pode fazer isso.' }); next(); }
+const rota = fn => (req, res) => Promise.resolve().then(() => fn(req, res)).catch(e => { if (!(e instanceof Erro)) console.error(e); res.status(e.status || 500).json({ erro: e instanceof Erro ? e.message : 'Erro no servidor.' }); });
+
+/* Anexos (antes do leitor de JSON, para aceitar qualquer tipo de arquivo) */
+const SEGUROS = /^(image\/(png|jpe?g|gif|webp|avif)|video\/|audio\/|application\/pdf$)/;
+app.post('/api/anexos', exigir, express.raw({ type: () => true, limit: '50mb' }), rota((req, res) => {
+  if (!req.body || !req.body.length) throw new Erro('Arquivo vazio.');
+  const aid = id('a'), nome = (() => { try { return decodeURIComponent(req.get('X-Nome') || '') || 'arquivo'; } catch (e) { return 'arquivo'; } })().slice(0, 200);
+  fs.writeFileSync(path.join(ANEXOS, aid), req.body);
+  db.anexos[aid] = { nome, tipo: String(req.get('Content-Type') || 'application/octet-stream').slice(0, 100), tam: req.body.length, dono: req.u.id, em: new Date().toISOString() };
+  gravar(); res.json({ id: aid });
+}));
+app.get('/api/anexos/:id', exigir, rota((req, res) => {
+  const a = /^a[\w-]+$/.test(req.params.id) && db.anexos[req.params.id];
+  if (!a) throw new Erro('Anexo não encontrado.', 404);
+  const inline = !req.query.baixar && SEGUROS.test(a.tipo);
+  res.set('Content-Type', inline ? a.tipo : 'application/octet-stream');
+  res.set('Content-Disposition', (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(a.nome));
+  if (a.tipo !== 'application/pdf') res.set('Content-Security-Policy', 'sandbox; default-src \'none\'; img-src \'self\'; media-src \'self\'');
+  res.set('Cache-Control', 'private, max-age=86400');
+  res.sendFile(path.join(ANEXOS, req.params.id));
+}));
+app.delete('/api/anexos/:id', exigir, rota((req, res) => {
+  const aid = req.params.id;
+  if (/^a[\w-]+$/.test(aid) && db.anexos[aid]) { try { fs.unlinkSync(path.join(ANEXOS, aid)); } catch (e) {} delete db.anexos[aid]; gravar(); }
+  res.json({ ok: true });
+}));
+
+app.use('/api', express.json({ limit: '5mb' }));
+
+/* Login */
+const tentativas = new Map();
+function limitar(req) {
+  const ip = req.ip, agora = Date.now(), l = (tentativas.get(ip) || []).filter(t => agora - t < 10 * 60e3);
+  if (l.length >= 12) throw new Erro('Muitas tentativas. Espere alguns minutos.', 429);
+  l.push(agora); tentativas.set(ip, l);
+}
+app.get('/api/estado', (req, res) => res.json({ primeiroAcesso: db.usuarios.length === 0, logado: !!usuarioDe(req) }));
+app.post('/api/primeiro-acesso', rota((req, res) => {
+  if (db.usuarios.length) throw new Erro('O administrador já foi criado. Entre com seu nome e senha.', 403);
+  const u = { id: id('u'), nome: validarNome(req.body.nome), senha: hashSenha(validarSenha(req.body.senha)), admin: true, whatsapp: '', resumoHora: '07:30', resumoAtivo: false, criado: new Date().toISOString() };
+  db.usuarios.push(u); abrirSessao(req, res, u); res.json({ eu: perfil(u) });
+}));
+app.post('/api/entrar', rota((req, res) => {
+  limitar(req);
+  const u = db.usuarios.find(x => normNome(x.nome) === normNome(req.body.nome));
+  if (!u || !senhaConfere(req.body.senha, u.senha)) throw new Erro('Nome ou senha incorretos.', 401);
+  abrirSessao(req, res, u); res.json({ eu: perfil(u) });
+}));
+app.post('/api/sair', (req, res) => {
+  const t = cookies(req).ora_sessao; if (t && db.sessoes[t]) { delete db.sessoes[t]; gravar(); }
+  res.set('Set-Cookie', 'ora_sessao=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax'); res.json({ ok: true });
+});
+
+/* Sincronização: cada missão, reunião, hábito etc. é um item. Itens privados só voltam para o dono. */
+app.get('/api/sync', exigir, rota((req, res) => {
+  const desde = Number(req.query.desde) || 0, u = req.u, itens = [];
+  for (const k in db.itens) {
+    const i = db.itens[k];
+    if (i.seq > desde && (!i.privado || i.dono === u.id)) itens.push({ col: i.col, id: i.id, dados: i.apagado ? null : i.dados, apagado: !!i.apagado });
+  }
+  res.json({ agora: db.seq, itens, equipe: equipePublica(), eu: perfil(u) });
+}));
+app.post('/api/itens', exigir, rota((req, res) => {
+  const ops = Array.isArray(req.body.ops) ? req.body.ops.slice(0, 2000) : [], u = req.u;
+  let aceitos = 0;
+  for (const op of ops) {
+    if (!op || !COLS.has(op.col) || typeof op.id !== 'string' || !op.id || op.id.length > 120 || /[\u0000-\u001f]/.test(op.id)) continue;
+    if (op.col === 'prefs' && op.id !== u.id) continue;
+    if (op.col === 'meta' && op.id !== 'cidade') continue;
+    const k = op.col + '|' + op.id, atual = db.itens[k];
+    if (atual && atual.privado && atual.dono !== u.id) continue;
+    if (op.apagado) {
+      if (atual && !atual.apagado) { db.itens[k] = { col: op.col, id: op.id, dono: atual.dono, privado: atual.privado, apagado: true, dados: null, seq: ++db.seq }; aceitos++; }
+      continue;
+    }
+    const dados = op.dados;
+    if (!dados || typeof dados !== 'object' || Array.isArray(dados) || JSON.stringify(dados).length > 400000) continue;
+    const privado = SEMPRE_PRIVADAS.has(op.col) || (op.col === 'missoes' && !!dados.privada);
+    if (privado) { if (atual && !atual.apagado && atual.dono !== u.id) continue; if ('dono' in dados || op.col === 'missoes') dados.dono = u.id; }
+    db.itens[k] = { col: op.col, id: op.id, dono: privado ? u.id : (atual && atual.dono) || u.id, privado, apagado: false, dados, seq: ++db.seq };
+    aceitos++;
+  }
+  if (aceitos) gravar();
+  res.json({ agora: db.seq, aceitos });
+}));
+
+/* Equipe */
+app.get('/api/equipe', exigir, (req, res) => res.json({ equipe: equipePublica() }));
+app.post('/api/equipe', exigir, exigirAdmin, rota((req, res) => {
+  const nome = validarNome(req.body.nome);
+  if (db.usuarios.some(x => normNome(x.nome) === normNome(nome))) throw new Erro('Já existe alguém com esse nome.');
+  const u = { id: id('u'), nome, senha: hashSenha(validarSenha(req.body.senha)), admin: false, whatsapp: '', resumoHora: '07:30', resumoAtivo: false, criado: new Date().toISOString() };
+  db.usuarios.push(u); gravar(); res.json({ equipe: equipePublica() });
+}));
+app.patch('/api/equipe/:id', exigir, exigirAdmin, rota((req, res) => {
+  const u = db.usuarios.find(x => x.id === req.params.id); if (!u) throw new Erro('Pessoa não encontrada.', 404);
+  if (req.body.nome !== undefined) u.nome = validarNome(req.body.nome);
+  if (req.body.senha) { u.senha = hashSenha(validarSenha(req.body.senha)); for (const t in db.sessoes) if (db.sessoes[t].uid === u.id) delete db.sessoes[t]; }
+  if (req.body.admin !== undefined && u.id !== req.u.id) u.admin = !!req.body.admin;
+  gravar(); res.json({ equipe: equipePublica() });
+}));
+app.delete('/api/equipe/:id', exigir, exigirAdmin, rota((req, res) => {
+  if (req.params.id === req.u.id) throw new Erro('Você não pode remover a si mesmo.');
+  const u = db.usuarios.find(x => x.id === req.params.id); if (!u) throw new Erro('Pessoa não encontrada.', 404);
+  db.usuarios = db.usuarios.filter(x => x.id !== u.id);
+  for (const t in db.sessoes) if (db.sessoes[t].uid === u.id) delete db.sessoes[t];
+  for (const k in db.itens) { const i = db.itens[k]; if (i.privado && i.dono === u.id && !i.apagado) db.itens[k] = Object.assign({}, i, { apagado: true, dados: null, seq: ++db.seq }); }
+  gravar(); res.json({ equipe: equipePublica() });
+}));
+app.patch('/api/eu', exigir, rota((req, res) => {
+  const u = req.u, b = req.body;
+  if (b.nome !== undefined) { const n = validarNome(b.nome); if (db.usuarios.some(x => x.id !== u.id && normNome(x.nome) === normNome(n))) throw new Erro('Já existe alguém com esse nome.'); u.nome = n; }
+  if (b.senha) u.senha = hashSenha(validarSenha(b.senha));
+  if (b.whatsapp !== undefined) u.whatsapp = String(b.whatsapp).replace(/[^\d+() -]/g, '').slice(0, 20);
+  if (b.resumoHora !== undefined && /^\d{2}:\d{2}$/.test(b.resumoHora)) u.resumoHora = b.resumoHora;
+  if (b.resumoAtivo !== undefined) u.resumoAtivo = !!b.resumoAtivo;
+  gravar(); res.json({ eu: perfil(u) });
+}));
+
+/* ---------- Resumo diário no WhatsApp ---------- */
+const CITACOES = [
+  ['Fazei tudo por amor, nada por obrigação.', 'São Francisco de Sales'],
+  ['A ociosidade é inimiga da alma.', 'São Bento'],
+  ['Não podemos fazer grandes coisas, apenas pequenas coisas com grande amor.', 'Santa Teresa de Calcutá'],
+  ['Servi ao Senhor com alegria.', 'São João Bosco'],
+  ['Em tudo amar e servir.', 'Santo Inácio de Loyola'],
+  ['Reza, espera e não te preocupes.', 'São Pio de Pietrelcina'],
+  ['Tudo o que fizerdes, fazei-o de bom coração, como para o Senhor.', 'São Paulo, Colossenses 3,23']
+];
+function itensVisiveis(col, u) {
+  const l = [];
+  for (const k in db.itens) { const i = db.itens[k]; if (i.col === col && !i.apagado && (!i.privado || i.dono === u.id)) l.push(i.dados); }
+  return l;
+}
+function montarResumo(u) {
+  const { data } = agoraNoFuso();
+  const tags = {}; itensVisiveis('tags', u).forEach(t => { tags[t.id] = t.nome; });
+  const abertas = itensVisiveis('missoes', u).filter(m => !m.feita);
+  const minhas = abertas.filter(m => !m.privada && m.resp === u.id);
+  const hoje = minhas.filter(m => m.data === data), atras = minhas.filter(m => m.data && m.data < data).sort((a, b) => a.data < b.data ? -1 : 1);
+  const aprovar = abertas.filter(m => !m.privada && m.aprovador === u.id && m.aprov && m.aprov.estado === 'aguardando');
+  const ajustes = minhas.filter(m => m.aprov && m.aprov.estado === 'ajustes');
+  const pessoais = abertas.filter(m => m.privada && m.dono === u.id && m.data && m.data <= data);
+  const reunioes = itensVisiveis('reunioes', u).filter(r => r.data === data && (r.pessoas || []).includes(u.id)).sort((a, b) => (a.inicio || '') < (b.inicio || '') ? -1 : 1);
+  const habitos = itensVisiveis('habitos', u).filter(h => h.dono === u.id);
+  const linha = m => '• ' + m.titulo + ((m.tags || []).length ? ' — ' + m.tags.map(t => tags[t]).filter(Boolean).join(', ') : '');
+  const dataTxt = new Date(data + 'T12:00:00Z').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+  const p = ['*Bom dia, ' + u.nome + '!*', '_' + dataTxt.charAt(0).toUpperCase() + dataTxt.slice(1) + '_', ''];
+  const bloco = (tit, l) => { if (l.length) p.push('*' + tit + ' (' + l.length + ')*', ...l, ''); };
+  bloco('Reuniões', reunioes.map(r => '• ' + (r.inicio || '') + ' ' + r.titulo + (r.local ? ' — ' + r.local : '')));
+  bloco('Missões de hoje', hoje.map(linha));
+  bloco('Atrasadas', atras.map(linha));
+  bloco('Para você aprovar', aprovar.map(linha));
+  bloco('Ajustes pedidos', ajustes.map(m => linha(m) + (m.aprov.nota ? '\n   _' + m.aprov.nota + '_' : '')));
+  bloco('Pessoal', pessoais.map(m => '• ' + m.titulo));
+  bloco('Hábitos', habitos.map(h => '• ' + h.nome + (h.minimo ? ' (mínimo: ' + h.minimo + ')' : '')));
+  if (p.length === 3) p.push('Nenhuma missão para hoje. Deo gratias!', '');
+  const c = CITACOES[Math.floor(Math.random() * CITACOES.length)];
+  p.push('“' + c[0] + '” — ' + c[1]);
+  if (APP_URL) p.push('', 'Abrir o Ora et Labora: ' + APP_URL);
+  return p.join('\n');
+}
+function numeroWhatsapp(n) { let d = String(n || '').replace(/\D/g, ''); if (d.length === 10 || d.length === 11) d = '55' + d; return d; }
+function provedor() {
+  if (process.env.ZAPI_INSTANCIA && process.env.ZAPI_TOKEN) return 'zapi';
+  if (process.env.EVOLUTION_URL && process.env.EVOLUTION_INSTANCIA && process.env.EVOLUTION_CHAVE) return 'evolution';
+  return null;
+}
+async function enviarWhatsapp(num, texto) {
+  const phone = numeroWhatsapp(num), qual = provedor();
+  if (phone.length < 12) throw new Erro('Número de WhatsApp inválido. Use DDD + número.');
+  if (!qual) throw new Erro('O WhatsApp do servidor ainda não foi configurado. Veja o passo do WhatsApp no guia.');
+  let r;
+  if (qual === 'zapi') {
+    const h = { 'Content-Type': 'application/json' }; if (process.env.ZAPI_CLIENT_TOKEN) h['Client-Token'] = process.env.ZAPI_CLIENT_TOKEN;
+    r = await fetch('https://api.z-api.io/instances/' + encodeURIComponent(process.env.ZAPI_INSTANCIA) + '/token/' + encodeURIComponent(process.env.ZAPI_TOKEN) + '/send-text',
+      { method: 'POST', headers: h, body: JSON.stringify({ phone, message: texto }) });
+  } else {
+    r = await fetch(process.env.EVOLUTION_URL.replace(/\/$/, '') + '/message/sendText/' + encodeURIComponent(process.env.EVOLUTION_INSTANCIA),
+      { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: process.env.EVOLUTION_CHAVE }, body: JSON.stringify({ number: phone, text: texto }) });
+  }
+  if (!r.ok) { const t = await r.text().catch(() => ''); throw new Erro('O provedor de WhatsApp recusou o envio (' + r.status + '). ' + t.slice(0, 160), 502); }
+}
+app.post('/api/whatsapp/teste', exigir, rota(async (req, res) => {
+  if (!req.u.whatsapp) throw new Erro('Salve seu número de WhatsApp primeiro.');
+  await enviarWhatsapp(req.u.whatsapp, montarResumo(req.u));
+  res.json({ ok: true });
+}));
+function minutos(h) { const [a, b] = String(h).split(':').map(Number); return a * 60 + b; }
+async function rodarResumos() {
+  const { data, hora } = agoraNoFuso(), agora = minutos(hora);
+  for (const u of db.usuarios) {
+    if (!u.resumoAtivo || !u.whatsapp || db.enviados[u.id] === data) continue;
+    const alvo = minutos(u.resumoHora || '07:30');
+    if (agora < alvo || agora > alvo + 120) continue;
+    db.enviados[u.id] = data; gravar();
+    try { await enviarWhatsapp(u.whatsapp, montarResumo(u)); console.log('[resumo] enviado para ' + u.nome); }
+    catch (e) { console.error('[resumo] falhou para ' + u.nome + ': ' + e.message); }
+  }
+}
+setInterval(() => { rodarResumos().catch(e => console.error(e)); backupDiario(); }, 30000);
+
+app.use((req, res) => res.status(404).type('text').send('Página não encontrada.'));
+app.listen(PORTA, () => {
+  backupDiario();
+  console.log('Ora et Labora rodando na porta ' + PORTA + ' · dados em ' + DADOS + ' · WhatsApp: ' + (provedor() || 'não configurado'));
+});

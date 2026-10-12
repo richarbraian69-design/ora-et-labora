@@ -1,0 +1,16 @@
+{
+  "name": "ora-et-labora",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerenciador de missões da agência, com cidade isométrica, área privada e resumo diário no WhatsApp.",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
