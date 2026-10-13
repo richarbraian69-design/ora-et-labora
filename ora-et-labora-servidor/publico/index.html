@@ -195,14 +195,21 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .cit.some{opacity:0;transform:translateY(6px)}
 .banner blockquote{margin:0;font-family:var(--f-serif);font-size:clamp(1.3rem,2.2vw,1.7rem);line-height:1.2;text-wrap:pretty}
 .banner .autor{margin:0;color:var(--banner-tx2);font-size:.9rem}
-.banner .btn{margin-top:6px;background:var(--banner-tx);color:#151513}
-.banner .btn:hover{background:#ffffff}
+.banner .btn{margin-top:6px;background:var(--banner-tx);color:var(--banner)}
+.banner .btn:hover{background:var(--banner-btn-hover,#ffffff)}
 .banner-arte{position:absolute;right:-10px;bottom:-14px;width:min(46%,340px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 35%);mask-image:linear-gradient(90deg,transparent,#000 35%)}
-.banner-prog{position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.08)}
-.banner-prog i{display:block;height:100%;width:100%;background:rgba(255,255,255,.4);transform-origin:left;animation:progresso 15s linear forwards}
+.banner-prog{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--banner-prog-bg,rgba(255,255,255,.08))}
+.banner-prog i{display:block;height:100%;width:100%;background:var(--banner-prog,rgba(255,255,255,.4));transform-origin:left;animation:progresso 15s linear forwards}
 .banner:hover .banner-prog i,.banner:focus-within .banner-prog i{animation-play-state:paused}
 @keyframes progresso{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media (max-width:640px){.banner-arte{opacity:.35;width:70%}.banner-texto{max-width:100%}}
+/* Modo escuro: banner e igreja claros (no modo claro, ficam escuros) */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .banner{--banner:#f4f3ef; --banner-tx:#151513; --banner-tx2:#6d6c67; --banner-btn-hover:#000000; --banner-prog-bg:rgba(0,0,0,.08); --banner-prog:rgba(0,0,0,.35)}
+  :root:not([data-theme="light"]) .banner .iso.escuro{--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49}
+}
+:root[data-theme="dark"] .banner{--banner:#f4f3ef; --banner-tx:#151513; --banner-tx2:#6d6c67; --banner-btn-hover:#000000; --banner-prog-bg:rgba(0,0,0,.08); --banner-prog:rgba(0,0,0,.35)}
+:root[data-theme="dark"] .banner .iso.escuro{--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49}
 
 .lado{grid-area:lado;background:var(--painel);border:1px solid var(--linha);border-radius:16px;overflow:hidden}
 .numeros{padding:18px 22px;display:grid;gap:4px}
@@ -839,6 +846,7 @@ textarea.campo{min-height:72px;resize:vertical}
           <div class="painel"><div class="rev-hist" id="pes-revisoes"></div></div>
           <div class="barra-lista"><h3 class="rotulo-vista">Suas virtudes</h3><span class="nota" id="vt-total"></span></div>
           <div class="painel"><ul class="virtudes" id="pes-virtudes"></ul></div>
+          <div id="zap-bloco" hidden>
           <div class="barra-lista"><h3 class="rotulo-vista">Resumo diário no WhatsApp</h3></div>
           <div class="painel">
             <form class="zap" id="zap-form" autocomplete="off">
@@ -848,6 +856,7 @@ textarea.campo{min-height:72px;resize:vertical}
               <label class="check" style="grid-column:1/-1"><input type="checkbox" id="zap-ativo"> Receber todo dia as minhas missões, reuniões e hábitos no privado</label>
               <p class="nota" id="zap-nota" style="grid-column:1/-1"></p>
             </form>
+          </div>
           </div>
           <div class="barra-lista"><h3 class="rotulo-vista">Áreas da vida</h3></div>
           <div class="painel ajustes-painel">
