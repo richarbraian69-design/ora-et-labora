@@ -160,9 +160,9 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .lightbox img{max-width:100%;max-height:85vh;border-radius:10px}
 
 /* ---------- Aplicativo ---------- */
-.app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:236px minmax(0,1fr);background:var(--bg)}
+.app{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:252px minmax(0,1fr);background:var(--bg)}
 .app.surgindo{animation:aparecer .5s ease}
-.lateral{min-width:0;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding:20px 12px 16px 14px}
+.lateral{min-width:0;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:16px;padding:20px 16px 16px 14px}
 .marca{display:flex;align-items:center;gap:10px;padding:2px 8px;background:none;border:0;cursor:pointer;text-align:left;color:var(--tx)}
 .marca .iso{width:30px}
 .marca-nome{font-weight:600;font-size:1.02rem;letter-spacing:-.01em;white-space:nowrap}
@@ -170,14 +170,15 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .menu-recolher{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--tx2);cursor:pointer}
 .menu-recolher:hover{background:var(--sup);color:var(--tx)}
 .menu-recolher svg{width:18px;height:18px}
-.nav{display:grid;gap:1px}
+.nav{display:grid;grid-template-columns:minmax(0,1fr);gap:1px}
 .nav button{display:flex;align-items:center;gap:11px;width:100%;padding:7px 10px;border:0;border-radius:9px;background:transparent;color:var(--tx);font-size:.94rem;text-align:left;cursor:pointer;white-space:nowrap}
 .nav button:hover{background:var(--sup)}
 .nav button[aria-current="true"]{background:var(--sup-2);font-weight:500}
 .nav svg{width:18px;height:18px;flex:none}
-.nav .qtd{margin-left:auto;padding-left:8px;font-size:.8rem;color:var(--tx3);font-weight:400;font-variant-numeric:tabular-nums}
+.nav .qtd{flex:none;margin-left:auto;padding-left:8px;font-size:.8rem;color:var(--tx3);font-weight:400;font-variant-numeric:tabular-nums}
 .nav .qtd.alerta{color:var(--alerta);font-weight:600}
-.nav .nome-tag{overflow:hidden;text-overflow:ellipsis}
+.nav .nome-tag{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.nav button{min-width:0}
 .nav-rotulo{margin:2px 10px -10px;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
 .av{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;flex:none;background:var(--c,var(--p1));color:var(--tx);font-size:.72rem;font-weight:600;line-height:1}
 .avs{display:inline-flex}
@@ -408,6 +409,7 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .sub-t{background:none;border:0;padding:0;text-align:left;font-size:.93rem;color:var(--tx);cursor:pointer;overflow-wrap:anywhere}
 .sub-t:hover{text-decoration:underline;text-decoration-color:var(--tx3);text-underline-offset:3px}
 .sub.feita .sub-t{color:var(--tx3);text-decoration:line-through}
+.sub-xp{color:var(--tx3);font-size:.74rem;font-variant-numeric:tabular-nums}
 .sub-desc{margin:0;font-size:.86rem;color:var(--tx2);overflow-wrap:anywhere}
 .sub-meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px;font-size:.8rem;color:var(--tx2)}
 .sub-meta .av{width:16px;height:16px;font-size:.6rem;margin-right:5px}
@@ -2170,9 +2172,16 @@ textarea.campo{min-height:72px;resize:vertical}
     if (m.recorrencia) g.constancia = 5;
     return g;
   }
+  var XP_SUB = 5;
   function virtudesDe(id){
     var v = {}; VIRTUDES.forEach(function(x){ v[x[0]] = 0; });
     state.missoes.forEach(function(m){
+      (m.subs||[]).forEach(function(sb){
+        if (!sb.feita) return;
+        var quem = m.privada ? m.dono : (sb.resp || m.resp); if (quem!==id) return;
+        var noPrazo = !sb.data || !sb.feitaEm || iso(new Date(sb.feitaEm)) <= sb.data;
+        v[noPrazo ? 'diligencia' : 'perseveranca'] += XP_SUB;
+      });
       if (!m.feita) return;
       if ((m.privada ? m.dono : m.resp)===id){ var g = ganhoMissao(m); for (var k in g) v[k] += g[k]; }
       if (!m.privada && m.aprovadaPor===id && m.resp!==id) v.prudencia += 5;
@@ -2505,6 +2514,7 @@ textarea.campo{min-height:72px;resize:vertical}
     }
     var meta = (s.resp && s.resp!==m.resp ? '<span class="sub-pessoa">'+av(s.resp)+esc(pessoa(s.resp).nome)+'</span>' : '');
     if (!s.feita && s.data){ var p = prazoTxt(s.data); meta += '<span class="'+p.c+'">'+esc(p.t)+'</span>'; }
+    meta += '<span class="sub-xp">'+XP_SUB+' XP</span>';
     var na = (s.anexos||[]).length;
     var sk = 's:'+k, sSel = !!selecao[sk];
     return '<li class="sub'+(s.feita?' feita':'')+(sSel?' selecionada':'')+'" data-sub="'+k+'"'+(selecionando && sSel ? ' draggable="true"' : '')+'>'+(selecionando ? '<button class="sel-box sel-sub'+(sSel?' on':'')+'" type="button" data-sel="'+sk+'" aria-pressed="'+sSel+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(s.titulo)+'">'+CHECK+'</button>' : '<button class="alca-sub" type="button" draggable="true" data-alca-sub="'+k+'" aria-label="Arrastar sub-missão" title="Arraste para fora para virar missão, ou para outra missão">'+ALCA+'</button>')+circ+
@@ -3162,7 +3172,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if ((el = t.closest('[data-pedir-ajuste]'))){ var pa = el.getAttribute('data-pedir-ajuste'); pedindoAjuste = pedindoAjuste===pa ? null : pa; renderLista(); var ta = document.getElementById('aj-nota-'+pa); if (ta) ta.focus(); return; }
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
-    if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){ r.s.feita = !r.s.feita; salvar(); render(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
+    if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; salvar(); render(); if (r.s.feita) avisar('+'+XP_SUB+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
     if (t.closest('[data-sub-cancelar]')){ editandoSub = null; renderLista(); return; }
     if ((el = t.closest('[data-sub-promover]'))){ tornarMissao(el.getAttribute('data-sub-promover')); return; }
