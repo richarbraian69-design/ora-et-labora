@@ -267,11 +267,16 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .barra-dir{display:flex;align-items:center;gap:8px}
 .prazo-btn{padding:2px 6px;margin:-2px -6px;border:0;border-radius:6px;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
 .prazo-btn:hover{background:var(--sup-2)}
-.sel-box{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:20px;height:20px;padding:0;border:1.5px solid var(--tx3);border-radius:6px;background:var(--painel);color:transparent;display:grid;place-items:center;cursor:pointer;z-index:2}
+.sel-box{position:absolute;left:6px;top:16px;width:20px;height:20px;padding:0;border:1.5px solid var(--tx3);border-radius:6px;background:var(--painel);color:transparent;display:grid;place-items:center;cursor:pointer;z-index:2}
 .sel-box svg{width:12px;height:12px}
 .sel-box.on{background:var(--btn);border-color:var(--btn);color:var(--btn-tx)}
 .app.selecionando .linha[data-id]{cursor:pointer;padding-left:34px}
 .app.selecionando .linha > .alca{display:none}
+.sel-box.sel-sub{left:-30px;top:4px;transform:none;width:17px;height:17px;border-radius:5px}
+.sel-box.sel-sub svg{width:10px;height:10px}
+.sub.selecionada{background:var(--sup-2);border-radius:8px;box-shadow:0 0 0 4px var(--sup-2)}
+.app.selecionando .sub[data-sub]{cursor:pointer}
+.linha[draggable="true"],.sub[draggable="true"]{cursor:grab}
 .linha.selecionada{background:var(--sup-2)!important}
 .massa{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:6px;max-width:calc(100% - 24px);padding:8px 10px 8px 16px;background:var(--btn);color:var(--btn-tx);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:.88rem;animation:aparecer .2s ease}
 .massa-n{font-weight:600;margin-right:4px;white-space:nowrap}
@@ -2490,7 +2495,8 @@ textarea.campo{min-height:72px;resize:vertical}
     var meta = (s.resp && s.resp!==m.resp ? '<span class="sub-pessoa">'+av(s.resp)+esc(pessoa(s.resp).nome)+'</span>' : '');
     if (!s.feita && s.data){ var p = prazoTxt(s.data); meta += '<span class="'+p.c+'">'+esc(p.t)+'</span>'; }
     var na = (s.anexos||[]).length;
-    return '<li class="sub'+(s.feita?' feita':'')+'" data-sub="'+k+'"><button class="alca-sub" type="button" draggable="true" data-alca-sub="'+k+'" aria-label="Arrastar sub-missão" title="Arraste para fora para virar missão, ou para outra missão">'+ALCA+'</button>'+circ+
+    var sk = 's:'+k, sSel = !!selecao[sk];
+    return '<li class="sub'+(s.feita?' feita':'')+(sSel?' selecionada':'')+'" data-sub="'+k+'"'+(selecionando && sSel ? ' draggable="true"' : '')+'>'+(selecionando ? '<button class="sel-box sel-sub'+(sSel?' on':'')+'" type="button" data-sel="'+sk+'" aria-pressed="'+sSel+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(s.titulo)+'">'+CHECK+'</button>' : '<button class="alca-sub" type="button" draggable="true" data-alca-sub="'+k+'" aria-label="Arrastar sub-missão" title="Arraste para fora para virar missão, ou para outra missão">'+ALCA+'</button>')+circ+
       '<div class="sub-corpo"><div class="sub-linha"><button class="sub-t" type="button" data-sub-editar="'+k+'" title="Editar sub-missão">'+esc(s.titulo)+'</button>'+pilulas(s.tags)+
       (na ? '<button class="indic" type="button" data-sub-editar="'+k+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '')+'</div>'+
       (s.descricao ? '<p class="sub-desc">'+esc(s.descricao)+'</p>' : '')+(meta ? '<div class="sub-meta">'+meta+'</div>' : '')+'</div>'+
@@ -2530,7 +2536,7 @@ textarea.campo{min-height:72px;resize:vertical}
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
     var circ = m.feita ? '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>' :
       '<button class="circ'+(est==='aguardando'?' espera':'')+'" type="button" data-cumprir="'+m.id+'" aria-label="'+(est==='aguardando' ? (m.aprovador===eu ? 'Aprovar' : 'Aguardando aprovação')+': ' : aprova && m.aprovador!==eu ? 'Enviar para aprovação: ' : 'Cumprir missão: ')+esc(m.titulo)+'" title="'+(aprova && m.aprovador!==eu ? 'Concluir e enviar para aprovação' : 'Cumprir missão')+'">'+CHECK+'</button>';
-    return '<article class="linha'+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'">'+
+    return '<article class="linha'+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'"'+(selecionando && selecao[m.id] ? ' draggable="true"' : '')+'>'+
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
@@ -3146,6 +3152,13 @@ textarea.campo{min-height:72px;resize:vertical}
   function temArquivos(e){ var tp = e.dataTransfer && e.dataTransfer.types; return !!tp && Array.prototype.indexOf.call(tp,'Files')>=0; }
   function linhaMissao(t){ var r = t.closest('.linha'); return r && r.getAttribute('data-id') ? r : null; }
   listaEl.addEventListener('dragstart', function(e){
+    var itSel = selecionando && e.target.closest && e.target.closest('.linha.selecionada, .sub.selecionada');
+    if (itSel){
+      e.stopPropagation(); arrastando = {tipo:'multi'};
+      try { e.dataTransfer.setData('text/plain', 'ora'); e.dataTransfer.effectAllowed = 'move'; } catch(err) {}
+      setTimeout(function(){ listaEl.querySelectorAll('.selecionada').forEach(function(x){ x.classList.add('arrastando'); }); if (!idsSel().length) listaEl.classList.add('arrastando-sub'); }, 0);
+      return;
+    }
     var hs = e.target.closest && e.target.closest('[data-alca-sub]'), h = !hs && e.target.closest && e.target.closest('[data-alca]');
     if (!hs && !h) return;
     var row = hs ? hs.closest('.sub') : h.closest('.linha');
@@ -3157,6 +3170,13 @@ textarea.campo{min-height:72px;resize:vertical}
     var row = linhaMissao(e.target);
     if (!arrastando){ if (temArquivos(e) && row){ e.preventDefault(); try { e.dataTransfer.dropEffect='copy'; } catch(err) {} marcar(row, 'Soltar para anexar'); } else limparAlvo(); return; }
     if (arrastando.tipo==='missao'){ if (!row || row.getAttribute('data-id')===arrastando.id){ limparAlvo(); return; } e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {} marcar(row, 'Soltar para tornar sub-missão'); return; }
+    if (arrastando.tipo==='multi'){
+      e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {}
+      var zm = e.target.closest('#zona-fora');
+      if (zm && !idsSel().length){ limparAlvo(); zm.classList.add('ativa'); return; }
+      if (row && !row.classList.contains('selecionada')){ marcar(row, L('Soltar para virar sub-missões daqui','Drop to make them subtasks here','Suelta para convertirlas en submisiones aquí','Dimitte ut hic partes fiant')+' ('+totalSel()+')'); return; }
+      limparAlvo(); return;
+    }
     var pai = arrastando.k.split('|')[0];
     e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {}
     var zona = e.target.closest('#zona-fora');
@@ -3171,6 +3191,11 @@ textarea.campo{min-height:72px;resize:vertical}
     e.preventDefault();
     var a = arrastando; arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub');
     if (a.tipo==='missao'){ if (row && row.getAttribute('data-id')!==a.id) tornarSub(a.id, row.getAttribute('data-id')); return; }
+    if (a.tipo==='multi'){
+      if (e.target.closest('#zona-fora') && !idsSel().length){ selecaoParaMissoes(); return; }
+      if (row && !row.classList.contains('selecionada')) selecaoPara(row.getAttribute('data-id'));
+      return;
+    }
     var pai = a.k.split('|')[0];
     if (row && row.getAttribute('data-id')===pai && !e.target.closest('#zona-fora')) return;
     if (row && !e.target.closest('#zona-fora')) moverSub(a.k, row.getAttribute('data-id')); else tornarMissao(a.k);
@@ -3190,7 +3215,9 @@ textarea.campo{min-height:72px;resize:vertical}
   });
   /* ---------- Seleção de várias missões e ações em massa ---------- */
   var selecionando = false, selecao = {}, ultimaSel = null;
-  function idsSel(){ return Object.keys(selecao).filter(function(id){ return selecao[id] && achar(id); }); }
+  function idsSel(){ return Object.keys(selecao).filter(function(id){ return selecao[id] && id.indexOf('s:')!==0 && achar(id); }); }
+  function subsSel(){ return Object.keys(selecao).filter(function(k){ return selecao[k] && k.indexOf('s:')===0; }).map(function(k){ var r = acharSub(k.slice(2)); return r ? {k:k.slice(2), m:r.m, s:r.s} : null; }).filter(Boolean); }
+  function totalSel(){ return idsSel().length + subsSel().length; }
   function linhasVisiveis(){ return Array.prototype.slice.call(document.querySelectorAll('#app section:not([hidden]) .linha[data-id]')).filter(function(r){ return r.offsetParent; }); }
   function entrarSel(on){ selecionando = on; if (!on){ selecao = {}; ultimaSel = null; } fecharPops(); render(); }
   function alternarSel(id, faixa){
@@ -3204,11 +3231,11 @@ textarea.campo{min-height:72px;resize:vertical}
   function renderMassa(){
     fecharFlut();
     var bt = document.getElementById('sel-modo'); if (bt) bt.textContent = selecionando ? L('Cancelar seleção','Cancel selection','Cancelar selección','Electionem omittere') : L('Selecionar','Select','Seleccionar','Eligere');
-    var bar = document.getElementById('massa'), ids = idsSel();
+    var bar = document.getElementById('massa'), ids = idsSel(), nTot = totalSel(), nSubs = nTot - ids.length;
     document.getElementById('app').classList.toggle('selecionando', selecionando);
     bar.hidden = !selecionando;
     if (!selecionando) return;
-    document.getElementById('massa-n').textContent = ids.length ? ids.length+' '+(ids.length===1 ? L('selecionada','selected','seleccionada','electa') : L('selecionadas','selected','seleccionadas','electae')) : L('Clique nas missões para selecionar','Click missions to select them','Haz clic en las misiones para seleccionarlas','Missiones preme ut eligas');
+    document.getElementById('massa-n').textContent = nTot ? nTot+' '+(nTot===1 ? L('selecionada','selected','seleccionada','electa') : L('selecionadas','selected','seleccionadas','electae'))+(nSubs ? ' ('+nSubs+' sub)' : '') : L('Clique nas missões para selecionar','Click missions to select them','Haz clic en las misiones para seleccionarlas','Missiones preme ut eligas');
     var vis = linhasVisiveis(), todas = vis.length && vis.every(function(r){ return selecao[r.getAttribute('data-id')]; });
     document.getElementById('massa-todas').textContent = todas ? L('Limpar seleção','Clear selection','Limpiar selección','Electionem purgare') : L('Selecionar todas','Select all','Seleccionar todas','Omnes eligere');
     document.getElementById('massa-l-resp').textContent = L('Responsável','Owner','Responsable','Curator');
@@ -3221,26 +3248,29 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('massa-l-peso').textContent = L('Peso','Weight','Peso','Pondus');
     document.getElementById('massa-peso').innerHTML = '<option value="">—</option><option value="leve">'+L('Leve','Light','Ligera','Leve')+' · 10 XP</option><option value="media">'+L('Média','Medium','Media','Medium')+' · 20 XP</option><option value="ardua">'+L('Árdua','Hard','Ardua','Arduum')+' · 40 XP</option>';
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
-    Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !ids.length; });
+    Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
+    document.getElementById('massa-peso').disabled = !ids.length;
     if (!document.getElementById('massa-tags-pop').hidden) renderPopTags();
   }
+  function alvosTag(){ return idsSel().map(achar).filter(function(m){ return m && !m.privada; }).concat(subsSel().filter(function(x){ return !x.m.privada; }).map(function(x){ return x.s; })); }
   function renderPopTags(){
-    var ids = idsSel(), ms = ids.map(achar).filter(function(m){ return m && !m.privada; }), pop = document.getElementById('massa-tags-pop');
+    var ms = alvosTag(), pop = document.getElementById('massa-tags-pop');
     if (!state.tags.length){ pop.innerHTML = '<p class="nota">'+L('Nenhum cliente criado ainda.','No clients yet.','Aún no hay clientes.','Nondum clientes.')+'</p>'; return; }
     pop.innerHTML = '<p class="massa-dica">'+L('Clique para pôr ou tirar de todas as selecionadas','Click to add to or remove from all selected','Haz clic para poner o quitar de todas las seleccionadas','Preme ut omnibus electis addas vel demas')+'</p><div class="massa-tags">'+state.tags.map(function(t){
       var n = ms.filter(function(m){ return (m.tags||[]).indexOf(t.id)>=0; }).length, est = !n ? '' : n===ms.length ? 'todas' : 'algumas';
       return '<button type="button" class="massa-tag '+est+'" data-massa-tag="'+t.id+'"><i>'+(est==='todas' ? CHECK : est==='algumas' ? '–' : '')+'</i>'+pilula(t)+'</button>';
     }).join('')+'</div><button type="button" class="massa-b" data-massa-tags-limpar>'+L('Tirar todos os clientes','Remove all clients','Quitar todos los clientes','Omnes clientes demere')+'</button>';
   }
-  function emMassa(fn, txt){
-    var ids = idsSel(); if (!ids.length) return;
+  function emMassa(fn, txt, fnSub){
+    var ids = idsSel(), ss = subsSel(); if (!ids.length && !ss.length) return;
     var antes = JSON.stringify(state.missoes), n = 0;
     ids.forEach(function(id){ var m = achar(id); if (m && fn(m) !== false) n++; });
+    if (fnSub) ss.forEach(function(x){ if (fnSub(x.s, x.m) !== false) n++; });
     salvar(); render(); avisar(txt.replace('{n} missões', nMissoes(n)).replace('{n} missions', nMissoes(n)).replace('{n} misiones', nMissoes(n)).replace('{n} missionibus', nMissoes(n, true)), antes);
   }
   function nMissoes(n, abl){ return n+' '+(n===1 ? L('missão','mission','misión', abl ? 'missione' : 'missio') : L('missões','missions','misiones', abl ? 'missionibus' : 'missiones')); }
   function mudarDataMassa(v){
-    emMassa(function(m){ if (m.feita) return false; m.data = v || null; }, L('Data alterada em {n} missões.','Date changed on {n} missions.','Fecha cambiada en {n} misiones.','Dies mutatus in {n} missionibus.'));
+    emMassa(function(m){ if (m.feita) return false; m.data = v || null; }, L('Data alterada em {n} missões.','Date changed on {n} missions.','Fecha cambiada en {n} misiones.','Dies mutatus in {n} missionibus.'), function(sb){ if (sb.feita) return false; sb.data = v || null; });
     fecharPops();
   }
   document.getElementById('sel-modo').addEventListener('click', function(){ entrarSel(!selecionando); });
@@ -3252,7 +3282,7 @@ textarea.campo{min-height:72px;resize:vertical}
   });
   document.getElementById('massa-resp').addEventListener('change', function(){
     var v = this.value; if (!v) return;
-    emMassa(function(m){ if (m.privada || m.resp===v) return false; m.resp = v; if (m.aprovador===v) m.aprovador = null; }, L('Responsável trocado em {n} missões.','Owner changed on {n} missions.','Responsable cambiado en {n} misiones.','Curator mutatus in {n} missionibus.'));
+    emMassa(function(m){ if (m.privada || m.resp===v) return false; m.resp = v; if (m.aprovador===v) m.aprovador = null; }, L('Responsável trocado em {n} missões.','Owner changed on {n} missions.','Responsable cambiado en {n} misiones.','Curator mutatus in {n} missionibus.'), function(sb, pai){ if (pai.privada || sb.resp===v) return false; sb.resp = v; });
   });
   document.getElementById('massa-peso').addEventListener('change', function(){
     var v = this.value; if (!v) return;
@@ -3266,20 +3296,23 @@ textarea.campo{min-height:72px;resize:vertical}
     if (b){ var k = b.getAttribute('data-massa-data'); mudarDataMassa(k==='sem' ? null : dia(+k)); return; }
     var t = e.target.closest('[data-massa-tag]');
     if (t){
-      var tid = t.getAttribute('data-massa-tag'), ms = idsSel().map(achar).filter(function(m){ return m && !m.privada; }), todas = ms.length && ms.every(function(m){ return (m.tags||[]).indexOf(tid)>=0; }), nome = (tagPorId(tid)||{}).nome || '';
-      emMassa(function(m){ if (m.privada) return false; m.tags = m.tags || []; var i = m.tags.indexOf(tid); if (todas){ if (i<0) return false; m.tags.splice(i,1); } else { if (i>=0) return false; m.tags.push(tid); } },
-        (todas ? L('“'+nome+'” tirado de {n} missões.','“'+nome+'” removed from {n} missions.','“'+nome+'” quitado de {n} misiones.','“'+nome+'” ex {n} missionibus demptum.') : L('“'+nome+'” posto em {n} missões.','“'+nome+'” added to {n} missions.','“'+nome+'” puesto en {n} misiones.','“'+nome+'” {n} missionibus additum.')));
+      var tid = t.getAttribute('data-massa-tag'), ms = alvosTag(), todas = ms.length && ms.every(function(m){ return (m.tags||[]).indexOf(tid)>=0; }), nome = (tagPorId(tid)||{}).nome || '';
+      var tg = function(m){ m.tags = m.tags || []; var i = m.tags.indexOf(tid); if (todas){ if (i<0) return false; m.tags.splice(i,1); } else { if (i>=0) return false; m.tags.push(tid); } };
+      emMassa(function(m){ if (m.privada) return false; return tg(m); },
+        (todas ? L('“'+nome+'” tirado de {n} missões.','“'+nome+'” removed from {n} missions.','“'+nome+'” quitado de {n} misiones.','“'+nome+'” ex {n} missionibus demptum.') : L('“'+nome+'” posto em {n} missões.','“'+nome+'” added to {n} missions.','“'+nome+'” puesto en {n} misiones.','“'+nome+'” {n} missionibus additum.')),
+        function(sb, pai){ if (pai.privada) return false; return tg(sb); });
       document.getElementById('massa-tags-pop').hidden = false; renderPopTags(); return;
     }
     if (e.target.closest('[data-massa-tags-limpar]')){
-      emMassa(function(m){ if (m.privada || !(m.tags||[]).length) return false; m.tags = []; }, L('Clientes tirados de {n} missões.','Clients removed from {n} missions.','Clientes quitados de {n} misiones.','Clientes ex {n} missionibus dempti.'));
+      emMassa(function(m){ if (m.privada || !(m.tags||[]).length) return false; m.tags = []; }, L('Clientes tirados de {n} missões.','Clients removed from {n} missions.','Clientes quitados de {n} misiones.','Clientes ex {n} missionibus dempti.'), function(sb, pai){ if (pai.privada || !(sb.tags||[]).length) return false; sb.tags = []; });
       fecharPops();
     }
   });
   document.getElementById('massa-excluir').addEventListener('click', function(){
-    var ids = idsSel(); if (!ids.length) return;
+    var ids = idsSel(), ss = subsSel(), tot = ids.length + ss.length; if (!tot) return;
     var antes = JSON.stringify(state.missoes), set = {}; ids.forEach(function(id){ set[id] = 1; });
-    state.missoes = state.missoes.filter(function(m){ return !set[m.id]; }); selecao = {};
+    ss.forEach(function(x){ x.m.subs = (x.m.subs||[]).filter(function(y){ return y!==x.s; }); });
+    state.missoes = state.missoes.filter(function(m){ return !set[m.id]; }); selecao = {}; ids = {length:tot};
     salvar(); render(); avisar(ids.length===1 ? L('1 missão excluída.','1 mission deleted.','1 misión eliminada.','1 missio deleta.') : L(ids.length+' missões excluídas.', ids.length+' missions deleted.', ids.length+' misiones eliminadas.', ids.length+' missiones deletae.'), antes);
   });
   document.addEventListener('click', function(e){
@@ -3287,6 +3320,12 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!e.target.closest('.massa-pop-w')) fecharPops();
     var sb = e.target.closest('[data-sel]');
     if (sb){ e.preventDefault(); alternarSel(sb.getAttribute('data-sel'), e.shiftKey); return; }
+    var subEl = e.target.closest('.sub[data-sub]');
+    if (subEl && !subEl.classList.contains('editando')){
+      var noBotao = e.target.closest('.circ,.sub-x,a,input,select,textarea,form');
+      if (!noBotao && (selecionando || e.ctrlKey || e.metaKey)){ e.preventDefault(); e.stopPropagation(); selecionando = true; alternarSel('s:'+subEl.getAttribute('data-sub'), false); }
+      return;
+    }
     var row = e.target.closest('.linha[data-id]'); if (!row) return;
     var interativo = e.target.closest('button,a,input,select,textarea,label,form,.sub,.extras,.det');
     if ((e.ctrlKey || e.metaKey) && !interativo){ if (!selecionando){ selecionando = true; } alternarSel(row.getAttribute('data-id'), false); return; }
@@ -3315,6 +3354,32 @@ textarea.campo{min-height:72px;resize:vertical}
     state.missoes = state.missoes.filter(function(m){ return m.id!==srcId; });
     abertas[tgtId] = true; movendo = null; editandoSub = null; salvar(); render();
     avisar('“'+src.titulo+'” agora é sub-missão de “'+tgt.titulo+'”'+(herdadas.length?', com '+plural(herdadas.length,'sub-missão','sub-missões')+' dela':'')+'.', antes);
+  }
+  function selecaoPara(tgtId){
+    var tgt = achar(tgtId); if (!tgt) return;
+    var antes = JSON.stringify(state.missoes), n = 0, fora = {};
+    subsSel().forEach(function(x){ if (x.m===tgt) return; x.m.subs = x.m.subs.filter(function(y){ return y!==x.s; }); tgt.subs = (tgt.subs||[]).concat([x.s]); n++; });
+    idsSel().forEach(function(id){
+      var src = achar(id); if (!src || src===tgt || !!src.privada !== !!tgt.privada) return;
+      var herdadas = (src.subs||[]).map(function(x){ return Object.assign({}, x); });
+      tgt.subs = (tgt.subs||[]).concat([{id:uid(), titulo:src.titulo, descricao:src.descricao||'', resp:src.resp, data:src.data||null, feita:!!src.feita, tags:(src.tags||[]).slice(), anexos:(src.anexos||[]).slice(), clickup:src.clickup||null}], herdadas);
+      fora[id] = 1; n++;
+    });
+    state.missoes = state.missoes.filter(function(m){ return !fora[m.id]; });
+    if (!n) return;
+    selecao = {}; abertas[tgtId] = true; movendo = null; editandoSub = null; salvar(); render();
+    avisar((n===1 ? L('1 item virou sub-missão de “','1 item is now a subtask of “','1 elemento pasó a ser submisión de “','1 res pars facta est “') : L(n+' itens viraram sub-missões de “', n+' items are now subtasks of “', n+' elementos pasaron a ser submisiones de “', n+' res partes factae sunt “'))+tgt.titulo+'”.', antes);
+  }
+  function selecaoParaMissoes(){
+    var ss = subsSel(); if (!ss.length) return;
+    var antes = JSON.stringify(state.missoes);
+    ss.forEach(function(x){
+      x.m.subs = x.m.subs.filter(function(y){ return y!==x.s; });
+      state.missoes.push({ id:uid(), titulo:x.s.titulo, descricao:x.s.descricao||'', resp:x.s.resp||x.m.resp, data:x.s.data||null, peso:'media', feita:!!x.s.feita, feitaEm:x.s.feita?new Date().toISOString():null,
+        exemplo:!!x.m.exemplo, subs:[], tags:(x.s.tags&&x.s.tags.length?x.s.tags:x.m.tags||[]).slice(), anexos:(x.s.anexos||[]).slice(), criadaPor:eu, criadaEm:new Date().toISOString(), privada:!!x.m.privada, dono:x.m.dono||null, area:x.m.area||null });
+    });
+    selecao = {}; editandoSub = null; salvar(); render();
+    avisar(ss.length===1 ? L('1 sub-missão voltou a ser missão.','1 subtask is a mission again.','1 submisión volvió a ser misión.','1 pars iterum missio est.') : L(ss.length+' sub-missões voltaram a ser missões.', ss.length+' subtasks are missions again.', ss.length+' submisiones volvieron a ser misiones.', ss.length+' partes iterum missiones sunt.'), antes);
   }
   function moverSub(k, tgtId){
     var r = acharSub(k), tgt = achar(tgtId); if (!r || !tgt || r.m===tgt) return;
