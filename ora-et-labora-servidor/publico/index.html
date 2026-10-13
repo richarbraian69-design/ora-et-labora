@@ -2621,19 +2621,22 @@ textarea.campo{min-height:72px;resize:vertical}
   function previaImportar(){
     var d = impDados, el = document.getElementById('imp-previa'), ja = {};
     state.missoes.forEach(function(m){ if (m.clickup) ja[m.clickup] = 1; });
+    state.missoes.forEach(function(m){ (m.subs||[]).forEach(function(x){ if (x.clickup) ja[x.clickup] = 1; }); });
     var novas = d.tarefas.filter(function(t){ return !ja[t.id]; }), nomes = {}, tags = {};
     novas.forEach(function(t){ (t.responsaveis||[]).forEach(function(n){ nomes[n] = 1; }); (t.subtarefas||[]).forEach(function(st){ (st.responsaveis||[]).forEach(function(n){ nomes[n] = 1; }); }); (t.tags||[]).forEach(function(g){ tags[g] = 1; }); });
-    var feitas = novas.filter(function(t){ return t.concluida; }).length;
+    var feitas = novas.filter(function(t){ return t.concluida; }).length, porId = {};
+    state.missoes.forEach(function(m){ if (m.clickup) porId[m.clickup] = 1; });
+    var completar = d.tarefas.filter(function(t){ return porId[t.id] && ((t.descricao||'').trim() || (t.subtarefas||[]).length); }).length;
     var ops = state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return '<option value="'+esc(p.id)+'">'+esc(p.nome)+'</option>'; }).join('');
     el.innerHTML = '<div style="display:grid;gap:14px">'+
-      '<p class="imp-resumo"><b>'+novas.length+'</b> '+L('tarefas novas','new tasks','tareas nuevas','opera nova')+(d.tarefas.length-novas.length ? ' · '+(d.tarefas.length-novas.length)+' '+L('já importadas','already imported','ya importadas','iam importata') : '')+' · '+feitas+' '+L('concluídas','completed','completadas','perfecta')+'</p>'+
+      '<p class="imp-resumo"><b>'+novas.length+'</b> '+L('tarefas novas','new tasks','tareas nuevas','opera nova')+(function(){ var pv = novas.filter(function(t){ return t.privada; }).length; return pv ? ' · '+pv+' '+L('pessoais (vão para a Minha área)','personal (go to My space)','personales (van a Mi área)','privata (in Area mea)') : ''; })()+(d.tarefas.length-novas.length ? ' · '+(d.tarefas.length-novas.length)+' '+L('já importadas','already imported','ya importadas','iam importata') : '')+(completar ? ' · '+completar+' '+L('serão completadas com descrição ou subtarefas','will get description or subtasks','se completarán con descripción o subtareas','descriptione vel partibus complebuntur') : '')+' · '+feitas+' '+L('concluídas','completed','completadas','perfecta')+'</p>'+
       (Object.keys(tags).length ? '<div><p class="det-tit" style="margin-bottom:6px">'+L('Clientes (tags)','Clients (tags)','Clientes (etiquetas)','Clientes (notae)')+'</p><div class="imp-tags">'+Object.keys(tags).sort().map(function(g){ return '<span>'+esc(g)+'</span>'; }).join('')+'</div></div>' : '')+
       (Object.keys(nomes).length ? '<div class="imp-mapa"><p class="det-tit">'+L('Responsáveis','Owners','Responsables','Curatores')+'</p>'+Object.keys(nomes).sort().map(function(n){
         var id = acharPessoaPorNome(n) || eu;
         return '<label>'+esc(n)+'<select class="campo" data-imp-resp="'+esc(n)+'">'+ops.replace('value="'+esc(id)+'"','value="'+esc(id)+'" selected')+'</select></label>';
       }).join('')+'</div>' : '')+
-      (feitas ? '<label class="check"><input type="checkbox" id="imp-feitas" checked> '+L('Importar também as concluídas','Also import completed tasks','Importar también las completadas','Etiam perfecta importare')+'</label>' : '')+
-      '<div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="imp-ok"'+(novas.length?'':' disabled')+'>'+L('Importar','Import','Importar','Importare')+'</button><button class="btn btn-claro btn-p" type="button" id="imp-cancelar">'+L('Cancelar','Cancel','Cancelar','Omittere')+'</button></div></div>';
+      (feitas ? '<label class="check"><input type="checkbox" id="imp-feitas"'+(feitas>novas.length/2 ? '' : ' checked')+'> '+L('Importar também as concluídas','Also import completed tasks','Importar también las completadas','Etiam perfecta importare')+'</label>' : '')+
+      '<div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="imp-ok"'+(novas.length||completar?'':' disabled')+'>'+L('Importar','Import','Importar','Importare')+'</button><button class="btn btn-claro btn-p" type="button" id="imp-cancelar">'+L('Cancelar','Cancel','Cancelar','Omittere')+'</button></div></div>';
     el.hidden = false;
   }
   function fazerImportar(){
@@ -2643,19 +2646,40 @@ textarea.campo{min-height:72px;resize:vertical}
     function respDe(lista){ return (lista && lista.length && mapa[lista[0]]) || eu; }
     function outros(lista){ return (lista||[]).slice(1).filter(function(x){ return mapa[x] && mapa[x]!==mapa[lista[0]]; }).map(function(x){ return pessoa(mapa[x]).nome; }); }
     function dataOk(x){ return /^\d{4}-\d{2}-\d{2}$/.test(x||'') ? x : null; }
+    var porId = {}, jaSub = {}; state.missoes.forEach(function(m){ if (m.clickup) porId[m.clickup] = m; (m.subs||[]).forEach(function(x){ if (x.clickup){ ja[x.clickup] = 1; jaSub[x.clickup] = 1; } }); });
+    var atualizadas = 0, remover = {};
     impDados.tarefas.forEach(function(t){
-      if (ja[t.id] || (t.concluida && !comFeitas)) return;
+      var ex = porId[t.id];
+      if (ex){
+        var mudou = false;
+        if (!ex.descricao || /^ClickUp: /.test(ex.descricao)){ var nd = String(t.descricao||'').trim(); if (nd){ ex.descricao = nd+(t.url ? '\n\nClickUp: '+t.url : ''); mudou = true; } }
+        (t.subtarefas||[]).forEach(function(st){
+          if (st.id && jaSub[st.id]) return;
+          var velha = st.id && porId[st.id];
+          ex.subs = ex.subs || [];
+          ex.subs.push({id:uid(), titulo:String(st.nome||'').trim().slice(0,200), descricao:String(st.descricao||'').trim(), resp:velha ? velha.resp : (st.responsaveis && st.responsaveis.length ? respDe(st.responsaveis) : ex.resp), data:dataOk(st.data), feita:velha ? velha.feita : !!st.concluida, tags:[], anexos:[], clickup:st.id||null});
+          if (velha) remover[velha.id] = 1;
+          if (st.id){ ja[st.id] = 1; jaSub[st.id] = 1; } mudou = true;
+        });
+        if (mudou) atualizadas++;
+        return;
+      }
+    });
+    if (Object.keys(remover).length) state.missoes = state.missoes.filter(function(m){ return !remover[m.id]; });
+    impDados.tarefas.forEach(function(t){
+      if (ja[t.id] || porId[t.id] || (t.concluida && !comFeitas)) return;
       var desc = String(t.descricao||'').trim(), ou = outros(t.responsaveis);
       if (ou.length) desc += (desc ? '\n\n' : '')+L('Também com: ','Also with: ','También con: ','Etiam cum: ')+ou.join(', ');
       var m = { id:uid(), titulo:String(t.nome||'').trim().slice(0,200) || L('Sem título','Untitled','Sin título','Sine titulo'), descricao:desc, resp:respDe(t.responsaveis), data:dataOk(t.data),
         peso:({urgent:'ardua',high:'ardua',low:'leve'})[t.prioridade]||'media', feita:!!t.concluida, feitaEm:t.concluida ? (t.concluidaEm || agora) : null, exemplo:false, subs:[], tags:(t.tags||[]).map(function(g){ var tg = criarTag(g); return tg && tg.id; }).filter(Boolean),
         anexos:[], criadaPor:eu, criadaEm:t.criadaEm || agora, recorrencia:null, clickup:t.id };
       if (t.url) m.descricao += (m.descricao ? '\n\n' : '')+'ClickUp: '+t.url;
-      m.subs = (t.subtarefas||[]).map(function(st){ return {id:uid(), titulo:String(st.nome||'').trim().slice(0,200), descricao:String(st.descricao||'').trim(), resp:st.responsaveis && st.responsaveis.length ? respDe(st.responsaveis) : m.resp, data:dataOk(st.data), feita:!!st.concluida, tags:[], anexos:[]}; });
+      m.subs = (t.subtarefas||[]).map(function(st){ return {id:uid(), titulo:String(st.nome||'').trim().slice(0,200), descricao:String(st.descricao||'').trim(), resp:st.responsaveis && st.responsaveis.length ? respDe(st.responsaveis) : m.resp, data:dataOk(st.data), feita:!!st.concluida, tags:[], anexos:[], clickup:st.id||null}; });
+      if (t.privada){ m.privada = true; m.dono = m.resp; m.area = null; m.tags = []; m.aprovador = null; }
       state.missoes.push(m); n++;
     });
     salvar(); impDados = null; document.getElementById('imp-previa').hidden = true; document.getElementById('imp-arq').value = '';
-    render(); avisar(n+' '+L('tarefas importadas do ClickUp.','tasks imported from ClickUp.','tareas importadas de ClickUp.','opera ex ClickUp importata.'));
+    render(); avisar(n+' '+L('tarefas importadas do ClickUp','tasks imported from ClickUp','tareas importadas de ClickUp','opera ex ClickUp importata')+(atualizadas ? ' · '+atualizadas+' '+L('completadas','updated','completadas','completa') : '')+'.');
   }
   document.getElementById('imp-arq').addEventListener('change', function(){
     var f = this.files[0]; if (!f) return;
