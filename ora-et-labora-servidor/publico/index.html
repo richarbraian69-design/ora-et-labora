@@ -325,6 +325,17 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .grupo-rot{margin:0;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3)}
 .grupo-rot.alerta{color:var(--alerta)}
 .grupo-rot .n{margin-left:6px;font-weight:500}
+.grupo-tg{all:unset;display:inline-flex;align-items:center;gap:6px;cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.grupo-tg:hover{color:var(--tx2);background:var(--sup)}
+.grupo-tg:focus-visible{outline:2px solid var(--tx3)}
+.grupo-tg .seta{display:inline-block;font-size:.7rem;transition:transform .15s}
+.grupo.fechado .seta{transform:rotate(-90deg)}
+.grupo.fechado > .painel{display:none}
+.grupo-rot .grupo-tg .n{margin-left:0}
+.ver-feitas-barra{display:flex;flex-wrap:wrap;gap:8px}
+.ver-feitas{border:1px dashed var(--linha);border-radius:10px;background:transparent;color:var(--tx2);padding:8px 14px;font:inherit;font-size:.86rem;cursor:pointer}
+.ver-feitas:hover{background:var(--sup);color:var(--tx)}
+.ver-feitas .n{color:var(--tx3);margin-left:4px}
 .painel{background:var(--painel);border:1px solid var(--linha);border-radius:14px;overflow:hidden}
 .linha{position:relative;display:grid;grid-template-columns:22px 112px minmax(0,1fr) auto auto;grid-template-areas:"chk prz cnt rsp act" ". . sub sub sub";gap:0 16px;align-items:center;padding:14px 12px 14px 22px;border-top:1px solid var(--linha);transition:background .15s}
 .linha:first-child{border-top:0}
@@ -901,7 +912,7 @@ textarea.campo{min-height:72px;resize:vertical}
         <section id="vista-missoes" style="display:grid;gap:14px">
           <div class="barra-lista">
             <h3 class="rotulo-vista" id="rotulo-vista"></h3>
-            <div class="barra-dir"><button class="btn btn-claro btn-p" type="button" id="sel-modo" data-sem-tr></button>
+            <div class="barra-dir"><button class="btn btn-claro btn-p" type="button" id="grupos-tg" data-sem-tr></button><button class="btn btn-claro btn-p" type="button" id="sel-modo" data-sem-tr></button>
             <div class="busca" id="busca-caixa">
               <input id="busca" type="search" placeholder="Buscar missão" aria-label="Buscar missão">
               <button class="icone-btn" id="busca-btn" type="button" aria-label="Buscar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg></button>
@@ -2173,6 +2184,36 @@ textarea.campo{min-height:72px;resize:vertical}
   function tagPorId(id){ for (var i=0;i<state.tags.length;i++) if (state.tags[i].id===id) return state.tags[i]; return null; }
 
   var editandoMissao = null;
+  /* ---------- Grupos recolhíveis e cumpridas ocultas ---------- */
+  var gruposFechados = {}; try { gruposFechados = JSON.parse(lsGet('ora-grupos')||'{}') || {}; } catch(e) { gruposFechados = {}; }
+  var verFeitas = lsGet('ora-ver-feitas')==='1', verReunFeitas = lsGet('ora-ver-reun-feitas')==='1', gruposNaTela = [];
+  function chaveGrupo(t){ return norm(t).replace(/ /g,'-'); }
+  function htmlGrupo(titulo, n, corpo, alerta, chave){
+    chave = chave || chaveGrupo(titulo); gruposNaTela.push(chave);
+    var fechado = !!gruposFechados[chave];
+    return '<section class="grupo'+(fechado?' fechado':'')+'" data-grupo-sec="'+chave+'"><h3 class="grupo-rot'+(alerta?' alerta':'')+'"><button class="grupo-tg" type="button" data-grupo="'+chave+'" aria-expanded="'+!fechado+'"><span class="seta" aria-hidden="true">▾</span>'+titulo+'<span class="n">'+n+'</span></button></h3><div class="painel">'+corpo+'</div></section>';
+  }
+  function botoesFeitas(nM, nR){
+    var h = '';
+    if (nR) h += '<button class="ver-feitas" type="button" data-ver-reun-feitas>'+(verReunFeitas ? L('Ocultar reuniões feitas','Hide finished meetings','Ocultar reuniones hechas','Conventus habitos celare') : L('Ver reuniões feitas','Show finished meetings','Ver reuniones hechas','Conventus habitos videre'))+' <span class="n">'+nR+'</span></button>';
+    if (nM) h += '<button class="ver-feitas" type="button" data-ver-feitas>'+(verFeitas ? L('Ocultar missões cumpridas','Hide completed missions','Ocultar misiones cumplidas','Missiones perfectas celare') : L('Ver missões cumpridas','Show completed missions','Ver misiones cumplidas','Missiones perfectas videre'))+' <span class="n">'+nM+'</span></button>';
+    return h ? '<div class="ver-feitas-barra" data-sem-tr>'+h+'</div>' : '';
+  }
+  function renderGruposTg(){
+    var b = document.getElementById('grupos-tg'); if (!b) return;
+    var todos = gruposNaTela.length && gruposNaTela.every(function(k){ return gruposFechados[k]; });
+    b.hidden = gruposNaTela.length < 2;
+    b.textContent = todos ? L('Expandir tudo','Expand all','Expandir todo','Omnia explicare') : L('Recolher tudo','Collapse all','Contraer todo','Omnia contrahere');
+  }
+  function salvarGrupos(){ lsSet('ora-grupos', JSON.stringify(gruposFechados)); }
+  document.addEventListener('click', function(e){
+    var g = e.target.closest('[data-grupo]');
+    if (g && !selecionando){ var k = g.getAttribute('data-grupo'); gruposFechados[k] = !gruposFechados[k]; if (!gruposFechados[k]) delete gruposFechados[k]; salvarGrupos();
+      var sec = g.closest('.grupo'); sec.classList.toggle('fechado', !!gruposFechados[k]); g.setAttribute('aria-expanded', String(!gruposFechados[k])); renderGruposTg(); return; }
+    if (e.target.closest('#grupos-tg')){ var todos = gruposNaTela.every(function(k){ return gruposFechados[k]; }); gruposNaTela.forEach(function(k){ if (todos) delete gruposFechados[k]; else gruposFechados[k] = true; }); salvarGrupos(); render(); return; }
+    if (e.target.closest('[data-ver-feitas]')){ verFeitas = !verFeitas; lsSet('ora-ver-feitas', verFeitas ? '1' : ''); render(); return; }
+    if (e.target.closest('[data-ver-reun-feitas]')){ verReunFeitas = !verReunFeitas; lsSet('ora-ver-reun-feitas', verReunFeitas ? '1' : ''); render(); return; }
+  });
   var vista='hoje', filtro='todos', filtroTag=null, busca='', abertas={}, editandoSub=null, movendo=null, tagueando=null, ultimaNova=null, formTags=[], reuniaoTags=[], reuniaoPessoas=[], editandoReuniao=null;
   var pedindoAjuste=null, areaSel=null, buscaCri='';
   var hoje = iso(new Date()), mesAgenda = new Date(), diaSel = hoje;
@@ -2660,26 +2701,30 @@ textarea.campo{min-height:72px;resize:vertical}
     }
     else if (vista==='hoje'){
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
-      g = [['Aguardando sua aprovação',am],['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)],['Cumpridas hoje',s.feitasHoje]];
+      g = [['Aguardando sua aprovação',am],['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]].concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
     }
     else if (vista==='todas') g = [['Atrasadas',s.atras,1],['Hoje',s.hoje],['Próximos dias',s.prox],['Sem data',s.sem]];
     else if (vista==='atrasadas') g = [['Atrasadas',s.atras,1]];
     else if (vista==='proximas') g = [['Próximos dias',s.prox],['Sem data',s.sem]];
     else g = [['Cumpridas',s.feitas]];
-    var html = '<div class="zona-fora" id="zona-fora">Solte aqui para a sub-missão virar uma missão</div>';
+    var html = '<div class="zona-fora" id="zona-fora">Solte aqui para a sub-missão virar uma missão</div>', nReunFeitas = 0;
+    gruposNaTela = [];
     if (vista==='hoje' && !q){
       if (new Date().getDay()===0 && !revisaoDaSemana(true)) html += '<p class="nota">Domingo é dia de revisão semanal.<button class="link" type="button" data-abrir-revisao>Fazer a revisão agora</button></p>';
-      var rh = reunioesDoDia(hoje);
-      if (rh.length) html += '<section class="grupo"><h3 class="grupo-rot">Reuniões de hoje<span class="n">'+rh.length+'</span></h3><div class="painel">'+rh.map(linhaReuniao).join('')+'</div></section>';
+      var rhTodas = reunioesDoDia(hoje), rh = rhTodas.filter(function(r){ return !r.feita; }), rf = rhTodas.filter(function(r){ return r.feita; }); nReunFeitas = rf.length;
+      if (rh.length) html += htmlGrupo('Reuniões de hoje', rh.length, rh.map(linhaReuniao).join(''), false, 'reunioes-de-hoje');
+      if (rf.length && verReunFeitas) html += htmlGrupo('Reuniões feitas hoje', rf.length, rf.map(linhaReuniao).join(''), false, 'reunioes-feitas-hoje');
     }
     html += g.filter(function(x){ return x[1].length; }).map(function(x){
-      return '<section class="grupo"><h3 class="grupo-rot'+(x[2]?' alerta':'')+'">'+x[0]+'<span class="n">'+x[1].length+'</span></h3><div class="painel">'+x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join('')+'</div></section>';
+      return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2]);
     }).join('');
-    if (!g.some(function(x){ return x[1].length; })){
+    var bfeitas = vista==='hoje' && !q ? botoesFeitas(s.feitasHoje.length, nReunFeitas) : '';
+    if (!g.some(function(x){ return x[1].length; }) && !(vista==='hoje' && !q && rh && rh.length)){
       var vz = { hoje:'Nenhuma missão para hoje. <em>Deo gratias.</em>', todas:'Nenhuma missão em aberto.', atrasadas:'Nenhuma missão atrasada. <em>Deo gratias.</em>', proximas:'Nada agendado para os próximos dias.', cumpridas:'Nenhuma missão cumprida ainda.', aprovar:'Nada aguardando aprovação.' };
       html += '<div class="painel"><p class="vazio">'+(q ? 'Nenhuma missão encontrada para “'+esc(busca.trim())+'”.' : filtroTag ? 'Nenhuma missão deste cliente aqui.' : vz[vista])+'</p></div>';
     }
-    document.getElementById('lista').innerHTML = html;
+    document.getElementById('lista').innerHTML = html + bfeitas;
+    renderGruposTg();
     ultimaNova = null;
     document.getElementById('aviso').hidden = !state.missoes.some(function(m){ return m.exemplo; });
     hidratarImagens();
@@ -3780,10 +3825,13 @@ textarea.campo{min-height:72px;resize:vertical}
     if (areaSel && areas.indexOf(areaSel)<0) areaSel = null;
     document.getElementById('pes-areas').innerHTML = '<button class="area-chip" type="button" data-area="" aria-pressed="'+(!areaSel)+'">Todas</button>'+areas.map(function(a){ return '<button class="area-chip" type="button" data-area="'+esc(a)+'" aria-pressed="'+(areaSel===a)+'">'+esc(a)+'</button>'; }).join('');
     var ms = minhasPessoais().filter(function(m){ return !areaSel || m.area===areaSel; }), s = separar(ms), semana = Date.now()-7*864e5;
-    var g = [['Atrasadas',s.atras,1],['Hoje',s.hoje],['Próximos dias',s.prox],['Sem data',s.sem],['Cumpridas nos últimos 7 dias',s.feitas.filter(function(m){ return new Date(m.feitaEm).getTime()>=semana; })]];
+    var feitas7 = s.feitas.filter(function(m){ return new Date(m.feitaEm).getTime()>=semana; });
+    var g = [['Atrasadas',s.atras,1],['Hoje',s.hoje],['Próximos dias',s.prox],['Sem data',s.sem]].concat(verFeitas ? [['Cumpridas nos últimos 7 dias',feitas7]] : []);
+    var guard = gruposNaTela; gruposNaTela = [];
     var html = g.filter(function(x){ return x[1].length; }).map(function(x){
-      return '<section class="grupo"><h3 class="grupo-rot'+(x[2]?' alerta':'')+'">'+x[0]+'<span class="n">'+x[1].length+'</span></h3><div class="painel">'+x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join('')+'</div></section>';
-    }).join('');
+      return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2], 'pes-'+chaveGrupo(x[0]));
+    }).join('') + botoesFeitas(feitas7.length, 0);
+    gruposNaTela = guard;
     listaPes.innerHTML = html || '<div class="painel"><p class="vazio" data-sem-tr>'+L('Nenhuma missão pessoal'+(areaSel ? ' em '+esc(areaSel) : '')+'. Use “Nova missão pessoal” para a casa, a família, a saúde ou a vida espiritual.', 'No personal missions'+(areaSel ? ' in '+esc(tr(areaSel)) : '')+'. Use “New personal mission” for home, family, health or spiritual life.', 'Ninguna misión personal'+(areaSel ? ' en '+esc(tr(areaSel)) : '')+'. Usa “Nueva misión personal” para la casa, la familia, la salud o la vida espiritual.', 'Nulla missio privata'+(areaSel ? ' ('+esc(tr(areaSel))+')' : '')+'. “Nova missio privata” adhibe pro domo, familia, valetudine vel vita spiritali.')+'</p></div>';
     ultimaNova = null; hidratarImagens();
     var rv = revisaoDaSemana(false);
