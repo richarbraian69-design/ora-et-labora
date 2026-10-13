@@ -673,6 +673,15 @@ textarea.campo{min-height:72px;resize:vertical}
 .sync{font-size:.76rem;color:var(--tx3);padding:2px 10px}
 .pilha-oracao{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:36;width:min(340px,calc(100% - 32px));display:grid;gap:10px}
 .pilha-oracao .angelus{position:static;width:auto}
+.contador{justify-self:end;display:grid;gap:2px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--painel) 88%,transparent);border:1px solid var(--linha);box-shadow:0 2px 8px rgba(0,0,0,.06);font-size:.72rem;line-height:1.35;color:var(--tx2);font-variant-numeric:tabular-nums;backdrop-filter:blur(6px)}
+.contador button{all:unset;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;max-width:260px}
+.contador button:hover{color:var(--tx)}
+.contador button span{overflow:hidden;text-overflow:ellipsis}
+.contador b{font-weight:600;color:var(--tx)}
+.contador svg{width:12px;height:12px;flex:none;opacity:.8}
+.contador .perto b{color:var(--alerta)}
+.massa:not([hidden]) ~ .pilha-oracao{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+@media (max-width:860px){.contador{display:none!important}}
 .dica-hora{margin:0;font-size:.78rem;color:var(--tx3);font-family:var(--f-ui)}
 .horas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
 .hora-it{display:grid;gap:2px;padding:14px 16px;border-left:1px solid var(--linha);text-decoration:none;color:var(--tx)}
@@ -1119,7 +1128,8 @@ textarea.campo{min-height:72px;resize:vertical}
   <p class="rot" id="an-rot"></p>
   <p id="an-verso"></p>
   <div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="an-rezar">Rezar</button><button class="btn btn-claro btn-p" type="button" id="an-fechar">Agora não</button></div>
-</div></div>
+</div>
+<div class="contador" id="contador" data-sem-tr hidden></div></div>
 <div class="veu" id="veu-angelus" hidden>
   <div class="cartao largo" role="dialog" aria-modal="true" aria-labelledby="ang-tit">
     <p class="rot" id="ang-rot"></p>
@@ -2850,7 +2860,7 @@ textarea.campo{min-height:72px;resize:vertical}
       (rh ? ' · '+plural(rh,'reunião','reuniões') : '')+(s.atras.length ? ' · <span class="alerta">'+plural(s.atras.length,'atrasada','atrasadas')+'</span>' : '')+'</span>';
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
-  function render(){ renderNav(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); }
+  function render(){ renderNav(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -3862,6 +3872,49 @@ textarea.campo{min-height:72px;resize:vertical}
     if (e.target.id==='horas-lembrar'){ prefsEu().horas = e.target.checked; salvar(); avisar(e.target.checked ? L('Lembretes das horas ligados.','Hour reminders on.','Recordatorios de las horas activados.','Monitiones horarum accensae.') : L('Lembretes das horas desligados.','Hour reminders off.','Recordatorios de las horas desactivados.','Monitiones horarum exstinctae.')); }
   });
   setInterval(checarHoras, 15000);
+  /* ---------- Contador discreto: próxima oração e próxima reunião ---------- */
+  var I_CRUZ = svgIcone('<path d="M10 3v14M6 7.5h8"/>'), I_REUN = svgIcone('<rect x="3.5" y="4.5" width="13" height="12" rx="2"/><path d="M3.5 8.5h13M7 3v3M13 3v3"/>');
+  function faltam(ms){
+    var min = Math.max(0, Math.ceil(ms/60000)), h = Math.floor(min/60), m = min%60, d = Math.floor(h/24);
+    if (min<1) return L('agora','now','ahora','nunc');
+    if (d>=1) return L('em '+d+'d '+(h%24)+'h','in '+d+'d '+(h%24)+'h','en '+d+'d '+(h%24)+'h','post '+d+'d '+(h%24)+'h');
+    var t = h ? h+'h'+(m ? ' '+m+'min' : '') : m+' min';
+    return L('em ','in ','en ','post ')+t;
+  }
+  function proximaOracao(){
+    var agora = new Date(), lista = [];
+    for (var k=0;k<2;k++){
+      HORAS.forEach(function(x){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(x.h,0,0,0); lista.push({t:d, nome:nomeHora(x), hora:x, h:x.h}); });
+      [6,12,18].forEach(function(h){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(h,0,0,0); lista.push({t:d, nome:L('Ângelus','Angelus','Ángelus','Angelus'), h:h}); });
+    }
+    lista = lista.filter(function(o){ return o.t > agora; }).sort(function(a,b){ return a.t-b.t; });
+    if (!lista.length) return null;
+    var p = lista[0], juntos = lista.filter(function(o){ return o.t.getTime()===p.t.getTime(); });
+    return {t:p.t, nome:juntos.map(function(o){ return o.nome; }).join(' · '), hora:(juntos.filter(function(o){ return o.hora; })[0]||{}).hora};
+  }
+  function proximaReuniao(){
+    var agora = Date.now(), melhor = null;
+    (state.reunioes||[]).forEach(function(r){
+      if (!r.data || !r.inicio || (eu && r.pessoas && r.pessoas.length && r.pessoas.indexOf(eu)<0)) return;
+      var p = r.data.split('-'), q = r.inicio.split(':'), t = new Date(+p[0], +p[1]-1, +p[2], +q[0], +q[1]||0).getTime();
+      if (t > agora - 60000 && t - agora < 7*864e5 && (!melhor || t < melhor.t)) melhor = {t:t, r:r};
+    });
+    return melhor;
+  }
+  function renderContador(){
+    var el = document.getElementById('contador'); if (!el) return;
+    if (!logado || app.hidden){ el.hidden = true; return; }
+    var o = proximaOracao(), r = proximaReuniao(), h = '';
+    if (o) h += '<button type="button" data-cont-oracao title="'+esc(L('Próxima oração','Next prayer','Próxima oración','Proxima oratio')+': '+o.nome+' · '+pad(o.t.getHours())+':00')+'">'+I_CRUZ+'<span><b>'+esc(o.nome)+'</b> '+esc(faltam(o.t - Date.now()))+'</span></button>';
+    if (r){ var ms = r.t - Date.now(); h += '<button type="button" data-cont-reuniao class="'+(ms < 15*60000 ? 'perto' : '')+'" title="'+esc(r.r.titulo+' · '+r.r.inicio)+'">'+I_REUN+'<span><b>'+esc(r.r.titulo)+'</b> '+esc(faltam(ms))+'</span></button>'; }
+    el.innerHTML = h; el.hidden = !h;
+  }
+  document.getElementById('contador').addEventListener('click', function(e){
+    if (e.target.closest('[data-cont-oracao]')){ var o = proximaOracao(); if (o && o.hora) mostrarHora(o.hora, false); else { vista = 'pessoal'; render(); } }
+    if (e.target.closest('[data-cont-reuniao]')){ vista = 'agenda'; render(); }
+  });
+  setInterval(renderContador, 30000);
+
 
 
   /* ---------- Servidor: login, equipe e sincronização ---------- */
