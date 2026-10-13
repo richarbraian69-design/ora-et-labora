@@ -10,7 +10,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PORTA = process.env.PORT || 3000;
-const DADOS = path.resolve(process.env.ORA_DADOS || process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'dados'));
+function discoEm(p) { try { return fs.statSync(p).isDirectory() && fs.statSync(p).dev !== fs.statSync(__dirname).dev; } catch (e) { return false; } }
+const DADOS = path.resolve(process.env.ORA_DADOS || process.env.RAILWAY_VOLUME_MOUNT_PATH || (discoEm('/data') ? '/data' : path.join(__dirname, 'dados')));
 const ARQ = path.join(DADOS, 'ora.json');
 const ANEXOS = path.join(DADOS, 'anexos');
 const BACKUPS = path.join(DADOS, 'backups');
@@ -44,11 +45,11 @@ function gravarAgora() {
 
 /* ---------- Disco: os dados sobrevivem a uma atualização? ---------- */
 const NO_RAILWAY = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_SERVICE_ID);
-const ORIGEM_DADOS = process.env.ORA_DADOS ? 'variável ORA_DADOS' : process.env.RAILWAY_VOLUME_MOUNT_PATH ? 'volume do Railway' : 'pasta padrão do app (apagada a cada atualização)';
+const ORIGEM_DADOS = process.env.ORA_DADOS ? 'variável ORA_DADOS' : process.env.RAILWAY_VOLUME_MOUNT_PATH ? 'volume do Railway' : DADOS === '/data' ? 'disco encontrado em /data' : 'pasta padrão do app (apagada a cada atualização)';
 function discoSeparado() { try { return fs.statSync(DADOS).dev !== fs.statSync(__dirname).dev; } catch (e) { return false; } }
 function dadosPersistentes() {
   if (!NO_RAILWAY) return true;
-  const vol = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+  const vol = process.env.RAILWAY_VOLUME_MOUNT_PATH || (DADOS === '/data' ? '/data' : '');
   return !!vol && (DADOS === path.resolve(vol) || DADOS.startsWith(path.resolve(vol) + path.sep)) && discoSeparado();
 }
 const INICIADO = new Date();
