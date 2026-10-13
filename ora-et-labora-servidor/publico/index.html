@@ -3245,7 +3245,10 @@ textarea.campo{min-height:72px;resize:vertical}
     if ((el = t.closest('[data-pedir-ajuste]'))){ var pa = el.getAttribute('data-pedir-ajuste'); pedindoAjuste = pedindoAjuste===pa ? null : pa; renderLista(); var ta = document.getElementById('aj-nota-'+pa); if (ta) ta.focus(); return; }
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
-    if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; salvar(); render(); if (r.s.feita) avisar('+'+XP_SUB+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
+    if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){
+        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; salvar(); render(); if (r.s.feita) avisar('+'+XP_SUB+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
+        if (!r.s.feita && !r.s.oferecida && !(r.m.privada && r.m.dono!==eu)){ abrirOferta({id:'s:'+k, titulo:r.s.titulo, sub:true}, function(){ r.s.oferecida = true; marcarSub(); }); return; }
+        marcarSub(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
     if (t.closest('[data-sub-cancelar]')){ editandoSub = null; renderLista(); return; }
     if ((el = t.closest('[data-sub-promover]'))){ tornarMissao(el.getAttribute('data-sub-promover')); return; }
@@ -3564,6 +3567,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function abrirOferta(m, depois){
     ofMissao = m; ofDepois = depois;
     document.getElementById('of-missao').textContent = m.titulo;
+    document.getElementById('of-tit').innerHTML = '<span data-sem-tr>'+(m.sub ? L('Por quem ou pelo quê você <em>oferece</em> esta sub-missão?','For whom or for what do you <em>offer</em> this subtask?','¿Por quién o por qué <em>ofreces</em> esta submisión?','Pro quo vel pro qua re hanc partem <em>offers</em>?') : L('Por quem ou pelo quê você <em>oferece</em> esta missão?','For whom or for what do you <em>offer</em> this mission?','¿Por quién o por qué <em>ofreces</em> esta misión?','Pro quo vel pro qua re hanc missionem <em>offers</em>?'))+'</span>';
     document.getElementById('of-chips').innerHTML = sugestoesOferta().map(function(t){ return '<button class="ofe-chip" type="button" data-of="'+esc(t)+'">'+esc(t)+'</button>'; }).join('');
     ofTexto.value = ''; document.getElementById('of-ok').disabled = true;
     document.getElementById('of-ok').textContent = precisaAprovacao(m) && eu!==m.aprovador ? 'Oferecer e enviar para aprovação' : 'Oferecer e cumprir';
@@ -3575,7 +3579,7 @@ textarea.campo{min-height:72px;resize:vertical}
   document.getElementById('of-cancelar').addEventListener('click', fecharOferta);
   document.getElementById('of-form').addEventListener('submit', function(e){
     e.preventDefault(); var t = ofTexto.value.trim(), m = ofMissao, depois = ofDepois; if (!t || !m) return;
-    var o = {id:uid(), dono:eu, tipo:'missao', missao:m.id, titulo:m.titulo, texto:t, em:new Date().toISOString(), data:hoje};
+    var o = {id:uid(), dono:eu, tipo:'missao', missao:m.id, titulo:m.titulo, texto:t, em:new Date().toISOString(), data:hoje}; if (m.sub) o.sub = true;
     state.oferecimentos.push(o); m.oferecida = true; pendenteOferta = o.id;
     fecharOferta(); depois();
   });
