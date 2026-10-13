@@ -210,6 +210,10 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 }
 :root[data-theme="dark"] .banner{--banner:#f4f3ef; --banner-tx:#151513; --banner-tx2:#6d6c67; --banner-btn-hover:#000000; --banner-prog-bg:rgba(0,0,0,.08); --banner-prog:rgba(0,0,0,.35)}
 :root[data-theme="dark"] .banner .iso.escuro{--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49}
+/* Desenho do sítio no cartão: escuro no modo claro, claro no modo escuro */
+#cid-arte{--bg:#111110;--painel:#1c1c1a;--tx2:#a6a59f;--linha:#2a2927;--iso-top:#2c2b29;--iso-esq:#222120;--iso-dir:#1a1918;--iso-vao:#0c0c0b;--iso-linha:#bdbcb6;--iso-fant:#4a4945;--iso-chao:#1d1c1b;--copa-top:#283329;--copa-esq:#1f2a21;--copa-dir:#18211a;--agua:#20354a;--pele:#d9b894}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) #cid-arte{--bg:#f4f3ef;--painel:#ffffff;--tx2:#6d6c67;--linha:#e8e7e3;--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49;--iso-fant:#c4c3bd;--iso-chao:#f6f5f1;--copa-top:#eaf2e5;--copa-esq:#dbe8d3;--copa-dir:#c8dabd;--agua:#cfe2f0;--pele:#f0d2b4} }
+:root[data-theme="dark"] #cid-arte{--bg:#f4f3ef;--painel:#ffffff;--tx2:#6d6c67;--linha:#e8e7e3;--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49;--iso-fant:#c4c3bd;--iso-chao:#f6f5f1;--copa-top:#eaf2e5;--copa-esq:#dbe8d3;--copa-dir:#c8dabd;--agua:#cfe2f0;--pele:#f0d2b4}
 
 .lado{grid-area:lado;background:var(--painel);border:1px solid var(--linha);border-radius:16px;overflow:hidden}
 .numeros{padding:18px 22px;display:grid;gap:4px}
