@@ -180,6 +180,17 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .nav .nome-tag{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .nav button{min-width:0}
 .nav-rotulo{margin:2px 10px -10px;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+.nav-rot-tg{display:flex;align-items:center;justify-content:space-between;gap:6px;width:calc(100% - 20px);padding:3px 0;border:0;background:none;font-family:inherit;cursor:pointer;text-align:left}
+.nav-rot-tg:hover{color:var(--tx2)}
+.nav-rot-tg .seta{font-size:.68rem;transition:transform .15s;opacity:.8}
+.nav-rot-tg[aria-expanded="false"] .seta{transform:rotate(-90deg)}
+.lateral.sem-pessoas #nav-pessoas,.lateral.sem-tags #nav-tags{display:none}
+.sub-tg .caret{display:inline-block;font-size:.62rem;margin-right:2px;transition:transform .15s}
+.sub-tg.aberta .caret{transform:rotate(90deg)}
+.app.recolhido .nav-rot-tg{padding:0;pointer-events:none}
+.app.recolhido .nav-rot-tg .seta{display:none}
+.app.recolhido .lateral.sem-pessoas #nav-pessoas,.app.recolhido .lateral.sem-tags #nav-tags{display:grid}
+@media (max-width:860px){.lateral.sem-pessoas #nav-pessoas,.lateral.sem-tags #nav-tags{display:flex}}
 .av{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;flex:none;background:var(--c,var(--p1));color:var(--tx);font-size:.72rem;font-weight:600;line-height:1}
 .avs{display:inline-flex}
 .avs .av{width:20px;height:20px;font-size:.66rem;box-shadow:0 0 0 2px var(--painel)}
@@ -806,9 +817,9 @@ textarea.campo{min-height:72px;resize:vertical}
       <button type="button" class="menu-recolher" id="menu-recolher" data-sem-tr></button>
     </div>
     <nav class="nav" id="nav-vistas" aria-label="Seções"></nav>
-    <p class="nav-rotulo">Equipe</p>
+    <button class="nav-rotulo nav-rot-tg" type="button" data-nav-sec="pessoas" aria-expanded="true"><span>Equipe</span><span class="seta" aria-hidden="true">▾</span></button>
     <nav class="nav" id="nav-pessoas" aria-label="Filtrar por responsável"></nav>
-    <p class="nav-rotulo">Clientes</p>
+    <button class="nav-rotulo nav-rot-tg" type="button" data-nav-sec="tags" aria-expanded="true"><span>Clientes</span><span class="seta" aria-hidden="true">▾</span></button>
     <nav class="nav" id="nav-tags" aria-label="Filtrar por cliente"></nav>
     <div class="lateral-pe nav"><span class="sync" id="sync" hidden></span><label class="idioma-sel" data-sem-tr><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2 2.2 3 4.5 3 7s-1 4.8-3 7c-2-2.2-3-4.5-3-7s1-4.8 3-7z"/></svg><select id="idioma" aria-label="Idioma / Language"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option><option value="la">Latina</option></select></label><button type="button" id="tema"></button><button type="button" id="sair" hidden></button></div>
   </aside>
@@ -2184,6 +2195,18 @@ textarea.campo{min-height:72px;resize:vertical}
   function tagPorId(id){ for (var i=0;i<state.tags.length;i++) if (state.tags[i].id===id) return state.tags[i]; return null; }
 
   var editandoMissao = null;
+  function aplicarNavSec(){
+    var lat = document.querySelector('.lateral'); if (!lat) return;
+    ['pessoas','tags'].forEach(function(k){
+      var f = lsGet('ora-nav-'+k)==='fechado'; lat.classList.toggle('sem-'+k, f);
+      var b = lat.querySelector('[data-nav-sec="'+k+'"]'); if (b){ b.setAttribute('aria-expanded', String(!f)); b.title = f ? L('Mostrar','Show','Mostrar','Ostendere') : L('Recolher','Collapse','Contraer','Contrahere'); }
+    });
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-nav-sec]'); if (!b) return;
+    var k = b.getAttribute('data-nav-sec'); lsSet('ora-nav-'+k, lsGet('ora-nav-'+k)==='fechado' ? '' : 'fechado'); aplicarNavSec();
+  });
+  setTimeout(aplicarNavSec, 0);
   /* ---------- Grupos recolhíveis e cumpridas ocultas ---------- */
   var gruposFechados = {}; try { gruposFechados = JSON.parse(lsGet('ora-grupos')||'{}') || {}; } catch(e) { gruposFechados = {}; }
   var verFeitas = lsGet('ora-ver-feitas')==='1', verReunFeitas = lsGet('ora-ver-reun-feitas')==='1', gruposNaTela = [];
@@ -2210,7 +2233,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var g = e.target.closest('[data-grupo]');
     if (g && !selecionando){ var k = g.getAttribute('data-grupo'); gruposFechados[k] = !gruposFechados[k]; if (!gruposFechados[k]) delete gruposFechados[k]; salvarGrupos();
       var sec = g.closest('.grupo'); sec.classList.toggle('fechado', !!gruposFechados[k]); g.setAttribute('aria-expanded', String(!gruposFechados[k])); renderGruposTg(); return; }
-    if (e.target.closest('#grupos-tg')){ var todos = gruposNaTela.every(function(k){ return gruposFechados[k]; }); gruposNaTela.forEach(function(k){ if (todos) delete gruposFechados[k]; else gruposFechados[k] = true; }); salvarGrupos(); render(); return; }
+    if (e.target.closest('#grupos-tg')){ var todos = gruposNaTela.every(function(k){ return gruposFechados[k]; }); gruposNaTela.forEach(function(k){ if (todos) delete gruposFechados[k]; else gruposFechados[k] = true; }); if (!todos) abertas = {}; salvarGrupos(); render(); return; }
     if (e.target.closest('[data-ver-feitas]')){ verFeitas = !verFeitas; lsSet('ora-ver-feitas', verFeitas ? '1' : ''); render(); return; }
     if (e.target.closest('[data-ver-reun-feitas]')){ verReunFeitas = !verReunFeitas; lsSet('ora-ver-reun-feitas', verReunFeitas ? '1' : ''); render(); return; }
   });
@@ -2616,7 +2639,7 @@ textarea.campo{min-height:72px;resize:vertical}
   }
   function linha(m, nova){
     var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length;
-    var ind = (subs.length ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+nf+' de '+subs.length+' sub-missões">'+I_RAMO+nf+'/'+subs.length+'</button>' : '')+(na ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
+    var ind = (subs.length ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'" aria-label="'+nf+' de '+subs.length+' sub-missões"><span class="caret" aria-hidden="true">▸</span>'+I_RAMO+nf+'/'+subs.length+'</button>' : '')+(na ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
     if (m.recorrencia) ind += '<span class="st" title="Missão recorrente">'+I_REPETE+esc(nomeRec(m.recorrencia))+'</span>';
     if (m.privada && m.area) ind += '<span class="st priv">'+esc(m.area)+'</span>';
     if (m.criativo && m.criativo.cidade) ind += '<span class="st" title="Criativo">'+esc(m.criativo.cidade)+' · '+esc(m.criativo.formato||'criativo')+'</span>';
