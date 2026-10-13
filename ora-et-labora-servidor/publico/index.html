@@ -302,7 +302,17 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .indic{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 6px;border:0;border-radius:6px;background:transparent;color:var(--tx3);font-size:.8rem;cursor:pointer}
 .indic:hover{background:var(--sup-2);color:var(--tx)}
 .indic svg{width:14px;height:14px}
-.r-desc{margin:0;color:var(--tx2);font-size:.9rem;overflow-wrap:anywhere}
+.r-desc{margin:0;color:var(--tx2);font-size:.9rem;overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.45}
+.r-desc a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.r-cnt{position:relative}
+.linha [data-desc-toggle].r-titulo{cursor:pointer}
+.desc-ind{opacity:.7}
+.linha.desc-aberta .desc-ind{opacity:1;color:var(--tx)}
+/* Descrição escondida: aparece num balão ao passar o mouse, ou fica aberta com um clique */
+.linha:not(.desc-aberta) .r-desc{display:none}
+.desc-flut{position:fixed;z-index:45;width:min(520px,calc(100vw - 24px));max-height:300px;overflow:auto;padding:12px 14px;background:var(--painel);color:var(--tx);border:1px solid var(--linha);border-radius:10px;box-shadow:var(--sombra);font-size:.9rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;animation:aparecer .15s ease}
+.desc-flut a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.linha.desc-aberta .r-desc{margin-top:4px;padding:10px 12px;border-left:2px solid var(--linha);background:var(--sup);border-radius:0 8px 8px 0}
 .r-local{font-size:.86rem;color:var(--tx2);overflow-wrap:anywhere}
 .r-resp{grid-area:rsp;display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:.86rem;color:var(--tx2)}
 .r-resp .xp{font-size:.78rem;color:var(--tx3);font-variant-numeric:tabular-nums}
@@ -1917,6 +1927,44 @@ textarea.campo{min-height:72px;resize:vertical}
   var I_SUB = svgIcone('<path d="M3 5h10M3 10h6M3 15h6M14.5 10v6M11.5 13h6"/>',1.6), I_MOVER = svgIcone('<path d="M5 3.5v6.5a3 3 0 0 0 3 3h8M13 10l3 3-3 3"/>',1.6);
   var I_LIXO = svgIcone('<path d="M4.5 6h11M8 6V4h4v2M6 6l.8 10h6.4L14 6"/>',1.6), I_TAG = svgIcone('<path d="M3.5 10.2V4.5a1 1 0 0 1 1-1h5.7l6.3 6.3a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0z"/><circle cx="7" cy="7" r="1.1"/>',1.6);
   var I_CLIPE = svgIcone('<path d="M15 9.2l-5.3 5.3a3.2 3.2 0 0 1-4.5-4.5l6-6a2.1 2.1 0 0 1 3 3l-6 6a1.1 1.1 0 0 1-1.5-1.5l5.3-5.3"/>',1.6), I_BAIXAR = svgIcone('<path d="M10 3.5v9M6 9l4 4 4-4M4 16.5h12"/>',1.6);
+  var I_DESC = svgIcone('<path d="M4 6h12M4 10h12M4 14h7"/>');
+  var descAbertas = {};
+  function textoComLinks(t){
+    var x = esc(t).replace(/\[([^\]\n]{1,300})\]\((https?:\/\/[^)\s]+)\)/g, function(_, txt, url){ return url; });
+    return x.replace(/https?:\/\/[^\s<]+/g, function(u){
+      var cauda = (u.match(/[.,;:)]+$/)||[''])[0]; if (cauda) u = u.slice(0, -cauda.length);
+      var href = u.replace(/\\_/g,'_');
+      return '<a href="'+href+'" target="_blank" rel="noopener">'+(href.length>60 ? href.slice(0,57)+'…' : href)+'</a>'+cauda;
+    });
+  }
+
+  var flut = null, flutTimer = null, flutDe = null;
+  function fecharFlut(){ clearTimeout(flutTimer); flutTimer = null; flutDe = null; if (flut){ flut.remove(); flut = null; } }
+  if (window.matchMedia && matchMedia('(hover: hover)').matches){
+    document.addEventListener('mouseover', function(e){
+      if (flut && (e.target===flut || flut.contains(e.target))){ clearTimeout(flutTimer); return; }
+      var c = e.target.closest('.linha:not(.desc-aberta) .r-cnt');
+      var d = c && c.querySelector(':scope > .r-desc');
+      if (!d){ if (flutDe){ clearTimeout(flutTimer); flutTimer = setTimeout(fecharFlut, 200); } return; }
+      if (flutDe===c){ clearTimeout(flutTimer); return; }
+      fecharFlut(); flutDe = c;
+      flutTimer = setTimeout(function(){
+        if (flutDe!==c) return;
+        var r = c.getBoundingClientRect(); flut = document.createElement('div'); flut.className = 'desc-flut'; flut.setAttribute('data-sem-tr',''); flut.innerHTML = d.innerHTML;
+        document.body.appendChild(flut);
+        var h = flut.offsetHeight, top = r.bottom + 6; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 6);
+        flut.style.top = top+'px'; flut.style.left = Math.max(12, Math.min(r.left, innerWidth - flut.offsetWidth - 12))+'px';
+      }, 350);
+    });
+    window.addEventListener('scroll', fecharFlut, true);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-desc-toggle]'); if (!b) return;
+    fecharFlut();
+    var id = b.getAttribute('data-desc-toggle'), row = b.closest('.linha'); if (!row) return;
+    descAbertas[id] = !descAbertas[id]; row.classList.toggle('desc-aberta', !!descAbertas[id]);
+    Array.prototype.forEach.call(row.querySelectorAll('.desc-ind'), function(x){ x.setAttribute('aria-expanded', String(!!descAbertas[id])); });
+  });
   var I_RAMO = svgIcone('<path d="M5 3.5v6.5a3 3 0 0 0 3 3h7"/><circle cx="15.5" cy="13" r="1.4"/>',1.6), I_EDITAR = svgIcone('<path d="M4 16l1-3.5L13.5 4a1.4 1.4 0 0 1 2 2L7 14.5z"/>',1.6);
   var I_DRIVE = svgIcone('<path d="M7.2 3.5h5.6l4.7 8.2-2.8 4.8H5.3L2.5 11.7z M7.2 3.5l5.5 9.6M12.8 3.5L7.3 13.1M2.5 11.7h15"/>',1.4);
   var I_LOCAL = svgIcone('<path d="M10 17s5-4.6 5-8.5a5 5 0 0 0-10 0C5 12.4 10 17 10 17z"/><circle cx="10" cy="8.5" r="1.8"/>',1.5);
@@ -2416,11 +2464,11 @@ textarea.campo{min-height:72px;resize:vertical}
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
     var circ = m.feita ? '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>' :
       '<button class="circ'+(est==='aguardando'?' espera':'')+'" type="button" data-cumprir="'+m.id+'" aria-label="'+(est==='aguardando' ? (m.aprovador===eu ? 'Aprovar' : 'Aguardando aprovação')+': ' : aprova && m.aprovador!==eu ? 'Enviar para aprovação: ' : 'Cumprir missão: ')+esc(m.titulo)+'" title="'+(aprova && m.aprovador!==eu ? 'Concluir e enviar para aprovação' : 'Cumprir missão')+'">'+CHECK+'</button>';
-    return '<article class="linha'+(m.feita?' feita':'')+(nova?' chegou':'')+'" data-id="'+m.id+'">'+
+    return '<article class="linha'+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+'" data-id="'+m.id+'">'+
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       '<div class="r-info">'+rotuloPrazo(m)+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+esc(p.nome)+'<span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
-      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+(m.descricao?'<p class="r-desc">'+esc(m.descricao)+'</p>':'')+status+'</div>'+
+      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo"'+(m.descricao ? ' data-desc-toggle="'+m.id+'" title="'+L('Clique para ver a descrição','Click to see the description','Haz clic para ver la descripción','Preme ut descriptionem videas')+'"' : '')+'>'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+(m.descricao ? '<button class="indic desc-ind" type="button" data-desc-toggle="'+m.id+'" aria-expanded="'+!!descAbertas[m.id]+'" aria-label="'+L('Descrição','Description','Descripción','Descriptio')+'">'+I_DESC+'</button>' : '')+ind+'</div>'+(m.descricao?'<div class="r-desc">'+textoComLinks(m.descricao)+'</div>':'')+status+'</div>'+
       '<div class="r-acoes">'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-taguear="'+m.id+'" aria-label="Cliente de '+esc(m.titulo)+'" title="Cliente (tag)">'+I_TAG+'</button>')+
         '<button class="icone-btn" type="button" data-anexar="m:'+m.id+'" aria-label="Anexar arquivo em '+esc(m.titulo)+'" title="Anexar arquivo">'+I_CLIPE+'</button>'+
