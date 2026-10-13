@@ -442,6 +442,11 @@ textarea.campo{min-height:72px;resize:vertical}
 .barra i{display:block;height:100%;background:var(--tx);transition:width .6s}
 .rk-xp{font-size:.82rem;color:var(--tx3)}
 .ajustes-painel{padding:20px 22px;display:grid;gap:14px}
+.imp-resumo{margin:0;font-size:.92rem}
+.imp-mapa{display:grid;gap:8px;max-width:520px}
+.imp-mapa label{display:grid;grid-template-columns:minmax(0,1fr) 200px;align-items:center;gap:12px;font-size:.9rem}
+.imp-tags{display:flex;flex-wrap:wrap;gap:6px}
+.imp-tags span{font-size:.8rem;padding:2px 8px;border-radius:6px;background:var(--sup-2);color:var(--tx2)}
 .campos-eq{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .lista-tags{display:grid;gap:8px}
 .linha-tag{display:grid;grid-template-columns:auto minmax(0,1fr) 130px auto;gap:10px;align-items:center}
@@ -934,6 +939,12 @@ textarea.campo{min-height:72px;resize:vertical}
             <p class="det-tit">Clientes</p>
             <div class="lista-tags" id="lista-tags"></div>
             <div class="tp-nova"><input id="nova-tag-aj" type="text" maxlength="30" placeholder="Novo cliente" aria-label="Novo cliente"><button class="btn btn-claro btn-p" id="criar-tag-aj" type="button">Criar</button></div>
+          </div>
+          <div class="painel ajustes-painel" id="aj-importar" data-sem-tr>
+            <p class="det-tit" id="imp-tit"></p>
+            <p class="nota" id="imp-nota"></p>
+            <div class="acoes"><label class="btn btn-claro btn-p" style="cursor:pointer"><span id="imp-escolher"></span><input type="file" id="imp-arq" accept=".json,application/json" hidden></label></div>
+            <div id="imp-previa" hidden></div>
           </div>
         </section>
       </div>
@@ -2590,7 +2601,77 @@ textarea.campo{min-height:72px;resize:vertical}
         '<span class="rk-xp">'+o.xp+' XP · '+(nv.prox ? 'faltam '+(nv.prox.min-o.xp)+' para '+nv.prox.nome : 'grau máximo')+(o.forte ? ' · mais forte em '+o.forte : '')+'</span></li>';
     }).join('');
   }
+  /* ---------- Importar do ClickUp (arquivo .json preparado pelo Claude) ---------- */
+  var impDados = null;
+  function txtImportar(){
+    document.getElementById('imp-tit').textContent = L('Importar do ClickUp','Import from ClickUp','Importar de ClickUp','Ex ClickUp importare');
+    document.getElementById('imp-nota').textContent = L('Escolha o arquivo de exportação. As tags do ClickUp viram clientes, e cada tarefa entra com o responsável, a descrição, a data e as subtarefas. Tarefas já importadas não se repetem.',
+      'Choose the export file. ClickUp tags become clients, and each task comes in with its owner, description, date and subtasks. Tasks already imported are not duplicated.',
+      'Elige el archivo de exportación. Las etiquetas de ClickUp se vuelven clientes, y cada tarea entra con su responsable, descripción, fecha y subtareas. Las tareas ya importadas no se repiten.',
+      'Tabulam exportatam elige. Notae ClickUp clientes fiunt; singula opera cum curatore, descriptione, die et partibus inferuntur. Opera iam importata non iterantur.');
+    document.getElementById('imp-escolher').textContent = L('Escolher arquivo','Choose file','Elegir archivo','Tabulam eligere');
+  }
+  function acharPessoaPorNome(n){
+    var a = norm(n); if (!a) return null;
+    var p = state.equipe.filter(function(x){ return norm(x.nome)===a; })[0]; if (p) return p.id;
+    var pa = a.split(' ')[0];
+    p = state.equipe.filter(function(x){ var b = norm(x.nome); return b && (b.split(' ')[0]===pa || a.indexOf(b)===0 || b.indexOf(a)===0); });
+    return p.length===1 ? p[0].id : null;
+  }
+  function previaImportar(){
+    var d = impDados, el = document.getElementById('imp-previa'), ja = {};
+    state.missoes.forEach(function(m){ if (m.clickup) ja[m.clickup] = 1; });
+    var novas = d.tarefas.filter(function(t){ return !ja[t.id]; }), nomes = {}, tags = {};
+    novas.forEach(function(t){ (t.responsaveis||[]).forEach(function(n){ nomes[n] = 1; }); (t.subtarefas||[]).forEach(function(st){ (st.responsaveis||[]).forEach(function(n){ nomes[n] = 1; }); }); (t.tags||[]).forEach(function(g){ tags[g] = 1; }); });
+    var feitas = novas.filter(function(t){ return t.concluida; }).length;
+    var ops = state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return '<option value="'+esc(p.id)+'">'+esc(p.nome)+'</option>'; }).join('');
+    el.innerHTML = '<div style="display:grid;gap:14px">'+
+      '<p class="imp-resumo"><b>'+novas.length+'</b> '+L('tarefas novas','new tasks','tareas nuevas','opera nova')+(d.tarefas.length-novas.length ? ' · '+(d.tarefas.length-novas.length)+' '+L('já importadas','already imported','ya importadas','iam importata') : '')+' · '+feitas+' '+L('concluídas','completed','completadas','perfecta')+'</p>'+
+      (Object.keys(tags).length ? '<div><p class="det-tit" style="margin-bottom:6px">'+L('Clientes (tags)','Clients (tags)','Clientes (etiquetas)','Clientes (notae)')+'</p><div class="imp-tags">'+Object.keys(tags).sort().map(function(g){ return '<span>'+esc(g)+'</span>'; }).join('')+'</div></div>' : '')+
+      (Object.keys(nomes).length ? '<div class="imp-mapa"><p class="det-tit">'+L('Responsáveis','Owners','Responsables','Curatores')+'</p>'+Object.keys(nomes).sort().map(function(n){
+        var id = acharPessoaPorNome(n) || eu;
+        return '<label>'+esc(n)+'<select class="campo" data-imp-resp="'+esc(n)+'">'+ops.replace('value="'+esc(id)+'"','value="'+esc(id)+'" selected')+'</select></label>';
+      }).join('')+'</div>' : '')+
+      (feitas ? '<label class="check"><input type="checkbox" id="imp-feitas" checked> '+L('Importar também as concluídas','Also import completed tasks','Importar también las completadas','Etiam perfecta importare')+'</label>' : '')+
+      '<div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="imp-ok"'+(novas.length?'':' disabled')+'>'+L('Importar','Import','Importar','Importare')+'</button><button class="btn btn-claro btn-p" type="button" id="imp-cancelar">'+L('Cancelar','Cancel','Cancelar','Omittere')+'</button></div></div>';
+    el.hidden = false;
+  }
+  function fazerImportar(){
+    var mapa = {}; Array.prototype.forEach.call(document.querySelectorAll('[data-imp-resp]'), function(s){ mapa[s.getAttribute('data-imp-resp')] = s.value; });
+    var cb = document.getElementById('imp-feitas'), comFeitas = !cb || cb.checked, ja = {}, n = 0, agora = new Date().toISOString();
+    state.missoes.forEach(function(m){ if (m.clickup) ja[m.clickup] = 1; });
+    function respDe(lista){ return (lista && lista.length && mapa[lista[0]]) || eu; }
+    function outros(lista){ return (lista||[]).slice(1).filter(function(x){ return mapa[x] && mapa[x]!==mapa[lista[0]]; }).map(function(x){ return pessoa(mapa[x]).nome; }); }
+    function dataOk(x){ return /^\d{4}-\d{2}-\d{2}$/.test(x||'') ? x : null; }
+    impDados.tarefas.forEach(function(t){
+      if (ja[t.id] || (t.concluida && !comFeitas)) return;
+      var desc = String(t.descricao||'').trim(), ou = outros(t.responsaveis);
+      if (ou.length) desc += (desc ? '\n\n' : '')+L('Também com: ','Also with: ','También con: ','Etiam cum: ')+ou.join(', ');
+      var m = { id:uid(), titulo:String(t.nome||'').trim().slice(0,200) || L('Sem título','Untitled','Sin título','Sine titulo'), descricao:desc, resp:respDe(t.responsaveis), data:dataOk(t.data),
+        peso:({urgent:'ardua',high:'ardua',low:'leve'})[t.prioridade]||'media', feita:!!t.concluida, feitaEm:t.concluida ? (t.concluidaEm || agora) : null, exemplo:false, subs:[], tags:(t.tags||[]).map(function(g){ var tg = criarTag(g); return tg && tg.id; }).filter(Boolean),
+        anexos:[], criadaPor:eu, criadaEm:t.criadaEm || agora, recorrencia:null, clickup:t.id };
+      if (t.url) m.descricao += (m.descricao ? '\n\n' : '')+'ClickUp: '+t.url;
+      m.subs = (t.subtarefas||[]).map(function(st){ return {id:uid(), titulo:String(st.nome||'').trim().slice(0,200), descricao:String(st.descricao||'').trim(), resp:st.responsaveis && st.responsaveis.length ? respDe(st.responsaveis) : m.resp, data:dataOk(st.data), feita:!!st.concluida, tags:[], anexos:[]}; });
+      state.missoes.push(m); n++;
+    });
+    salvar(); impDados = null; document.getElementById('imp-previa').hidden = true; document.getElementById('imp-arq').value = '';
+    render(); avisar(n+' '+L('tarefas importadas do ClickUp.','tasks imported from ClickUp.','tareas importadas de ClickUp.','opera ex ClickUp importata.'));
+  }
+  document.getElementById('imp-arq').addEventListener('change', function(){
+    var f = this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try { var d = JSON.parse(r.result); if (!d || !Array.isArray(d.tarefas)) throw 0; impDados = d; previaImportar(); }
+      catch (e){ avisar(L('Esse arquivo não é uma exportação válida.','This file is not a valid export.','Ese archivo no es una exportación válida.','Haec tabula exportatio valida non est.')); }
+    };
+    r.readAsText(f);
+  });
+  document.getElementById('aj-importar').addEventListener('click', function(e){
+    if (e.target.id==='imp-ok') fazerImportar();
+    if (e.target.id==='imp-cancelar'){ impDados = null; document.getElementById('imp-previa').hidden = true; document.getElementById('imp-arq').value = ''; }
+  });
   function renderAjustes(){
+    txtImportar();
     document.getElementById('aj-eu').innerHTML = opcoesPessoas(eu);
     document.getElementById('aj-eu-painel').hidden = SERVIDOR;
     if (SERVIDOR){
