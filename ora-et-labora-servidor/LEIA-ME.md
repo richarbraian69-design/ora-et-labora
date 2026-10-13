@@ -108,6 +108,10 @@ Quando houver uma versão nova do Ora et Labora:
 
 O Railway publica a nova versão sozinho em um ou dois minutos, e os dados continuam no disco.
 
+## Os dados sumiram depois de uma atualização?
+
+Abra `https://SEU-ENDERECO/diagnostico`. A primeira linha diz se os dados estão num disco que sobrevive às atualizações e, se não estiverem, mostra o motivo. Quando o servidor está sem disco, a tela de entrada também mostra um aviso vermelho.
+
 ## Cópias de segurança
 
 - Toda madrugada fica uma cópia em `/data/backups/ora-AAAA-MM-DD.json`, e as últimas 14 são guardadas.

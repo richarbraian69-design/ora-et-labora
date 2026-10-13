@@ -3637,7 +3637,19 @@ textarea.campo{min-height:72px;resize:vertical}
   }
   if (SERVIDOR){
     montarAbertura();
-    api('GET','/api/estado').then(function(r){ if (r.logado) return carregar(); mostrarLogin('', r.primeiroAcesso); })
+    function avisoSemDisco(sem){
+    var a = document.getElementById('aviso-disco');
+    if (!sem){ if (a) a.remove(); return; }
+    if (a) return;
+    a = document.createElement('div'); a.id = 'aviso-disco'; a.setAttribute('role','alert'); a.setAttribute('data-sem-tr','');
+    a.style.cssText = 'position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:60;width:min(560px,calc(100% - 32px));background:var(--ajuste-bg);color:var(--ajuste-tx);border:1px solid currentColor;border-radius:12px;padding:12px 16px;font-size:.9rem;line-height:1.4';
+    a.innerHTML = L('<b>Atenção:</b> o servidor está sem disco. Tudo o que for feito aqui será apagado na próxima atualização. No Railway, ligue um Volume a este serviço com Mount path <code>/data</code>. Detalhes em <a href="/diagnostico" target="_blank" style="color:inherit">/diagnostico</a>.',
+      '<b>Warning:</b> the server has no disk. Everything done here will be erased on the next update. In Railway, attach a Volume to this service with Mount path <code>/data</code>. Details at <a href="/diagnostico" target="_blank" style="color:inherit">/diagnostico</a>.',
+      '<b>Atención:</b> el servidor no tiene disco. Todo lo que se haga aquí se borrará en la próxima actualización. En Railway, conecta un Volume a este servicio con Mount path <code>/data</code>. Detalles en <a href="/diagnostico" target="_blank" style="color:inherit">/diagnostico</a>.',
+      '<b>Cave:</b> servitor sine disco est. Omnia hic facta proxima renovatione delebuntur. In Railway, Volume huic servitio adiunge (Mount path <code>/data</code>). Singula in <a href="/diagnostico" target="_blank" style="color:inherit">/diagnostico</a>.');
+    document.body.appendChild(a);
+  }
+      api('GET','/api/estado').then(function(r){ avisoSemDisco(r.semDisco); if (r.logado) return carregar(); mostrarLogin('', r.primeiroAcesso); })
       .catch(function(){ mostrarLogin('Não foi possível falar com o servidor. Tente recarregar a página.'); });
   } else iniciarApp();
 })();

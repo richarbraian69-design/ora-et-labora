@@ -30,12 +30,28 @@ if (fs.existsSync(ARQ)) {
 }
 let timerGravar = null;
 function gravar() { clearTimeout(timerGravar); timerGravar = setTimeout(gravarAgora, 300); }
+let ultimoErroGravar = '', ultimaGravacao = 0;
 function gravarAgora() {
   timerGravar = null;
-  const tmp = ARQ + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(db));
-  fs.renameSync(tmp, ARQ);
+  if (!db.criadoEm) db.criadoEm = new Date().toISOString();
+  try {
+    const tmp = ARQ + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(db));
+    fs.renameSync(tmp, ARQ);
+    ultimaGravacao = Date.now(); ultimoErroGravar = '';
+  } catch (e) { ultimoErroGravar = e.message; console.error('[dados] NÃO consegui gravar em ' + ARQ + ': ' + e.message); }
 }
+
+/* ---------- Disco: os dados sobrevivem a uma atualização? ---------- */
+const NO_RAILWAY = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_SERVICE_ID);
+const ORIGEM_DADOS = process.env.ORA_DADOS ? 'variável ORA_DADOS' : process.env.RAILWAY_VOLUME_MOUNT_PATH ? 'volume do Railway' : 'pasta padrão do app (apagada a cada atualização)';
+function discoSeparado() { try { return fs.statSync(DADOS).dev !== fs.statSync(__dirname).dev; } catch (e) { return false; } }
+function dadosPersistentes() {
+  if (!NO_RAILWAY) return true;
+  const vol = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+  return !!vol && (DADOS === path.resolve(vol) || DADOS.startsWith(path.resolve(vol) + path.sep)) && discoSeparado();
+}
+const INICIADO = new Date();
 function encerrar() { if (timerGravar) gravarAgora(); process.exit(0); }
 process.on('SIGTERM', encerrar);
 process.on('SIGINT', encerrar);
@@ -101,6 +117,35 @@ function pagina() {
 const PAGINA = pagina();
 app.get('/', (req, res) => { res.set('Cache-Control', 'no-cache'); res.type('html').send(PAGINA); });
 app.get('/saude', (req, res) => res.type('text').send('ok'));
+app.get('/diagnostico', (req, res) => {
+  let arq = 'ainda não existe';
+  try { const st = fs.statSync(ARQ); arq = (st.size / 1024).toFixed(1) + ' KB, gravado em ' + st.mtime.toISOString(); } catch (e) {}
+  let teste = 'ok';
+  try { const t = path.join(DADOS, '.teste-escrita'); fs.writeFileSync(t, String(Date.now())); fs.unlinkSync(t); } catch (e) { teste = 'FALHOU: ' + e.message; }
+  let backups = [];
+  try { backups = fs.readdirSync(BACKUPS).filter(f => f.endsWith('.json')).sort(); } catch (e) {}
+  const ok = dadosPersistentes() && teste === 'ok' && !ultimoErroGravar;
+  res.set('Cache-Control', 'no-store').type('text').send([
+    'Ora et Labora · diagnóstico dos dados',
+    '',
+    ok ? 'RESULTADO: OK — os dados ficam no disco e sobrevivem às atualizações.' : 'RESULTADO: PROBLEMA — veja as linhas abaixo.',
+    '',
+    'Pasta dos dados ........ ' + DADOS,
+    'De onde veio ........... ' + ORIGEM_DADOS,
+    'Volume do Railway ...... ' + (process.env.RAILWAY_VOLUME_MOUNT_PATH ? process.env.RAILWAY_VOLUME_MOUNT_PATH + (process.env.RAILWAY_VOLUME_NAME ? ' (' + process.env.RAILWAY_VOLUME_NAME + ')' : '') : (NO_RAILWAY ? 'NENHUM ligado a este serviço' : 'não está no Railway')),
+    'Disco separado do app .. ' + (discoSeparado() ? 'sim' : 'NÃO'),
+    'Teste de escrita ....... ' + teste,
+    'Última gravação ........ ' + (ultimoErroGravar ? 'ERRO: ' + ultimoErroGravar : ultimaGravacao ? new Date(ultimaGravacao).toISOString() : 'nenhuma desde que o servidor ligou'),
+    'Arquivo ora.json ....... ' + arq,
+    'Dados criados em ....... ' + (db.criadoEm || '—'),
+    'Contas cadastradas ..... ' + db.usuarios.length,
+    'Itens guardados ........ ' + Object.keys(db.itens || {}).length,
+    'Cópias de segurança .... ' + (backups.length ? backups.length + ' (última: ' + backups[backups.length - 1] + ')' : 'nenhuma ainda'),
+    'Servidor ligado em ..... ' + INICIADO.toISOString(),
+    '',
+    'Se "Dados criados em" for anterior a "Servidor ligado em", os dados sobreviveram à última atualização.'
+  ].join('\n'));
+});
 
 /* Proteção simples contra requisições de outros sites: toda chamada que altera algo precisa do cabeçalho X-Ora. */
 app.use('/api', (req, res, next) => { if (req.method !== 'GET' && req.get('X-Ora') !== '1') return res.status(403).json({ erro: 'Requisição recusada.' }); next(); });
@@ -142,7 +187,7 @@ function limitar(req) {
   if (l.length >= 12) throw new Erro('Muitas tentativas. Espere alguns minutos.', 429);
   l.push(agora); tentativas.set(ip, l);
 }
-app.get('/api/estado', (req, res) => res.json({ primeiroAcesso: db.usuarios.length === 0, logado: !!usuarioDe(req) }));
+app.get('/api/estado', (req, res) => res.json({ primeiroAcesso: db.usuarios.length === 0, logado: !!usuarioDe(req), semDisco: !dadosPersistentes() }));
 app.post('/api/primeiro-acesso', rota((req, res) => {
   if (db.usuarios.length) throw new Erro('O administrador já foi criado. Entre com seu nome e senha.', 403);
   const u = { id: id('u'), nome: validarNome(req.body.nome), senha: hashSenha(validarSenha(req.body.senha)), admin: true, whatsapp: '', resumoHora: '07:30', resumoAtivo: false, criado: new Date().toISOString() };
@@ -311,5 +356,6 @@ setInterval(() => { rodarResumos().catch(e => console.error(e)); backupDiario();
 app.use((req, res) => res.status(404).type('text').send('Página não encontrada.'));
 app.listen(PORTA, () => {
   backupDiario();
+  if (!dadosPersistentes()) console.warn('[dados] ATENÇÃO: os dados estão em ' + DADOS + ', fora de um volume. Eles serão apagados na próxima atualização. Crie um Volume no Railway com Mount path /data.');
   console.log('Ora et Labora rodando na porta ' + PORTA + ' · dados em ' + DADOS + ' · WhatsApp: ' + (provedor() || 'não configurado'));
 });
