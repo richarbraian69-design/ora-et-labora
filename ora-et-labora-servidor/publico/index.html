@@ -371,6 +371,14 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .reuniao .hora small{display:block;font-weight:400;color:var(--tx3)}
 .reuniao .marca-r{grid-area:chk;width:20px;height:20px;border-radius:6px;background:var(--btn);color:var(--btn-tx);display:grid;place-items:center}
 .reuniao .marca-r svg{width:12px;height:12px}
+.chk-r{border:1.5px solid var(--tx3)!important;background:transparent!important;color:var(--tx3)!important;padding:0;cursor:pointer;transition:all .15s}
+.chk-r:hover{border-color:var(--tx)!important;color:var(--tx)!important}
+.chk-r.on{background:var(--ok)!important;border-color:var(--ok)!important;color:#fff!important}
+.reuniao.feita .r-titulo,.dia-item.feita .t b{color:var(--tx2);text-decoration:line-through;text-decoration-thickness:1px}
+.reuniao.feita .hora{color:var(--tx3)}
+.chk-mini{display:inline-grid;place-items:center;width:15px;height:15px;margin:0 6px -2px 0;padding:0;border:1.5px solid var(--tx3);border-radius:4px;background:transparent;color:transparent;cursor:pointer;vertical-align:baseline}
+.chk-mini svg{width:9px;height:9px}
+.chk-mini.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .alca{position:absolute;left:4px;top:15px;width:14px;height:26px;padding:0;border:0;border-radius:5px;background:transparent;color:var(--tx3);cursor:grab;opacity:0;display:grid;place-items:center}
 .alca svg{width:8px;height:14px}
 .linha:hover > .alca,.alca:focus-visible{opacity:1}
@@ -476,6 +484,8 @@ textarea.campo{min-height:72px;resize:vertical}
 .dia-item .t{min-width:0;display:grid;gap:2px}
 .dia-item .t b{font-weight:500}
 .dia-item .t span{font-size:.86rem;color:var(--tx2)}
+.dia-item .t .tag{font-size:.74rem;color:#fff}
+.dia-item .t .tag.cinza{color:var(--tx2)}
 
 /* Vistas Cidade e Ajustes */
 .cid-grande{display:grid;gap:16px;padding:22px}
@@ -862,6 +872,7 @@ textarea.campo{min-height:72px;resize:vertical}
             <label>Data<input class="campo" id="r-data" type="date" required></label>
             <label>Início<input class="campo" id="r-inicio" type="time" required value="10:00"></label>
             <label>Fim<input class="campo" id="r-fim" type="time" value="11:00"></label>
+            <label>Repetir<select class="campo" id="r-rec"></select></label>
             <div class="largo rotulo">Participantes<div class="chips-pessoas" id="r-pessoas"></div></div>
             <label class="largo">Local ou link<input class="campo" id="r-local" maxlength="300" placeholder="Ex.: https://meet.google.com/... ou escritório"></label>
             <label class="largo">Pauta<textarea class="campo" id="r-desc" placeholder="O que será decidido nesta reunião."></textarea></label>
@@ -2550,11 +2561,45 @@ textarea.campo{min-height:72px;resize:vertical}
         '<button class="icone-btn" type="button" data-excluir="'+m.id+'" aria-label="Excluir missão: '+esc(m.titulo)+'" title="Excluir">'+I_LIXO+'</button></div>'+
       extras(m)+'</article>';
   }
+  /* ---------- Reuniões: marcar como feita e repetir ---------- */
+  function proximaReuniaoData(base, rec, minimo){
+    var d = paraData(base), dd = d.getDate(), lim = paraData(minimo), g = 0;
+    do {
+      if (rec==='diaria') d.setDate(d.getDate()+1);
+      else if (rec==='uteis'){ do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6); }
+      else if (rec==='semanal') d.setDate(d.getDate()+7);
+      else if (rec==='mensal'){ d.setDate(1); d.setMonth(d.getMonth()+1); d.setDate(Math.min(dd, diasNoMes(d))); }
+      else return null;
+    } while (d < lim && ++g < 800);
+    return iso(d);
+  }
+  function manterSeriesReunioes(){
+    var series = {}, criou = false;
+    (state.reunioes||[]).forEach(function(r){ if (!r.serie) return; var u = series[r.serie]; if (!u || r.data > u.data) series[r.serie] = r; });
+    Object.keys(series).forEach(function(k){
+      var u = series[k]; if (!u.recorrencia) return;
+      if (u.data >= hoje && !u.feita) return;
+      var nd = proximaReuniaoData(u.data, u.recorrencia, u.data < hoje ? hoje : dia(1)); if (!nd) return;
+      var nid = 'r'+k+'@'+nd; if (acharReuniao(nid)) return;
+      state.reunioes.push({id:nid, serie:k, titulo:u.titulo, data:nd, inicio:u.inicio, fim:u.fim||'', pessoas:(u.pessoas||[]).slice(), local:u.local||'', descricao:u.descricao||'', tags:(u.tags||[]).slice(), recorrencia:u.recorrencia, exemplo:!!u.exemplo, criadaPor:u.criadaPor||eu, feita:false});
+      criou = true;
+    });
+    return criou;
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-reuniao-feita]'); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var r = acharReuniao(b.getAttribute('data-reuniao-feita')); if (!r) return;
+    var antesR = JSON.stringify(state.reunioes);
+    r.feita = !r.feita; r.feitaEm = r.feita ? new Date().toISOString() : null; r.feitaPor = r.feita ? eu : null;
+    manterSeriesReunioes(); salvar(); render();
+    avisarR(r.feita ? L('Reunião “'+r.titulo+'” marcada como feita.','Meeting “'+r.titulo+'” marked as done.','Reunión “'+r.titulo+'” marcada como hecha.','Conventus “'+r.titulo+'” habitus notatus.')+(r.recorrencia ? ' '+L('A próxima já está na agenda.','The next one is already scheduled.','La próxima ya está en la agenda.','Proximus iam in fastis est.') : '') : L('Reunião desmarcada.','Meeting unmarked.','Reunión desmarcada.','Conventus revocatus.'), antesR);
+  }, true);
   function linhaReuniao(r){
     var local = r.local ? (ehLink(r.local) ? '<a href="'+esc(r.local)+'" target="_blank" rel="noopener">'+tr('Entrar na chamada')+'</a>' : esc(r.local)) : '';
-    return '<article class="linha reuniao" data-reuniao="'+r.id+'"><span class="marca-r" aria-hidden="true">'+svgIcone(ICONES.reuniao,1.8)+'</span>'+
+    return '<article class="linha reuniao'+(r.feita?' feita':'')+'" data-reuniao="'+r.id+'"><button class="marca-r chk-r'+(r.feita?' on':'')+'" type="button" data-reuniao-feita="'+r.id+'" aria-pressed="'+!!r.feita+'" title="'+(r.feita ? L('Reunião feita. Clique para desmarcar','Meeting done. Click to undo','Reunión hecha. Haz clic para desmarcar','Conventus habitus. Preme ut revoces') : L('Marcar reunião como feita','Mark meeting as done','Marcar reunión como hecha','Conventum habitum notare'))+'" aria-label="'+L('Reunião feita','Meeting done','Reunión hecha','Conventus habitus')+': '+esc(r.titulo)+'">'+(r.feita ? CHECK : svgIcone(ICONES.reuniao,1.8))+'</button>'+
       '<div class="r-info"><span class="hora">'+esc(r.inicio)+(r.fim?'<small>até '+esc(r.fim)+'</small>':'')+'</span><span class="r-resp"><span class="avs">'+r.pessoas.map(av).join('')+'</span></span></div>'+
-      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo">'+esc(r.titulo)+'</h4>'+pilulas(r.tags)+'</div>'+(local?'<span class="r-local">'+local+'</span>':'')+(r.descricao?'<p class="r-desc">'+esc(r.descricao)+'</p>':'')+'</div>'+
+      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo">'+esc(r.titulo)+'</h4>'+pilulas(r.tags)+(r.recorrencia ? '<span class="st" title="'+L('Reunião recorrente','Recurring meeting','Reunión recurrente','Conventus iteratus')+'">'+I_REPETE+esc(nomeRec(r.recorrencia))+'</span>' : '')+'</div>'+(local?'<span class="r-local">'+local+'</span>':'')+(r.descricao?'<p class="r-desc">'+esc(r.descricao)+'</p>':'')+'</div>'+
       '<div class="r-acoes"><button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião '+esc(r.titulo)+'" title="Editar">'+I_EDITAR+'</button></div></article>';
   }
   function renderLista(){
@@ -2618,7 +2663,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var rs2 = reunioesDoDia(diaSel), ms2 = miss.filter(function(m){ return m.data===diaSel; }), lt2 = liturgia(diaSel);
     var corpo = rs2.map(function(r){
       var local = r.local ? (ehLink(r.local) ? '<a href="'+esc(r.local)+'" target="_blank" rel="noopener">'+tr('Entrar na chamada')+'</a>' : esc(r.local)) : '';
-      return '<div class="dia-item"><span class="h">'+esc(r.inicio)+(r.fim?'<small>até '+esc(r.fim)+'</small>':'')+'</span><div class="t"><b>'+esc(r.titulo)+' '+pilulas(r.tags)+'</b>'+(local?'<span>'+local+'</span>':'')+(r.descricao?'<span>'+esc(r.descricao)+'</span>':'')+'<span class="avs">'+r.pessoas.map(av).join('')+'</span></div>'+
+      return '<div class="dia-item'+(r.feita?' feita':'')+'"><span class="h"><button class="chk-mini'+(r.feita?' on':'')+'" type="button" data-reuniao-feita="'+r.id+'" aria-pressed="'+!!r.feita+'" aria-label="'+L('Reunião feita','Meeting done','Reunión hecha','Conventus habitus')+'">'+CHECK+'</button>'+esc(r.inicio)+(r.fim?'<small>até '+esc(r.fim)+'</small>':'')+'</span><div class="t"><b>'+esc(r.titulo)+' '+pilulas(r.tags)+(r.recorrencia ? ' <span class="st">'+I_REPETE+esc(nomeRec(r.recorrencia))+'</span>' : '')+'</b>'+(local?'<span>'+local+'</span>':'')+(r.descricao?'<span>'+esc(r.descricao)+'</span>':'')+'<span class="avs">'+r.pessoas.map(av).join('')+'</span></div>'+
         '<button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião" title="Editar">'+I_EDITAR+'</button></div>';
     }).join('') + ms2.map(function(m){
       return '<div class="dia-item"><span class="h">Missão<small>'+esc(pessoa(m.resp).nome)+'</small></span><div class="t"><b>'+esc(m.titulo)+' '+pilulas(m.tags)+'</b>'+(m.descricao?'<span>'+esc(m.descricao)+'</span>':'')+'</div>'+
@@ -2866,7 +2911,7 @@ textarea.campo{min-height:72px;resize:vertical}
       (rh ? ' · '+plural(rh,'reunião','reuniões') : '')+(s.atras.length ? ' · <span class="alerta">'+plural(s.atras.length,'atrasada','atrasadas')+'</span>' : '')+'</span>';
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
-  function render(){ renderNav(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); }
+  function render(){ if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -3050,6 +3095,8 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('r-fim').value = r ? (r.fim||'') : '11:00';
     document.getElementById('r-local').value = r ? (r.local||'') : '';
     document.getElementById('r-desc').value = r ? (r.descricao||'') : '';
+    document.getElementById('r-rec').innerHTML = RECORRENCIAS.map(function(x){ return '<option value="'+x[0]+'">'+x[1]+'</option>'; }).join('');
+    document.getElementById('r-rec').value = r ? (r.recorrencia||'') : '';
     reuniaoPessoas = r ? r.pessoas.slice() : [eu]; reuniaoTags = r ? (r.tags||[]).slice() : (filtroTag ? [filtroTag] : []);
     renderPessoasReuniao(); document.getElementById('r-tags').innerHTML = seletorTags('reuniao', reuniaoTags);
     document.getElementById('excluir-reuniao').hidden = !r;
@@ -3075,9 +3122,10 @@ textarea.campo{min-height:72px;resize:vertical}
     var fim = document.getElementById('r-fim').value;
     if (fim && fim<=ini){ avisar('O fim precisa ser depois do início.'); return; }
     if (!reuniaoPessoas.length) reuniaoPessoas = [eu];
-    var dados = {titulo:t, data:d, inicio:ini, fim:fim, pessoas:reuniaoPessoas.slice(), local:document.getElementById('r-local').value.trim(), descricao:document.getElementById('r-desc').value.trim(), tags:reuniaoTags.slice()};
-    if (editandoReuniao){ Object.assign(acharReuniao(editandoReuniao), dados); }
-    else state.reunioes.push(Object.assign({id:uid(), exemplo:false, criadaPor:eu}, dados));
+    var dados = {titulo:t, data:d, inicio:ini, fim:fim, pessoas:reuniaoPessoas.slice(), local:document.getElementById('r-local').value.trim(), descricao:document.getElementById('r-desc').value.trim(), tags:reuniaoTags.slice(), recorrencia:document.getElementById('r-rec').value||null};
+    if (editandoReuniao){ var re0 = acharReuniao(editandoReuniao); Object.assign(re0, dados); if (dados.recorrencia && !re0.serie) re0.serie = re0.id; }
+    else { var nr = Object.assign({id:uid(), exemplo:false, criadaPor:eu, feita:false}, dados); if (nr.recorrencia) nr.serie = nr.id; state.reunioes.push(nr); }
+    manterSeriesReunioes();
     var editou = !!editandoReuniao; editandoReuniao = null; formR.hidden = true; salvar();
     diaSel = d; mesAgenda = paraData(d); mesAgenda.setDate(1);
     if (vista!=='agenda' && d!==hoje) vista = 'agenda';
@@ -3960,7 +4008,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function proximaReuniao(){
     var agora = Date.now(), melhor = null;
     (state.reunioes||[]).forEach(function(r){
-      if (!r.data || !r.inicio || (eu && r.pessoas && r.pessoas.length && r.pessoas.indexOf(eu)<0)) return;
+      if (r.feita || !r.data || !r.inicio || (eu && r.pessoas && r.pessoas.length && r.pessoas.indexOf(eu)<0)) return;
       var p = r.data.split('-'), q = r.inicio.split(':'), t = new Date(+p[0], +p[1]-1, +p[2], +q[0], +q[1]||0).getTime();
       if (t > agora - 60000 && t - agora < 7*864e5 && (!melhor || t < melhor.t)) melhor = {t:t, r:r};
     });
