@@ -352,6 +352,10 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .linha [data-desc-toggle].r-titulo{cursor:pointer}
 .desc-ind{opacity:.7}
 .linha.desc-aberta .desc-ind{opacity:1;color:var(--tx)}
+.desc-editar{display:none;justify-self:start;font-size:.8rem}
+.linha.desc-aberta .desc-editar{display:inline}
+.m-editor{margin-top:10px}
+.m-editor textarea{min-height:120px;resize:vertical}
 /* Descrição escondida: aparece num balão ao passar o mouse, ou fica aberta com um clique */
 .linha:not(.desc-aberta) .r-desc{display:none}
 .desc-flut{position:fixed;z-index:25;width:min(520px,calc(100vw - 24px));max-height:300px;overflow:auto;padding:12px 14px;background:var(--painel);color:var(--tx);border:1px solid var(--linha);border-radius:10px;box-shadow:var(--sombra);font-size:.9rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;animation:aparecer .15s ease}
@@ -2029,6 +2033,13 @@ textarea.campo{min-height:72px;resize:vertical}
     });
   }
 
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-editar-m]');
+    if (b && !selecionando){ e.preventDefault(); editandoMissao = b.getAttribute('data-editar-m'); render();
+      var f = document.querySelector('[data-m-form="'+editandoMissao+'"] textarea'); if (f){ f.focus(); f.setSelectionRange(f.value.length, f.value.length); f.closest('form').scrollIntoView({block:'nearest'}); } return; }
+    if (e.target.closest('[data-m-cancelar]')){ editandoMissao = null; render(); }
+  });
+  document.addEventListener('keydown', function(e){ if (e.key==='Escape' && editandoMissao && e.target.closest && e.target.closest('[data-m-form]')){ editandoMissao = null; render(); } });
   var flut = null, flutTimer = null, flutDe = null;
   function fecharFlut(){ clearTimeout(flutTimer); flutTimer = null; flutDe = null; if (flut){ flut.remove(); flut = null; } }
   if (window.matchMedia && matchMedia('(hover: hover)').matches){
@@ -2161,6 +2172,7 @@ textarea.campo{min-height:72px;resize:vertical}
   }
   function tagPorId(id){ for (var i=0;i<state.tags.length;i++) if (state.tags[i].id===id) return state.tags[i]; return null; }
 
+  var editandoMissao = null;
   var vista='hoje', filtro='todos', filtroTag=null, busca='', abertas={}, editandoSub=null, movendo=null, tagueando=null, ultimaNova=null, formTags=[], reuniaoTags=[], reuniaoPessoas=[], editandoReuniao=null;
   var pedindoAjuste=null, areaSel=null, buscaCri='';
   var hoje = iso(new Date()), mesAgenda = new Date(), diaSel = hoje;
@@ -2530,8 +2542,21 @@ textarea.campo{min-height:72px;resize:vertical}
       (s.descricao ? '<p class="sub-desc">'+esc(s.descricao)+'</p>' : '')+(meta ? '<div class="sub-meta">'+meta+'</div>' : '')+'</div>'+
       '<button class="sub-x" type="button" data-sub-del="'+k+'" aria-label="Excluir sub-missão: '+esc(s.titulo)+'" title="Excluir">×</button></li>';
   }
+  function editorMissao(m){
+    var pesoOps = [['leve','Leve · 10 XP'],['media','Média · 20 XP'],['ardua','Árdua · 40 XP']].map(function(o){ return '<option value="'+o[0]+'"'+((m.peso||'media')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('');
+    var recOps = RECORRENCIAS.map(function(r){ return '<option value="'+r[0]+'"'+((m.recorrencia||'')===r[0]?' selected':'')+'>'+r[1]+'</option>'; }).join('');
+    return '<form class="sub-editor m-editor" data-m-form="'+m.id+'" autocomplete="off">'+
+      '<label>Missão<input class="campo" name="titulo" required maxlength="200" value="'+esc(m.titulo)+'"></label>'+
+      '<label>Descrição<textarea class="campo" name="descricao" rows="6" placeholder="Detalhes, links, combinados…">'+esc(m.descricao||'')+'</textarea></label>'+
+      '<div class="campos-sub">'+(m.privada ? '' : '<label>Responsável<select class="campo" name="resp">'+opcoesPessoas(m.resp)+'</select></label>')+
+        '<label>Data<input class="campo" name="data" type="date" value="'+esc(m.data||'')+'"></label>'+
+        '<label>Peso<select class="campo" name="peso">'+pesoOps+'</select></label>'+
+        '<label>Repetir<select class="campo" name="recorrencia">'+recOps+'</select></label></div>'+
+      '<div class="acoes"><button class="btn btn-escuro" type="submit">Salvar</button><button class="btn btn-claro" type="button" data-m-cancelar>Cancelar</button></div></form>';
+  }
   function extras(m){
     var subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, aberta = !!abertas[m.id], blocos = '';
+    if (editandoMissao===m.id) blocos += editorMissao(m);
     if (tagueando==='m:'+m.id) blocos += seletorTags('m:'+m.id, m.tags, 'Cliente desta missão');
     if (movendo===m.id){
       var alvos = state.missoes.filter(function(x){ return x.id!==m.id && !x.feita && !x.privada; }).sort(function(a,b){ return a.titulo.localeCompare(b.titulo,'pt'); });
@@ -2569,9 +2594,10 @@ textarea.campo{min-height:72px;resize:vertical}
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
       '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+esc(p.nome)+'<span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
-      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo"'+(m.descricao ? ' data-desc-toggle="'+m.id+'" title="'+L('Clique para ver a descrição','Click to see the description','Haz clic para ver la descripción','Preme ut descriptionem videas')+'"' : '')+'>'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+(m.descricao ? '<button class="indic desc-ind" type="button" data-desc-toggle="'+m.id+'" aria-expanded="'+!!descAbertas[m.id]+'" aria-label="'+L('Descrição','Description','Descripción','Descriptio')+'">'+I_DESC+'</button>' : '')+ind+'</div>'+(m.descricao?'<div class="r-desc">'+textoComLinks(m.descricao)+'</div>':'')+status+'</div>'+
+      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo"'+(m.descricao ? ' data-desc-toggle="'+m.id+'" title="'+L('Clique para ver a descrição','Click to see the description','Haz clic para ver la descripción','Preme ut descriptionem videas')+'"' : '')+'>'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+(m.descricao ? '<button class="indic desc-ind" type="button" data-desc-toggle="'+m.id+'" aria-expanded="'+!!descAbertas[m.id]+'" aria-label="'+L('Descrição','Description','Descripción','Descriptio')+'">'+I_DESC+'</button>' : '')+ind+'</div>'+(m.descricao?'<div class="r-desc">'+textoComLinks(m.descricao)+'</div><button class="link desc-editar" type="button" data-editar-m="'+m.id+'">'+L('Editar descrição','Edit description','Editar descripción','Descriptionem emendare')+'</button>':'')+status+'</div>'+
       '<div class="r-acoes">'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-taguear="'+m.id+'" aria-label="Cliente de '+esc(m.titulo)+'" title="Cliente (tag)">'+I_TAG+'</button>')+
+        '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="Editar título, descrição, data…">'+I_EDITAR+'</button>'+
         '<button class="icone-btn" type="button" data-anexar="m:'+m.id+'" aria-label="Anexar arquivo em '+esc(m.titulo)+'" title="Anexar arquivo">'+I_CLIPE+'</button>'+
         '<button class="icone-btn" type="button" data-det="'+m.id+'" aria-label="Sub-missões e anexos de '+esc(m.titulo)+'" title="Sub-missões e anexos">'+I_SUB+'</button>'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-mover="'+m.id+'" aria-label="Tornar sub-missão de outra missão" title="Tornar sub-missão de…">'+I_MOVER+'</button>')+
@@ -3240,6 +3266,12 @@ textarea.campo{min-height:72px;resize:vertical}
     if (fa){ e.preventDefault(); var ma = achar(fa.getAttribute('data-ajuste-form')), nota = fa.elements.nota.value.trim(); if (!ma || !nota) return;
       ma.aprov = {estado:'ajustes', nota:nota, em:new Date().toISOString(), por:eu}; ma.ajustes = (ma.ajustes||0)+1; pedindoAjuste = null; salvar(); render();
       avisar('Ajustes pedidos para '+pessoa(ma.resp).nome+'.'); return; }
+    var fm = e.target.closest('[data-m-form]');
+    if (fm){ e.preventDefault(); var mm = achar(fm.getAttribute('data-m-form')); if (!mm) return; var tt0 = fm.elements.titulo.value.trim(); if (!tt0) return;
+      var antesM = JSON.stringify(state.missoes);
+      mm.titulo = tt0; mm.descricao = fm.elements.descricao.value.trim(); if (fm.elements.resp) mm.resp = fm.elements.resp.value;
+      mm.data = fm.elements.data.value || null; mm.peso = fm.elements.peso.value || 'media'; mm.recorrencia = fm.elements.recorrencia.value || null;
+      editandoMissao = null; salvar(); render(); avisar(L('Missão atualizada.','Mission updated.','Misión actualizada.','Missio renovata.'), antesM); return; }
     var fe = e.target.closest('[data-sub-form]');
     if (fe){ e.preventDefault(); var r = acharSub(fe.getAttribute('data-sub-form')); if (!r) return; var t = fe.elements.titulo.value.trim(); if (!t) return;
       r.s.titulo = t; r.s.descricao = fe.elements.descricao.value.trim(); r.s.resp = fe.elements.resp.value; r.s.data = fe.elements.data.value || null; editandoSub = null; salvar(); render(); return; }
