@@ -2388,6 +2388,19 @@ textarea.campo{min-height:72px;resize:vertical}
   function precisaAprovacao(m){ return !!(m.aprovador && !m.privada && m.aprovador!==m.resp); }
   function nivel(xp){ var i=0; for (var k=0;k<NIVEIS.length;k++) if (xp>=NIVEIS[k].min) i=k; return {atual:NIVEIS[i], prox:NIVEIS[i+1]||null}; }
   function porData(a,b){ return a.data<b.data?-1:a.data>b.data?1:0; }
+  /* Próximos dias: um grupo por dia até domingo; depois, tudo junto em "Semana que vem em diante" */
+  function gruposProximos(lista){
+    if (!lista.length) return [];
+    var h = paraData(hoje), dom = new Date(h); dom.setDate(h.getDate() + ((7 - h.getDay()) % 7)); var fimSemana = iso(dom), amanha = dia(1);
+    var porDia = {}, depois = [];
+    lista.forEach(function(m){ if (m.data && m.data <= fimSemana) (porDia[m.data] = porDia[m.data] || []).push(m); else depois.push(m); });
+    var g = Object.keys(porDia).sort().map(function(d){
+      var t = d===amanha ? L('Amanhã','Tomorrow','Mañana','Cras')+' · '+dataLonga(d) : dataLonga(d);
+      return [t.charAt(0).toUpperCase()+t.slice(1), porDia[d], 0, 'dia-'+d.slice(5)];
+    });
+    if (depois.length) g.push([L('Semana que vem em diante','Next week onward','La próxima semana en adelante','Ab hebdomada proxima'), depois, 0, 'semana-que-vem']);
+    return g;
+  }
   function separar(lista){
     var pend = lista.filter(function(m){ return !m.feita; }), ini = inicioDia();
     var feitas = lista.filter(function(m){ return m.feita; }).sort(function(a,b){ return a.feitaEm<b.feitaEm?1:-1; });
@@ -2823,9 +2836,9 @@ textarea.campo{min-height:72px;resize:vertical}
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
       g = [['Aguardando sua aprovação',am],['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]].concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
     }
-    else if (vista==='todas') g = [['Atrasadas',s.atras,1],['Hoje',s.hoje],['Próximos dias',s.prox],['Sem data',s.sem]];
+    else if (vista==='todas') g = [['Atrasadas',s.atras,1],['Hoje',s.hoje]].concat(gruposProximos(s.prox), [['Sem data',s.sem]]);
     else if (vista==='atrasadas') g = [['Atrasadas',s.atras,1]];
-    else if (vista==='proximas') g = [['Próximos dias',s.prox],['Sem data',s.sem]];
+    else if (vista==='proximas') g = gruposProximos(s.prox).concat([['Sem data',s.sem]]);
     else g = [['Cumpridas',s.feitas]];
     var html = '<div class="zona-fora" id="zona-fora">Solte aqui para a sub-missão virar uma missão</div>', nReunFeitas = 0;
     gruposNaTela = [];
@@ -2836,7 +2849,7 @@ textarea.campo{min-height:72px;resize:vertical}
       if (rf.length && verReunFeitas) html += htmlGrupo('Reuniões feitas hoje', rf.length, rf.map(linhaReuniao).join(''), false, 'reunioes-feitas-hoje');
     }
     html += g.filter(function(x){ return x[1].length; }).map(function(x){
-      return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2]);
+      return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2], x[3]);
     }).join('');
     var bfeitas = vista==='hoje' && !q ? botoesFeitas(s.feitasHoje.length, nReunFeitas) : '';
     if (!g.some(function(x){ return x[1].length; }) && !(vista==='hoje' && !q && rh && rh.length)){
@@ -3963,10 +3976,10 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('pes-areas').innerHTML = '<button class="area-chip" type="button" data-area="" aria-pressed="'+(!areaSel)+'">Todas</button>'+areas.map(function(a){ return '<button class="area-chip" type="button" data-area="'+esc(a)+'" aria-pressed="'+(areaSel===a)+'">'+esc(a)+'</button>'; }).join('');
     var ms = minhasPessoais().filter(function(m){ return !areaSel || m.area===areaSel; }), s = separar(ms), semana = Date.now()-7*864e5;
     var feitas7 = s.feitas.filter(function(m){ return new Date(m.feitaEm).getTime()>=semana; });
-    var g = [['Atrasadas',s.atras,1],['Hoje',s.hoje],['Próximos dias',s.prox],['Sem data',s.sem]].concat(verFeitas ? [['Cumpridas nos últimos 7 dias',feitas7]] : []);
+    var g = [['Atrasadas',s.atras,1],['Hoje',s.hoje]].concat(gruposProximos(s.prox), [['Sem data',s.sem]]).concat(verFeitas ? [['Cumpridas nos últimos 7 dias',feitas7]] : []);
     var guard = gruposNaTela; gruposNaTela = [];
     var html = g.filter(function(x){ return x[1].length; }).map(function(x){
-      return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2], 'pes-'+chaveGrupo(x[0]));
+      return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2], 'pes-'+(x[3]||chaveGrupo(x[0])));
     }).join('') + botoesFeitas(feitas7.length, 0);
     gruposNaTela = guard;
     listaPes.innerHTML = html || '<div class="painel"><p class="vazio" data-sem-tr>'+L('Nenhuma missão pessoal'+(areaSel ? ' em '+esc(areaSel) : '')+'. Use “Nova missão pessoal” para a casa, a família, a saúde ou a vida espiritual.', 'No personal missions'+(areaSel ? ' in '+esc(tr(areaSel)) : '')+'. Use “New personal mission” for home, family, health or spiritual life.', 'Ninguna misión personal'+(areaSel ? ' en '+esc(tr(areaSel)) : '')+'. Usa “Nueva misión personal” para la casa, la familia, la salud o la vida espiritual.', 'Nulla missio privata'+(areaSel ? ' ('+esc(tr(areaSel))+')' : '')+'. “Nova missio privata” adhibe pro domo, familia, valetudine vel vita spiritali.')+'</p></div>';
