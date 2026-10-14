@@ -622,6 +622,9 @@ textarea.campo{min-height:72px;resize:vertical}
 .btn-fim[aria-pressed="true"]{color:var(--tx2)}
 
 /* ---------- Estados de aprovação, recorrência, pessoal ---------- */
+.grupo-vazio{margin:0;padding:10px 16px;font-size:13px;color:var(--tx2);opacity:.75}
+.st.tipo{background:transparent;border:1px solid var(--linha,rgba(127,127,127,.3))}
+.grupo.alvo-tipo > .grupo-rot{outline:2px dashed currentColor;outline-offset:4px;border-radius:6px}
 .st{display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:2px 8px;border-radius:6px;font-size:.76rem;font-weight:500;background:var(--sup-2);color:var(--tx2);line-height:1.3}
 .st svg{width:13px;height:13px;flex:none}
 .st.espera{background:var(--espera-bg);color:var(--espera-tx)}
@@ -915,6 +918,7 @@ textarea.campo{min-height:72px;resize:vertical}
             <label class="so-pes" hidden>Área da vida<select class="campo" id="f-area"></select></label>
             <label>Data<input class="campo" id="f-data" name="data" type="date"></label>
             <label>Peso<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
+            <label>Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
             <label>Repetir<select class="campo" id="f-rec"></select></label>
             <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
             <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
@@ -958,7 +962,7 @@ textarea.campo{min-height:72px;resize:vertical}
         <section id="vista-missoes" style="display:grid;gap:14px">
           <div class="barra-lista">
             <h3 class="rotulo-vista" id="rotulo-vista"></h3>
-            <div class="barra-dir"><button class="btn btn-claro btn-p" type="button" id="grupos-tg" data-sem-tr></button><button class="btn btn-claro btn-p" type="button" id="sel-modo" data-sem-tr></button>
+            <div class="barra-dir"><button class="btn btn-claro btn-p" type="button" id="tipo-tg" data-sem-tr hidden></button><button class="btn btn-claro btn-p" type="button" id="grupos-tg" data-sem-tr></button><button class="btn btn-claro btn-p" type="button" id="sel-modo" data-sem-tr></button>
             <div class="busca" id="busca-caixa">
               <input id="busca" type="search" placeholder="Buscar missão" aria-label="Buscar missão">
               <button class="icone-btn" id="busca-btn" type="button" aria-label="Buscar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg></button>
@@ -1110,6 +1114,7 @@ textarea.campo{min-height:72px;resize:vertical}
   <div class="massa-pop-w"><button class="massa-b" type="button" id="massa-tags-b"></button>
     <div class="massa-pop" id="massa-tags-pop" hidden></div></div>
   <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
+  <label class="massa-campo"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
   <button class="massa-b" type="button" id="massa-pessoal"></button>
   <button class="massa-b perigo" type="button" id="massa-excluir"></button>
   <button class="massa-x" type="button" id="massa-fechar" aria-label="Fechar">×</button>
@@ -2329,9 +2334,12 @@ textarea.campo{min-height:72px;resize:vertical}
     var b = document.getElementById('grupos-tg'); if (!b) return;
     var todos = gruposNaTela.length && gruposNaTela.every(function(k){ return gruposFechados[k]; });
     b.hidden = gruposNaTela.length < 2;
+    var tt = document.getElementById('tipo-tg');
+    if (tt){ tt.hidden = vista!=='hoje'; tt.textContent = porTipo ? L('Organizar por data','Organize by date','Organizar por fecha','Per diem ordinare') : L('Organizar por tipo','Organize by type','Organizar por tipo','Per genus ordinare'); tt.title = porTipo ? L('Hoje está separado por tipo de demanda','Today is split by task type','Hoy está separado por tipo','Hodie per genus divisum') : ''; }
     b.textContent = todos ? L('Expandir tudo','Expand all','Expandir todo','Omnia explicare') : L('Recolher tudo','Collapse all','Contraer todo','Omnia contrahere');
   }
   function salvarGrupos(){ lsSet('ora-grupos', JSON.stringify(gruposFechados)); }
+  document.getElementById('tipo-tg').addEventListener('click', function(){ porTipo = !porTipo; lsSet('ora-por-tipo', porTipo ? '1' : '0'); render(); });
   document.addEventListener('click', function(e){
     var g = e.target.closest('[data-grupo]');
     if (g && !selecionando){ var k = g.getAttribute('data-grupo'); gruposFechados[k] = !gruposFechados[k]; if (!gruposFechados[k]) delete gruposFechados[k]; salvarGrupos();
@@ -2410,11 +2418,40 @@ textarea.campo{min-height:72px;resize:vertical}
     if (lerRec(sel)) h += '<option value="'+sel+'" selected>'+esc(nomeRec(sel))+'</option>';
     return h + '<option value="__custom">Personalizado…</option>';
   }
+  /* ---------- Tipos de demanda: organizam o dia sem precisar de sub-missões ---------- */
+  function tiposLista(){ return [
+    ['reuniao', L('Para reunião','For a meeting','Para reunión','Ad conventum'), L('Para tratar em reunião','To discuss in a meeting','Para tratar en reunión','In conventu tractanda')],
+    ['rapida', L('Rápida','Quick','Rápida','Celeris'), L('Rápidas','Quick ones','Rápidas','Celeres')],
+    ['mensagem', L('Mensagem','Message','Mensaje','Nuntius'), L('Mensagens e cobranças','Messages and follow-ups','Mensajes y cobros','Nuntii et monita')],
+    ['trafego', L('Tráfego','Paid traffic','Tráfico','Commeatus'), L('Tráfego','Paid traffic','Tráfico','Commeatus')],
+    ['complexa', L('Complexa','Complex','Compleja','Ardua'), L('Complexas','Complex ones','Complejas','Arduae')]
+  ]; }
+  function nomeTipo(k){ var t = tiposLista().filter(function(x){ return x[0]===k; })[0]; return t ? t[1] : ''; }
+  function opcoesTipo(sel, vazio){
+    return '<option value="">'+(vazio ? '—' : L('Sem tipo','No type','Sin tipo','Sine genere'))+'</option>'+tiposLista().map(function(t){ return '<option value="'+t[0]+'"'+(t[0]===sel?' selected':'')+'>'+t[1]+'</option>'; }).join('')+(vazio ? '<option value="__nenhum">'+L('Sem tipo','No type','Sin tipo','Sine genere')+'</option>' : '');
+  }
+  var porTipo = lsGet('ora-por-tipo')!=='0', agrupandoTipo = false;
+  /* Hoje por tipo: atrasadas + de hoje, separadas em Rápidas, Mensagens, Tráfego… (as atrasadas vêm primeiro em cada grupo) */
+  function gruposPorTipo(atras, deHoje){
+    var todas = atras.concat(deHoje), g = [];
+    tiposLista().concat([['', '', L('Sem tipo','No type','Sin tipo','Sine genere')]]).forEach(function(t){
+      var l = todas.filter(function(m){ return (m.tipo||'')===t[0] || (!t[0] && !nomeTipo(m.tipo)); });
+      g.push([t[2], l, l.some(function(m){ return atras.indexOf(m)>=0; }) ? 1 : 0, 'tipo-'+(t[0]||'sem'), !!t[0] && todas.length>0]);
+    });
+    return g;
+  }
+  function definirTipo(ids, tipo){
+    var antes = JSON.stringify(state.missoes), n = 0;
+    ids.forEach(function(id){ var m = achar(id); if (m && (m.tipo||'')!==(tipo||'')){ m.tipo = tipo || null; n++; } });
+    if (!n) return;
+    salvar(); render();
+    avisar(tipo ? L('Movida para “{t}”.','Moved to “{t}”.','Movida a “{t}”.','Ad “{t}” translata.').replace('{t}', nomeTipo(tipo))+(n>1 ? ' ('+n+')' : '') : L('Tipo removido.','Type removed.','Tipo quitado.','Genus remotum.'), antes);
+  }
   function gerarRecorrente(m){
     var nd = proximaData(m.data, m.recorrencia); if (!nd) return null;
     var c = {id:uid(), titulo:m.titulo, descricao:m.descricao||'', resp:m.resp, data:nd, peso:m.peso, feita:false, feitaEm:null, exemplo:!!m.exemplo, tags:(m.tags||[]).slice(), anexos:[],
       subs:(m.subs||[]).map(function(s){ return {id:uid(), titulo:s.titulo, descricao:s.descricao||'', resp:s.resp, data:null, feita:false, tags:(s.tags||[]).slice(), anexos:[]}; }),
-      recorrencia:m.recorrencia, aprovador:m.aprovador||null, aprov:null, privada:!!m.privada, dono:m.dono||null, area:m.area||null, criadaPor:m.criadaPor||eu, criadaEm:new Date().toISOString(), origem:m.origem||m.id};
+      recorrencia:m.recorrencia, tipo:m.tipo||null, aprovador:m.aprovador||null, aprov:null, privada:!!m.privada, dono:m.dono||null, area:m.area||null, criadaPor:m.criadaPor||eu, criadaEm:new Date().toISOString(), origem:m.origem||m.id};
     state.missoes.push(c); return c;
   }
   function precisaAprovacao(m){ return !!(m.aprovador && !m.privada && m.aprovador!==m.resp); }
@@ -2751,6 +2788,7 @@ textarea.campo{min-height:72px;resize:vertical}
       '<div class="campos-sub">'+(m.privada ? '' : '<label>Responsável<select class="campo" name="resp">'+opcoesPessoas(m.resp)+'</select></label>')+
         '<label>Data<input class="campo" name="data" type="date" value="'+esc(m.data||'')+'"></label>'+
         '<label>Peso<select class="campo" name="peso">'+pesoOps+'</select></label>'+
+        '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(m.tipo||'')+'</select></label>'+
         '<label>Repetir<select class="campo" name="recorrencia">'+recOps+'</select></label>'+
         '<label>'+L('Área','Area','Área','Area')+'<select class="campo" name="espaco">'+
           (m.privada || m.resp===eu ? '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>'+areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(m.privada && m.area===a?' selected':'')+'>'+L('Minha área · ','My space · ','Mi área · ','Area mea · ')+esc(a)+'</option>'; }).join('')+'<option value="__sem"'+(m.privada && !m.area?' selected':'')+'>'+L('Minha área · sem área','My space · no area','Mi área · sin área','Area mea · sine area')+'</option>'
@@ -2780,6 +2818,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function linha(m, nova){
     var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length;
     var ind = (subs.length ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'" aria-label="'+nf+' de '+subs.length+' sub-missões"><span class="caret" aria-hidden="true">▸</span>'+I_RAMO+nf+'/'+subs.length+'</button>' : '')+(na ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
+    if (m.tipo && nomeTipo(m.tipo) && !agrupandoTipo) ind += '<span class="st tipo">'+esc(nomeTipo(m.tipo))+'</span>';
     if (m.recorrencia) ind += '<span class="st" title="Missão recorrente">'+I_REPETE+esc(nomeRec(m.recorrencia))+'</span>';
     if (m.privada && m.area) ind += '<span class="st priv">'+esc(m.area)+'</span>';
     if (m.criativo && m.criativo.cidade) ind += '<span class="st" title="Criativo">'+esc(m.criativo.cidade)+' · '+esc(m.criativo.formato||'criativo')+'</span>';
@@ -2852,7 +2891,7 @@ textarea.campo{min-height:72px;resize:vertical}
       var txt = m.titulo+' '+(m.descricao||'')+' '+(m.tags||[]).map(function(t){ var x=tagPorId(t); return x?x.nome:''; }).join(' ')+' '+(m.subs||[]).map(function(s){ return s.titulo+' '+(s.descricao||''); }).join(' ');
       return txt.toLowerCase().indexOf(q)>=0;
     });
-    var s = separar(vis), g, ap = aprovacoes();
+    var s = separar(vis), g, ap = aprovacoes(); agrupandoTipo = false;
     if (vista==='aprovar'){
       var filtra = function(l){ return l.filter(function(m){ return vis.indexOf(m)>=0; }); };
       g = [['Aguardando sua aprovação',filtra(ap.minhas),1],['Ajustes pedidos para você',filtra(ap.ajustes),1],['Você enviou para aprovação',filtra(ap.enviadas)]];
@@ -2860,7 +2899,8 @@ textarea.campo{min-height:72px;resize:vertical}
     }
     else if (vista==='hoje'){
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
-      g = [['Aguardando sua aprovação',am],['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]].concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
+      agrupandoTipo = porTipo && !q;
+      g = [['Aguardando sua aprovação',am]].concat(agrupandoTipo ? gruposPorTipo(fora(s.atras), fora(s.hoje)) : [['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]]).concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
     }
     else if (vista==='todas') g = [['Atrasadas',s.atras,1],['Hoje',s.hoje]].concat(gruposProximos(s.prox), [['Sem data',s.sem]]);
     else if (vista==='atrasadas') g = [['Atrasadas',s.atras,1]];
@@ -2874,7 +2914,8 @@ textarea.campo{min-height:72px;resize:vertical}
       if (rh.length) html += htmlGrupo('Reuniões de hoje', rh.length, rh.map(linhaReuniao).join(''), false, 'reunioes-de-hoje');
       if (rf.length && verReunFeitas) html += htmlGrupo('Reuniões feitas hoje', rf.length, rf.map(linhaReuniao).join(''), false, 'reunioes-feitas-hoje');
     }
-    html += g.filter(function(x){ return x[1].length; }).map(function(x){
+    html += g.filter(function(x){ return x[1].length || x[4]; }).map(function(x){
+      if (!x[1].length) return htmlGrupo(x[0], 0, '<p class="grupo-vazio">'+L('Nada aqui hoje. Arraste uma missão até este título para trazê-la.','Nothing here today. Drag a mission onto this title to bring it here.','Nada aquí hoy. Arrastra una misión a este título.','Nihil hodie. Missionem huc trahe.')+'</p>', 0, x[3]);
       return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2], x[3]);
     }).join('');
     var bfeitas = vista==='hoje' && !q ? botoesFeitas(s.feitasHoje.length, nReunFeitas) : '';
@@ -3374,7 +3415,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!/^f-cri-/.test(e.target.id||'')) return;
     document.getElementById('f-cri-aviso').innerHTML = htmlAvisoCriativo(document.getElementById('f-cri-cid').value, document.getElementById('f-cri-for').value, document.getElementById('f-cri-gan').value);
   });
-  function preencherPesoNova(){ var fp = document.getElementById('f-peso'); if (fp) fp.innerHTML = opcoesPeso('media'); }
+  function preencherPesoNova(){ var fp = document.getElementById('f-peso'); if (fp) fp.innerHTML = opcoesPeso('media'); var ft = document.getElementById('f-tipo'); if (ft) ft.innerHTML = opcoesTipo(''); }
   preencherPesoNova();
   document.getElementById('cancelar-nova').addEventListener('click', function(){ form.reset(); form.hidden = true; preencherPesoNova(); });
   form.addEventListener('submit', function(e){
@@ -3383,7 +3424,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var pes = fPessoal.checked;
     var m = { id:uid(), titulo:t, descricao:document.getElementById('f-desc').value.trim(), resp:pes ? eu : document.getElementById('f-resp').value, data:document.getElementById('f-data').value||null,
       peso:document.getElementById('f-peso').value, feita:false, feitaEm:null, exemplo:false, subs:[], tags:pes ? [] : formTags.slice(), anexos:[], criadaPor:eu, criadaEm:new Date().toISOString(),
-      recorrencia:valorRec(document.getElementById('f-rec')) };
+      recorrencia:valorRec(document.getElementById('f-rec')), tipo:document.getElementById('f-tipo').value||null };
     if (pes){ m.privada = true; m.dono = eu; m.area = document.getElementById('f-area').value; }
     else {
       var ap = document.getElementById('f-aprov').value; if (ap && ap!==m.resp) m.aprovador = ap;
@@ -3509,7 +3550,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (fm){ e.preventDefault(); var mm = achar(fm.getAttribute('data-m-form')); if (!mm) return; var tt0 = fm.elements.titulo.value.trim(); if (!tt0) return;
       var antesM = JSON.stringify(state.missoes);
       mm.titulo = tt0; mm.descricao = fm.elements.descricao.value.trim(); if (fm.elements.resp) mm.resp = fm.elements.resp.value;
-      mm.data = fm.elements.data.value || null; mm.peso = fm.elements.peso.value || 'media'; mm.recorrencia = valorRec(fm.elements.recorrencia);
+      mm.data = fm.elements.data.value || null; mm.peso = fm.elements.peso.value || 'media'; mm.recorrencia = valorRec(fm.elements.recorrencia); if (fm.elements.tipo) mm.tipo = fm.elements.tipo.value || null;
       var esp = fm.elements.espaco ? fm.elements.espaco.value : '';
       if (esp && !mm.privada){ if (mm.resp!==eu){ avisar(L('Só dá para levar para a sua área as missões em que você é o responsável.','You can only move missions you own to your space.','Solo puedes llevar a tu área las misiones de las que eres responsable.','Solum missiones tuas in aream tuam transferre potes.')); return; } paraPessoal(mm, esp==='__sem' ? null : esp); }
       else if (esp && mm.privada) mm.area = esp==='__sem' ? null : esp;
@@ -3532,7 +3573,7 @@ textarea.campo{min-height:72px;resize:vertical}
 
   /* ---------- Arrastar: missões, sub-missões e arquivos ---------- */
   var arrastando = null;
-  function limparAlvo(){ listaEl.querySelectorAll('.alvo').forEach(function(x){ x.classList.remove('alvo'); x.removeAttribute('data-dica'); }); var z = document.getElementById('zona-fora'); if (z) z.classList.remove('ativa'); }
+  function limparAlvo(){ listaEl.querySelectorAll('.alvo-tipo').forEach(function(x){ x.classList.remove('alvo-tipo'); }); listaEl.querySelectorAll('.alvo').forEach(function(x){ x.classList.remove('alvo'); x.removeAttribute('data-dica'); }); var z = document.getElementById('zona-fora'); if (z) z.classList.remove('ativa'); }
   function marcar(row, dica){ if (!row.classList.contains('alvo') || row.getAttribute('data-dica')!==dica){ limparAlvo(); row.classList.add('alvo'); row.setAttribute('data-dica', dica); } }
   function temArquivos(e){ var tp = e.dataTransfer && e.dataTransfer.types; return !!tp && Array.prototype.indexOf.call(tp,'Files')>=0; }
   function linhaMissao(t){ var r = t.closest('.linha'); return r && r.getAttribute('data-id') ? r : null; }
@@ -3551,8 +3592,10 @@ textarea.campo{min-height:72px;resize:vertical}
     try { e.dataTransfer.setData('text/plain', 'ora'); e.dataTransfer.effectAllowed='move'; if (row) e.dataTransfer.setDragImage(row, 20, 16); } catch(err) {}
     setTimeout(function(){ if (row) row.classList.add('arrastando'); if (hs) listaEl.classList.add('arrastando-sub'); }, 0);
   });
+  function grupoTipoAlvo(e){ var h = e.target.closest && e.target.closest('.grupo-rot'), sec = h && h.closest('section[data-grupo-sec^="tipo-"]'); return sec || null; }
   listaEl.addEventListener('dragover', function(e){
-    var row = linhaMissao(e.target);
+    var row = linhaMissao(e.target), gt = arrastando && (arrastando.tipo==='missao' || (arrastando.tipo==='multi' && idsSel().length)) && grupoTipoAlvo(e);
+    if (gt){ e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {} if (!gt.classList.contains('alvo-tipo')){ limparAlvo(); gt.classList.add('alvo-tipo'); } return; }
     if (!arrastando){ if (temArquivos(e) && row){ e.preventDefault(); try { e.dataTransfer.dropEffect='copy'; } catch(err) {} marcar(row, 'Soltar para anexar'); } else limparAlvo(); return; }
     if (arrastando.tipo==='missao'){ if (!row || row.getAttribute('data-id')===arrastando.id){ limparAlvo(); return; } e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {} marcar(row, 'Soltar para tornar sub-missão'); return; }
     if (arrastando.tipo==='multi'){
@@ -3574,7 +3617,12 @@ textarea.campo{min-height:72px;resize:vertical}
     var row = linhaMissao(e.target);
     if (!arrastando){ if (temArquivos(e) && row){ e.preventDefault(); var mid = row.getAttribute('data-id'); abertas[mid] = true; limparAlvo(); anexar(e.dataTransfer.files, 'm:'+mid); } return; }
     e.preventDefault();
+    var gt = grupoTipoAlvo(e);
     var a = arrastando; arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub');
+    if (gt && (a.tipo==='missao' || a.tipo==='multi')){
+      var tk = gt.getAttribute('data-grupo-sec').slice(5);
+      definirTipo(a.tipo==='missao' ? [a.id] : idsSel(), tk==='sem' ? null : tk); return;
+    }
     if (a.tipo==='missao'){ if (row && row.getAttribute('data-id')!==a.id) tornarSub(a.id, row.getAttribute('data-id')); return; }
     if (a.tipo==='multi'){
       if (e.target.closest('#zona-fora') && !idsSel().length){ selecaoParaMissoes(); return; }
@@ -3632,10 +3680,13 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('massa-tags-b').textContent = L('Clientes','Clients','Clientes','Clientes')+' ▾';
     document.getElementById('massa-l-peso').textContent = L('Peso','Weight','Peso','Pondus');
     document.getElementById('massa-peso').innerHTML = opcoesPeso('', true);
+    document.getElementById('massa-l-tipo').textContent = L('Tipo','Type','Tipo','Genus');
+    document.getElementById('massa-tipo').innerHTML = opcoesTipo('', true);
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
     document.getElementById('massa-pessoal').textContent = L('Para Minha área','To My space','A Mi área','In Aream meam');
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
     document.getElementById('massa-peso').disabled = !ids.length;
+    document.getElementById('massa-tipo').disabled = !ids.length;
     if (!document.getElementById('massa-tags-pop').hidden) renderPopTags();
   }
   function alvosTag(){ return idsSel().map(achar).filter(function(m){ return m && !m.privada; }).concat(subsSel().filter(function(x){ return !x.m.privada; }).map(function(x){ return x.s; })); }
@@ -3669,6 +3720,10 @@ textarea.campo{min-height:72px;resize:vertical}
   document.getElementById('massa-resp').addEventListener('change', function(){
     var v = this.value; if (!v) return;
     emMassa(function(m){ if (m.privada || m.resp===v) return false; m.resp = v; if (m.aprovador===v) m.aprovador = null; }, L('Responsável trocado em {n} missões.','Owner changed on {n} missions.','Responsable cambiado en {n} misiones.','Curator mutatus in {n} missionibus.'), function(sb, pai){ if (pai.privada || sb.resp===v) return false; sb.resp = v; });
+  });
+  document.getElementById('massa-tipo').addEventListener('change', function(){
+    var v = this.value; if (!v) return; v = v==='__nenhum' ? null : v;
+    emMassa(function(m){ if ((m.tipo||null)===v) return false; m.tipo = v; }, L('Tipo trocado em {n} missões.','Type changed on {n} missions.','Tipo cambiado en {n} misiones.','Genus mutatum in {n} missionibus.'));
   });
   document.getElementById('massa-peso').addEventListener('change', function(){
     var v = this.value; if (!v) return;
