@@ -374,6 +374,8 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .circ svg{width:12px;height:12px}
 .circ:hover{border-color:var(--tx);color:var(--tx2)}
 .circ.feita{background:var(--tx);border-color:var(--tx);color:var(--painel);cursor:default}
+button.circ.feita[data-reabrir]{cursor:pointer}
+button.circ.feita[data-reabrir]:hover{background:transparent;color:var(--tx3);border-color:var(--tx3)}
 .r-info{display:contents}
 .r-prazo{grid-area:prz;font-size:.84rem;color:var(--tx2);font-variant-numeric:tabular-nums}
 .r-prazo.atrasada{color:var(--alerta);font-weight:500}
@@ -2841,7 +2843,7 @@ textarea.campo{min-height:72px;resize:vertical}
     } else if (est==='ajustes'){
       status = '<span class="st ajuste">'+I_ESCUDO+'Ajustes pedidos por '+esc(pessoa(m.aprov.por).nome)+'</span>'+(m.aprov.nota ? '<p class="nota-ajuste">'+esc(m.aprov.nota)+'</p>' : '');
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
-    var circ = m.feita ? '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>' :
+    var circ = m.feita ? (podeReabrir(m) ? '<button class="circ feita" type="button" data-reabrir="'+m.id+'" aria-label="'+esc(L('Voltar a fazer','Mark as not done','Volver a hacer','Iterum facere'))+': '+esc(m.titulo)+'" title="'+esc(L('Cumprida · clique para voltar a fazer','Done · click to mark as not done','Cumplida · haz clic para volver a hacer','Perfecta · preme ut iterum facias'))+'"'+'>'+CHECK+'</button>' : '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>') :
       '<button class="circ'+(est==='aguardando'?' espera':'')+'" type="button" data-cumprir="'+m.id+'" aria-label="'+(est==='aguardando' ? (m.aprovador===eu ? 'Aprovar' : 'Aguardando aprovação')+': ' : aprova && m.aprovador!==eu ? 'Enviar para aprovação: ' : 'Cumprir missão: ')+esc(m.titulo)+'" title="'+(aprova && m.aprovador!==eu ? 'Concluir e enviar para aprovação' : 'Cumprir missão')+'">'+CHECK+'</button>';
     return '<article class="linha'+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'"'+(selecionando && selecao[m.id] ? ' draggable="true"' : '')+'>'+
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
@@ -3039,7 +3041,7 @@ textarea.campo{min-height:72px;resize:vertical}
         '<button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião" title="Editar">'+I_EDITAR+'</button></div>';
     }).join('') + ms2.map(function(m){
       return '<div class="dia-item"><span class="h">Missão<small>'+esc(pessoa(m.resp).nome)+'</small></span><div class="t"><b>'+esc(m.titulo)+' '+pilulas(m.tags)+'</b>'+(m.descricao?'<span>'+esc(m.descricao)+'</span>':'')+'</div>'+
-        (m.feita ? '<span class="circ feita" role="img" aria-label="Cumprida" style="grid-area:auto">'+CHECK+'</span>' : '<button class="circ" type="button" data-cumprir="'+m.id+'" aria-label="Cumprir missão: '+esc(m.titulo)+'" style="grid-area:auto">'+CHECK+'</button>')+'</div>';
+        (m.feita ? (podeReabrir(m) ? '<button class="circ feita" type="button" data-reabrir="'+m.id+'" aria-label="'+esc(L('Voltar a fazer','Mark as not done','Volver a hacer','Iterum facere'))+': '+esc(m.titulo)+'" title="'+esc(L('Cumprida · clique para voltar a fazer','Done · click to mark as not done','Cumplida · haz clic para volver a hacer','Perfecta · preme ut iterum facias'))+'"'+' style="grid-area:auto">'+CHECK+'</button>' : '<span class="circ feita" role="img" aria-label="Cumprida" style="grid-area:auto">'+CHECK+'</span>') : '<button class="circ" type="button" data-cumprir="'+m.id+'" aria-label="Cumprir missão: '+esc(m.titulo)+'" style="grid-area:auto">'+CHECK+'</button>')+'</div>';
     }).join('') + (prev[diaSel]||[]).map(function(x){
       var rotulo = '<span class="prev-rot">'+I_REPETE+L('Prevista','Planned','Prevista','Praevisa')+' · '+esc(nomeRec(x.tipo==='r' ? x.r.recorrencia : x.m.recorrencia))+'</span>';
       if (x.tipo==='r') return '<div class="dia-item prevista"><span class="h">'+esc(x.r.inicio)+(x.r.fim?'<small>até '+esc(x.r.fim)+'</small>':'')+'</span><div class="t"><b>'+esc(x.r.titulo)+' '+pilulas(x.r.tags)+'</b>'+rotulo+'<span class="avs">'+(x.r.pessoas||[]).map(av).join('')+'</span></div><span></span></div>';
@@ -3055,7 +3057,8 @@ textarea.campo{min-height:72px;resize:vertical}
     var d = e.target.closest('[data-dia]'); if (d){ diaSel = d.getAttribute('data-dia'); renderAgenda(); return; }
     var nr = e.target.closest('[data-nova-reuniao]'); if (nr){ abrirReuniao(null, nr.getAttribute('data-nova-reuniao')||diaSel); return; }
     var er = e.target.closest('[data-editar-reuniao]'); if (er){ abrirReuniao(er.getAttribute('data-editar-reuniao')); return; }
-    var c = e.target.closest('[data-cumprir]'); if (c){ cumprir(c.getAttribute('data-cumprir')); }
+    var c = e.target.closest('[data-cumprir]'); if (c){ cumprir(c.getAttribute('data-cumprir')); return; }
+    var ra = e.target.closest('[data-reabrir]'); if (ra){ reabrir(ra.getAttribute('data-reabrir')); }
   });
 
   function htmlLit(lt){
@@ -3516,6 +3519,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var t = e.target, el;
     if (tratarTags(e)) return true;
     if ((el = t.closest('[data-cumprir]'))){ cumprir(el.getAttribute('data-cumprir')); return true; }
+    if ((el = t.closest('[data-reabrir]'))){ reabrir(el.getAttribute('data-reabrir')); return true; }
     if ((el = t.closest('[data-anexar]'))){ chaveAnexo = el.getAttribute('data-anexar'); var mm = chaveAnexo.indexOf('m:')===0 ? chaveAnexo.slice(2) : null; if (mm) abertas[mm] = true; entradaArquivo.click(); return true; }
     if ((el = t.closest('[data-drive]'))){ abrirDrive(el.getAttribute('data-drive')); return true; }
     if (t.closest('[data-drive-fechar]')){ drivePara = null; renderPrincipal(); return true; }
@@ -3867,6 +3871,26 @@ textarea.campo{min-height:72px;resize:vertical}
     var r = acharSub(k); if (!r) return;
     var antes = JSON.stringify(state.missoes);
     var nova = subParaMissao(r.m, r.s); ultimaNova = nova.id; editandoSub = null; salvar(); render(); avisar('“'+nova.titulo+'” voltou a ser uma missão.', antes);
+  }
+
+  /* ---------- Voltar a fazer: desfaz uma missão cumprida (XP, cidade, oferecimento e a próxima repetição) ---------- */
+  function podeReabrir(m){ return !!m && m.feita && (!m.privada || m.dono===eu); }
+  function reabrir(id){
+    var m = achar(id); if (!podeReabrir(m)) return;
+    var quando = m.feitaEm || '';
+    m.feita = false; m.feitaEm = null; m.oferecida = false;
+    if (m.aprovadaPor) delete m.aprovadaPor;
+    if (m.aprov && m.aprov.estado!=='ajustes') m.aprov = null;
+    if (!m.privada) state.obras = Math.max(0, (state.obras||0)-1);
+    /* a repetição criada quando ela foi cumprida some (senão a próxima ficaria duplicada) */
+    if (m.recorrencia){
+      var raiz = m.origem || m.id, filhas = state.missoes.filter(function(x){ return x!==m && !x.feita && (x.origem===raiz) && (!quando || (x.criadaEm||'') >= quando); })
+        .sort(function(a,b){ return (a.criadaEm||'') < (b.criadaEm||'') ? 1 : -1; });
+      if (filhas[0]){ var fid = filhas[0].id; state.missoes = state.missoes.filter(function(x){ return x.id!==fid; }); }
+    }
+    state.oferecimentos = (state.oferecimentos||[]).filter(function(o){ return !(o.tipo==='missao' && o.missao===m.id && !o.sub); });
+    salvar(); render();
+    avisar(L('“{t}” voltou para fazer.','“{t}” is back on your list.','“{t}” volvió a la lista.','“{t}” iterum facienda est.').replace('{t}', m.titulo));
   }
 
   /* ---------- Cumprir: oferta, aprovação e celebração ---------- */
