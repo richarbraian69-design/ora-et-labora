@@ -210,7 +210,9 @@ app.get('/api/sync', exigir, rota((req, res) => {
   const desde = Number(req.query.desde) || 0, u = req.u, itens = [];
   for (const k in db.itens) {
     const i = db.itens[k];
-    if (i.seq > desde && (!i.privado || i.dono === u.id)) itens.push({ col: i.col, id: i.id, dados: i.apagado ? null : i.dados, apagado: !!i.apagado });
+    if (i.seq <= desde) continue;
+    if (!i.privado || i.dono === u.id) itens.push({ col: i.col, id: i.id, dados: i.apagado ? null : i.dados, apagado: !!i.apagado });
+    else if (i.col === 'missoes') itens.push({ col: i.col, id: i.id, dados: null, apagado: true }); // virou pessoal de outra pessoa: some da tela dos demais
   }
   res.json({ agora: db.seq, itens, equipe: equipePublica(), eu: perfil(u) });
 }));
@@ -230,7 +232,11 @@ app.post('/api/itens', exigir, rota((req, res) => {
     const dados = op.dados;
     if (!dados || typeof dados !== 'object' || Array.isArray(dados) || JSON.stringify(dados).length > 400000) continue;
     const privado = SEMPRE_PRIVADAS.has(op.col) || (op.col === 'missoes' && !!dados.privada);
-    if (privado) { if (atual && !atual.apagado && atual.dono !== u.id) continue; if ('dono' in dados || op.col === 'missoes') dados.dono = u.id; }
+    if (privado) {
+      const levandoParaSi = op.col === 'missoes' && atual && !atual.privado && atual.dados && atual.dados.resp === u.id;
+      if (atual && !atual.apagado && atual.dono !== u.id && !levandoParaSi) continue;
+      if ('dono' in dados || op.col === 'missoes') dados.dono = u.id;
+    }
     db.itens[k] = { col: op.col, id: op.id, dono: privado ? u.id : (atual && atual.dono) || u.id, privado, apagado: false, dados, seq: ++db.seq };
     aceitos++;
   }

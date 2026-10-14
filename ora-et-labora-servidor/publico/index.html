@@ -1102,6 +1102,7 @@ textarea.campo{min-height:72px;resize:vertical}
   <div class="massa-pop-w"><button class="massa-b" type="button" id="massa-tags-b"></button>
     <div class="massa-pop" id="massa-tags-pop" hidden></div></div>
   <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
+  <button class="massa-b" type="button" id="massa-pessoal"></button>
   <button class="massa-b perigo" type="button" id="massa-excluir"></button>
   <button class="massa-x" type="button" id="massa-fechar" aria-label="Fechar">×</button>
 </div>
@@ -2238,6 +2239,21 @@ textarea.campo{min-height:72px;resize:vertical}
   function tagPorId(id){ for (var i=0;i<state.tags.length;i++) if (state.tags[i].id===id) return state.tags[i]; return null; }
 
   var editandoMissao = null;
+  /* ---------- Levar missão da equipe para a Minha área (e de volta) ---------- */
+  function podeLevarParaMim(m){ return m && !m.privada && m.resp===eu; }
+  function paraPessoal(m, area){
+    m.privada = true; m.dono = eu; m.resp = eu; m.area = area || m.area || null; m.aprovador = null; m.aprov = null;
+  }
+  function paraEquipe(m){ m.privada = false; m.resp = m.dono || eu; m.dono = null; m.area = null; }
+  function levarMissao(id){
+    var m = achar(id); if (!m) return;
+    var antes = JSON.stringify(state.missoes);
+    if (m.privada){ if (m.dono!==eu) return; paraEquipe(m); salvar(); render(); avisar(L('“'+m.titulo+'” voltou para as missões da equipe.','“'+m.titulo+'” is back in the team missions.','“'+m.titulo+'” volvió a las misiones del equipo.','“'+m.titulo+'” ad missiones sodalium rediit.'), antes); return; }
+    if (!podeLevarParaMim(m)){ avisar(L('Só dá para levar para a sua área as missões em que você é o responsável.','You can only move missions you own to your space.','Solo puedes llevar a tu área las misiones de las que eres responsable.','Solum missiones tuas in aream tuam transferre potes.')); return; }
+    paraPessoal(m); salvar(); render();
+    avisar(L('“'+m.titulo+'” foi para a Minha área. Só você vê.','“'+m.titulo+'” moved to My space. Only you can see it.','“'+m.titulo+'” pasó a Mi área. Solo tú la ves.','“'+m.titulo+'” in Aream meam translata est.'), antes);
+  }
+  document.addEventListener('click', function(e){ var b = e.target.closest('[data-levar]'); if (!b || selecionando) return; e.preventDefault(); levarMissao(b.getAttribute('data-levar')); });
   var I_ENGRENAGEM = svgIcone('<circle cx="10" cy="10" r="2.6"/><path d="M10 2.8v2M10 15.2v2M2.8 10h2M15.2 10h2M4.9 4.9l1.4 1.4M13.7 13.7l1.4 1.4M4.9 15.1l1.4-1.4M13.7 6.3l1.4-1.4"/>');
   function renderConfig(){
     var b = document.getElementById('config-btn'); if (!b) return;
@@ -2691,6 +2707,9 @@ textarea.campo{min-height:72px;resize:vertical}
         '<label>Data<input class="campo" name="data" type="date" value="'+esc(m.data||'')+'"></label>'+
         '<label>Peso<select class="campo" name="peso">'+pesoOps+'</select></label>'+
         '<label>Repetir<select class="campo" name="recorrencia">'+recOps+'</select></label>'+
+        '<label>'+L('Área','Area','Área','Area')+'<select class="campo" name="espaco">'+
+          (m.privada || m.resp===eu ? '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>'+areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(m.privada && m.area===a?' selected':'')+'>'+L('Minha área · ','My space · ','Mi área · ','Area mea · ')+esc(a)+'</option>'; }).join('')+'<option value="__sem"'+(m.privada && !m.area?' selected':'')+'>'+L('Minha área · sem área','My space · no area','Mi área · sin área','Area mea · sine area')+'</option>'
+            : '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>')+'</select></label>'+
         (m.privada ? '' : '<label>Aprovação<select class="campo" name="aprovador"><option value="">'+L('Não precisa de aprovação','No approval needed','No necesita aprobación','Approbatio non requiritur')+'</option>'+state.equipe.filter(function(x){ return x.nome; }).map(function(x){ return '<option value="'+esc(x.id)+'"'+(m.aprovador===x.id?' selected':'')+'>'+L('Aprovada por ','Approved by ','Aprobada por ','Approbanda a ')+esc(x.nome)+'</option>'; }).join('')+'</select></label>')+'</div>'+
       '<div class="acoes"><button class="btn btn-escuro" type="submit">Salvar</button><button class="btn btn-claro" type="button" data-m-cancelar>Cancelar</button></div></form>';
   }
@@ -2738,6 +2757,8 @@ textarea.campo{min-height:72px;resize:vertical}
       '<div class="r-acoes">'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-taguear="'+m.id+'" aria-label="Cliente de '+esc(m.titulo)+'" title="Cliente (tag)">'+I_TAG+'</button>')+
         '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="Editar título, descrição, data…">'+I_EDITAR+'</button>'+
+        (m.privada ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para as missões da equipe','Move to team missions','Llevar a las misiones del equipo','Ad missiones sodalium transferre')+'" aria-label="'+L('Levar para a equipe','Move to team','Llevar al equipo','Ad sodales')+'">'+svgIcone(ICONES.todas)+'</button>'
+          : (m.resp===eu ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para a Minha área (só você vê)','Move to My space (only you see it)','Llevar a Mi área (solo tú la ves)','In Aream meam transferre')+'" aria-label="'+L('Levar para a Minha área','Move to My space','Llevar a Mi área','In Aream meam')+'">'+I_CADEADO+'</button>' : ''))+
         '<button class="icone-btn" type="button" data-anexar="m:'+m.id+'" aria-label="Anexar arquivo em '+esc(m.titulo)+'" title="Anexar arquivo">'+I_CLIPE+'</button>'+
         '<button class="icone-btn" type="button" data-det="'+m.id+'" aria-label="Sub-missões e anexos de '+esc(m.titulo)+'" title="Sub-missões e anexos">'+I_SUB+'</button>'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-mover="'+m.id+'" aria-label="Tornar sub-missão de outra missão" title="Tornar sub-missão de…">'+I_MOVER+'</button>')+
@@ -3420,7 +3441,11 @@ textarea.campo{min-height:72px;resize:vertical}
       var antesM = JSON.stringify(state.missoes);
       mm.titulo = tt0; mm.descricao = fm.elements.descricao.value.trim(); if (fm.elements.resp) mm.resp = fm.elements.resp.value;
       mm.data = fm.elements.data.value || null; mm.peso = fm.elements.peso.value || 'media'; mm.recorrencia = fm.elements.recorrencia.value || null;
-      if (fm.elements.aprovador){
+      var esp = fm.elements.espaco ? fm.elements.espaco.value : '';
+      if (esp && !mm.privada){ if (mm.resp!==eu){ avisar(L('Só dá para levar para a sua área as missões em que você é o responsável.','You can only move missions you own to your space.','Solo puedes llevar a tu área las misiones de las que eres responsable.','Solum missiones tuas in aream tuam transferre potes.')); return; } paraPessoal(mm, esp==='__sem' ? null : esp); }
+      else if (esp && mm.privada) mm.area = esp==='__sem' ? null : esp;
+      else if (!esp && mm.privada) paraEquipe(mm);
+      if (fm.elements.aprovador && !mm.privada){
         var apv = fm.elements.aprovador.value || null;
         if (apv && apv===mm.resp){ avisar(L('Quem aprova precisa ser outra pessoa, não o responsável.','The approver must be someone other than the owner.','Quien aprueba debe ser otra persona, no el responsable.','Approbator alius esse debet ac curator.')); return; }
         if (apv !== (mm.aprovador||null)){ mm.aprovador = apv; if (!apv && mm.aprov && mm.aprov.estado==='aguardando') mm.aprov = null; if (apv && mm.aprov && mm.aprov.estado==='aguardando') mm.aprov.em = new Date().toISOString(); }
@@ -3539,6 +3564,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('massa-l-peso').textContent = L('Peso','Weight','Peso','Pondus');
     document.getElementById('massa-peso').innerHTML = opcoesPeso('', true);
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
+    document.getElementById('massa-pessoal').textContent = L('Para Minha área','To My space','A Mi área','In Aream meam');
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
     document.getElementById('massa-peso').disabled = !ids.length;
     if (!document.getElementById('massa-tags-pop').hidden) renderPopTags();
@@ -3598,6 +3624,11 @@ textarea.campo{min-height:72px;resize:vertical}
       emMassa(function(m){ if (m.privada || !(m.tags||[]).length) return false; m.tags = []; }, L('Clientes tirados de {n} missões.','Clients removed from {n} missions.','Clientes quitados de {n} misiones.','Clientes ex {n} missionibus dempti.'), function(sb, pai){ if (pai.privada || !(sb.tags||[]).length) return false; sb.tags = []; });
       fecharPops();
     }
+  });
+  document.getElementById('massa-pessoal').addEventListener('click', function(){
+    var ids = idsSel(), outras = 0; if (!ids.length) return;
+    emMassa(function(m){ if (m.privada) return false; if (m.resp!==eu){ outras++; return false; } paraPessoal(m); }, L('{n} missões foram para a Minha área.','{n} missions moved to My space.','{n} misiones pasaron a Mi área.','{n} missionibus in Aream meam translatis.'));
+    if (outras) setTimeout(function(){ avisar(L(outras+' não foram porque têm outro responsável.', outras+' were skipped because someone else owns them.', outras+' no se movieron porque tienen otro responsable.', outras+' omissae sunt: alius curator.')); }, 2600);
   });
   document.getElementById('massa-excluir').addEventListener('click', function(){
     var ids = idsSel(), ss = subsSel(), tot = ids.length + ss.length; if (!tot) return;
