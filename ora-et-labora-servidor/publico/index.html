@@ -906,7 +906,7 @@ textarea.campo{min-height:72px;resize:vertical}
             <label class="so-trab">Responsável<select class="campo" id="f-resp" name="resp"></select></label>
             <label class="so-pes" hidden>Área da vida<select class="campo" id="f-area"></select></label>
             <label>Data<input class="campo" id="f-data" name="data" type="date"></label>
-            <label>Peso<select class="campo" id="f-peso" name="peso"><option value="leve">Leve · 10 XP</option><option value="media" selected>Média · 20 XP</option><option value="ardua">Árdua · 40 XP</option></select></label>
+            <label>Peso<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
             <label>Repetir<select class="campo" id="f-rec"></select></label>
             <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
             <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
@@ -1454,7 +1454,10 @@ textarea.campo{min-height:72px;resize:vertical}
     ['Jesus, eu confio em vós.','Santa Faustina Kowalska']
   ];
 
-  var PESOS = { leve:{xp:10}, media:{xp:20}, ardua:{xp:40} };
+  var PESOS = { minima:{xp:5}, leve:{xp:10}, media:{xp:25}, ardua:{xp:50}, heroica:{xp:100} };
+  var PESOS_ORDEM = ['minima','leve','media','ardua','heroica'];
+  function nomePeso(k){ return ({minima:L('Mínima','Minimal','Mínima','Minima'), leve:L('Leve','Light','Ligera','Levis'), media:L('Média','Medium','Media','Media'), ardua:L('Árdua','Hard','Ardua','Ardua'), heroica:L('Heroica','Heroic','Heroica','Heroica')})[k] || k; }
+  function opcoesPeso(sel, vazio){ return (vazio ? '<option value="">—</option>' : '')+PESOS_ORDEM.map(function(k){ return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+nomePeso(k)+' · '+PESOS[k].xp+' XP</option>'; }).join(''); }
   var NIVEIS = [ {min:0,nome:'Aprendiz'}, {min:100,nome:'Pedreiro'}, {min:250,nome:'Canteiro'}, {min:500,nome:'Mestre de obras'}, {min:1000,nome:'Arquiteto'} ];
   var CORES = ['var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
   var TAG_CORES = [ ['azul','#2f7fe6','Azul'], ['laranja','#e2742c','Laranja'], ['verde','#2b9a5a','Verde'], ['roxo','#7a5af5','Roxo'], ['rosa','#d6336c','Rosa'],
@@ -2303,6 +2306,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var xp = PESOS[m.peso||'media'].xp, g = {}, noPrazo = !m.data || (m.feitaEm && iso(new Date(m.feitaEm)) <= m.data);
     g[noPrazo ? 'diligencia' : 'perseveranca'] = xp;
     if (m.peso==='ardua') g.fortaleza = 10;
+    if (m.peso==='heroica') g.fortaleza = 25;
     if (m.ajustes) g.humildade = 10;
     if (m.recorrencia) g.constancia = 5;
     return g;
@@ -2665,7 +2669,7 @@ textarea.campo{min-height:72px;resize:vertical}
       '<button class="sub-x" type="button" data-sub-del="'+k+'" aria-label="Excluir sub-missão: '+esc(s.titulo)+'" title="Excluir">×</button></li>';
   }
   function editorMissao(m){
-    var pesoOps = [['leve','Leve · 10 XP'],['media','Média · 20 XP'],['ardua','Árdua · 40 XP']].map(function(o){ return '<option value="'+o[0]+'"'+((m.peso||'media')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('');
+    var pesoOps = opcoesPeso(m.peso||'media');
     var recOps = RECORRENCIAS.map(function(r){ return '<option value="'+r[0]+'"'+((m.recorrencia||'')===r[0]?' selected':'')+'>'+r[1]+'</option>'; }).join('');
     return '<form class="sub-editor m-editor" data-m-form="'+m.id+'" autocomplete="off">'+
       '<label>Missão<input class="campo" name="titulo" required maxlength="200" value="'+esc(m.titulo)+'"></label>'+
@@ -3266,7 +3270,9 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!/^f-cri-/.test(e.target.id||'')) return;
     document.getElementById('f-cri-aviso').innerHTML = htmlAvisoCriativo(document.getElementById('f-cri-cid').value, document.getElementById('f-cri-for').value, document.getElementById('f-cri-gan').value);
   });
-  document.getElementById('cancelar-nova').addEventListener('click', function(){ form.reset(); form.hidden = true; });
+  function preencherPesoNova(){ var fp = document.getElementById('f-peso'); if (fp) fp.innerHTML = opcoesPeso('media'); }
+  preencherPesoNova();
+  document.getElementById('cancelar-nova').addEventListener('click', function(){ form.reset(); form.hidden = true; preencherPesoNova(); });
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var t = document.getElementById('f-titulo').value.trim(); if (!t) return;
@@ -3518,7 +3524,7 @@ textarea.campo{min-height:72px;resize:vertical}
     Array.prototype.forEach.call(rap, function(b, i){ b.textContent = rt[i]; });
     document.getElementById('massa-tags-b').textContent = L('Clientes','Clients','Clientes','Clientes')+' ▾';
     document.getElementById('massa-l-peso').textContent = L('Peso','Weight','Peso','Pondus');
-    document.getElementById('massa-peso').innerHTML = '<option value="">—</option><option value="leve">'+L('Leve','Light','Ligera','Leve')+' · 10 XP</option><option value="media">'+L('Média','Medium','Media','Medium')+' · 20 XP</option><option value="ardua">'+L('Árdua','Hard','Ardua','Arduum')+' · 40 XP</option>';
+    document.getElementById('massa-peso').innerHTML = opcoesPeso('', true);
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
     document.getElementById('massa-peso').disabled = !ids.length;
@@ -4411,7 +4417,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (l===LANG){ aplicarIdioma(); return; }
     LANG = l; lsSet('ora-idioma', l);
     if (logado && eu && eu!=='_'){ prefsEu().idioma = l; salvar(); }
-    aplicarIdioma(); renderTema(); renderMenu(); renderConfig(); pintarCit(); cidadeN = {};
+    aplicarIdioma(); renderTema(); renderMenu(); renderConfig(); preencherPesoNova(); pintarCit(); cidadeN = {};
     if (!app.hidden) render(); else renderAbertura();
   }
   ['idioma','ab-idioma','aj-idioma'].forEach(function(id){ var el = document.getElementById(id); if (el) el.addEventListener('change', function(){ mudarIdioma(el.value); }); });
