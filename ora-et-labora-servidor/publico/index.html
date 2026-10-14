@@ -2442,9 +2442,16 @@ textarea.campo{min-height:72px;resize:vertical}
     });
     return g;
   }
-  function definirTipo(ids, tipo){
+  function definirTipo(ids, tipo, subs){
     var antes = JSON.stringify(state.missoes), n = 0;
     ids.forEach(function(id){ var m = achar(id); if (m && (m.tipo||'')!==(tipo||'')){ m.tipo = tipo || null; n++; } });
+    /* sub-missões arrastadas para um tipo viram missões daquele tipo, para hoje */
+    (subs||[]).forEach(function(x){
+      if (!x || !x.m || !x.s) return;
+      var nova = subParaMissao(x.m, x.s, {tipo:tipo||null, data:(x.s.data && x.s.data<=hoje) ? x.s.data : hoje});
+      ultimaNova = nova.id; n++;
+    });
+    if (subs && subs.length){ selecao = {}; editandoSub = null; }
     if (!n) return;
     salvar(); render();
     avisar(tipo ? L('Movida para “{t}”.','Moved to “{t}”.','Movida a “{t}”.','Ad “{t}” translata.').replace('{t}', nomeTipo(tipo))+(n>1 ? ' ('+n+')' : '') : L('Tipo removido.','Type removed.','Tipo quitado.','Genus remotum.'), antes);
@@ -2821,6 +2828,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function linha(m, nova){
     var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length;
     var ind = (subs.length ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'" aria-label="'+nf+' de '+subs.length+' sub-missões"><span class="caret" aria-hidden="true">▸</span>'+I_RAMO+nf+'/'+subs.length+'</button>' : '')+(na ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
+    if (m.vemDe) ind += '<span class="st" title="'+esc(L('Veio da missão','Came from mission','Vino de la misión','Ex missione'))+'">↳ '+esc(m.vemDe)+'</span>';
     if (m.tipo && nomeTipo(m.tipo) && !agrupandoTipo) ind += '<span class="st tipo">'+esc(nomeTipo(m.tipo))+'</span>';
     if (m.recorrencia) ind += '<span class="st" title="Missão recorrente">'+I_REPETE+esc(nomeRec(m.recorrencia))+'</span>';
     if (m.privada && m.area) ind += '<span class="st priv">'+esc(m.area)+'</span>';
@@ -3604,7 +3612,7 @@ textarea.campo{min-height:72px;resize:vertical}
   });
   function grupoTipoAlvo(e){ var h = e.target.closest && e.target.closest('.grupo-rot'), sec = h && h.closest('section[data-grupo-sec^="tipo-"]'); return sec || null; }
   listaEl.addEventListener('dragover', function(e){
-    var row = linhaMissao(e.target), gt = arrastando && (arrastando.tipo==='missao' || (arrastando.tipo==='multi' && idsSel().length)) && grupoTipoAlvo(e);
+    var row = linhaMissao(e.target), gt = arrastando && (arrastando.tipo==='missao' || arrastando.tipo==='sub' || (arrastando.tipo==='multi' && totalSel())) && grupoTipoAlvo(e);
     if (gt){ e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {} if (!gt.classList.contains('alvo-tipo')){ limparAlvo(); gt.classList.add('alvo-tipo'); } return; }
     if (!arrastando){ if (temArquivos(e) && row){ e.preventDefault(); try { e.dataTransfer.dropEffect='copy'; } catch(err) {} marcar(row, 'Soltar para anexar'); } else limparAlvo(); return; }
     if (arrastando.tipo==='missao'){ if (!row || row.getAttribute('data-id')===arrastando.id){ limparAlvo(); return; } e.preventDefault(); try { e.dataTransfer.dropEffect='move'; } catch(err) {} marcar(row, 'Soltar para tornar sub-missão'); return; }
@@ -3629,9 +3637,12 @@ textarea.campo{min-height:72px;resize:vertical}
     e.preventDefault();
     var gt = grupoTipoAlvo(e);
     var a = arrastando; arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub');
-    if (gt && (a.tipo==='missao' || a.tipo==='multi')){
-      var tk = gt.getAttribute('data-grupo-sec').slice(5);
-      definirTipo(a.tipo==='missao' ? [a.id] : idsSel(), tk==='sem' ? null : tk); return;
+    if (gt && (a.tipo==='missao' || a.tipo==='sub' || a.tipo==='multi')){
+      var tk = gt.getAttribute('data-grupo-sec').slice(5); tk = tk==='sem' ? null : tk;
+      if (a.tipo==='missao') definirTipo([a.id], tk);
+      else if (a.tipo==='sub'){ var rs = acharSub(a.k); definirTipo([], tk, rs ? [{m:rs.m, s:rs.s}] : []); }
+      else definirTipo(idsSel(), tk, subsSel());
+      return;
     }
     if (a.tipo==='missao'){ if (row && row.getAttribute('data-id')!==a.id) tornarSub(a.id, row.getAttribute('data-id')); return; }
     if (a.tipo==='multi'){
@@ -3830,9 +3841,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var ss = subsSel(); if (!ss.length) return;
     var antes = JSON.stringify(state.missoes);
     ss.forEach(function(x){
-      x.m.subs = x.m.subs.filter(function(y){ return y!==x.s; });
-      state.missoes.push({ id:uid(), titulo:x.s.titulo, descricao:x.s.descricao||'', resp:x.s.resp||x.m.resp, data:x.s.data||null, peso:'media', feita:!!x.s.feita, feitaEm:x.s.feita?new Date().toISOString():null,
-        exemplo:!!x.m.exemplo, subs:[], tags:(x.s.tags&&x.s.tags.length?x.s.tags:x.m.tags||[]).slice(), anexos:(x.s.anexos||[]).slice(), criadaPor:eu, criadaEm:new Date().toISOString(), privada:!!x.m.privada, dono:x.m.dono||null, area:x.m.area||null });
+      subParaMissao(x.m, x.s);
     });
     selecao = {}; editandoSub = null; salvar(); render();
     avisar(ss.length===1 ? L('1 sub-missão voltou a ser missão.','1 subtask is a mission again.','1 submisión volvió a ser misión.','1 pars iterum missio est.') : L(ss.length+' sub-missões voltaram a ser missões.', ss.length+' subtasks are missions again.', ss.length+' submisiones volvieron a ser misiones.', ss.length+' partes iterum missiones sunt.'), antes);
@@ -3843,14 +3852,21 @@ textarea.campo{min-height:72px;resize:vertical}
     r.m.subs = r.m.subs.filter(function(x){ return x.id!==r.s.id; }); tgt.subs = (tgt.subs||[]).concat([r.s]);
     abertas[tgtId] = true; editandoSub = null; salvar(); render(); avisar('“'+r.s.titulo+'” foi para “'+tgt.titulo+'”.', antes);
   }
+  /* sub-missão -> missão (mantém privacidade, área, XP e de onde veio) */
+  function subParaMissao(pai, sb, extra){
+    pai.subs = (pai.subs||[]).filter(function(y){ return y!==sb; });
+    var nova = { id:uid(), titulo:sb.titulo, descricao:sb.descricao||'', resp:sb.resp||pai.resp, data:sb.data||null, peso:PESOS[sb.peso] ? sb.peso : 'media', feita:!!sb.feita, feitaEm:sb.feita?(sb.feitaEm||new Date().toISOString()):null,
+      exemplo:!!pai.exemplo, subs:[], tags:(sb.tags&&sb.tags.length?sb.tags:pai.tags||[]).slice(), anexos:(sb.anexos||[]).slice(), criadaPor:eu, criadaEm:new Date().toISOString(),
+      privada:!!pai.privada, dono:pai.dono||null, area:pai.area||null, vemDe:pai.titulo };
+    if (sb.oferecida) nova.oferecida = true;
+    for (var k in (extra||{})) nova[k] = extra[k];
+    if (nova.resp===eu) marcarVistas(eu, [nova.id]);
+    state.missoes.push(nova); return nova;
+  }
   function tornarMissao(k){
     var r = acharSub(k); if (!r) return;
     var antes = JSON.stringify(state.missoes);
-    r.m.subs = r.m.subs.filter(function(x){ return x.id!==r.s.id; });
-    var nova = { id:uid(), titulo:r.s.titulo, descricao:r.s.descricao||'', resp:r.s.resp||r.m.resp, data:r.s.data||null, peso:'media', feita:!!r.s.feita, feitaEm:r.s.feita?new Date().toISOString():null,
-      exemplo:!!r.m.exemplo, subs:[], tags:(r.s.tags&&r.s.tags.length?r.s.tags:r.m.tags||[]).slice(), anexos:(r.s.anexos||[]).slice(), criadaPor:eu, criadaEm:new Date().toISOString() };
-    if (nova.resp===eu) marcarVistas(eu, [nova.id]);
-    state.missoes.push(nova); ultimaNova = nova.id; editandoSub = null; salvar(); render(); avisar('“'+nova.titulo+'” voltou a ser uma missão.', antes);
+    var nova = subParaMissao(r.m, r.s); ultimaNova = nova.id; editandoSub = null; salvar(); render(); avisar('“'+nova.titulo+'” voltou a ser uma missão.', antes);
   }
 
   /* ---------- Cumprir: oferta, aprovação e celebração ---------- */
