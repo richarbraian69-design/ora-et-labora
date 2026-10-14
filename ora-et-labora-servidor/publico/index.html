@@ -568,6 +568,14 @@ textarea.campo{min-height:72px;resize:vertical}
 @media (max-width:560px){.linha-tag{grid-template-columns:auto minmax(0,1fr) auto}.linha-tag select{grid-column:2}}
 
 /* Sobreposições */
+.veu#veu-rec{z-index:32}
+.rec-linha{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px}
+.rec-linha .campo{width:auto;margin:0}
+.rec-linha input.campo{width:76px;text-align:center}
+.rec-dias{display:flex;gap:6px;flex-wrap:wrap}
+.rec-dias button{border:1px solid var(--linha,#ccc);background:transparent;color:inherit;border-radius:999px;min-width:44px;padding:7px 10px;font:inherit;font-size:13px;cursor:pointer}
+.rec-dias button[aria-pressed="true"]{background:var(--tx,#111);color:var(--bg,#fff);border-color:var(--tx,#111)}
+.rec-resumo{margin:0;font-size:13px;opacity:.75}
 .veu{position:fixed;inset:0;z-index:20;background:rgba(10,10,9,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:grid;place-items:center;padding:16px;overflow-y:auto;animation:aparecer .25s ease}
 .graca{width:100%;max-width:480px;background:var(--painel);border:1px solid var(--linha);border-radius:20px;box-shadow:var(--sombra);padding:24px clamp(20px,5vw,34px) 24px;display:grid;gap:10px;justify-items:center;text-align:center}
 .graca .g-arte{width:100%;max-width:300px;background:var(--bg);border-radius:14px;padding:10px}
@@ -1150,6 +1158,17 @@ textarea.campo{min-height:72px;resize:vertical}
   </div>
 </div>
 
+<div class="veu" id="veu-rec" hidden>
+  <form class="cartao" role="dialog" aria-modal="true" aria-labelledby="rec-tit" id="rec-form" autocomplete="off">
+    <p class="rot">Repetição</p>
+    <h2 id="rec-tit">Repetir de forma <em>personalizada</em></h2>
+    <div class="rec-linha"><span>A cada</span><input class="campo" type="number" id="rec-n" min="1" max="99" value="1"><select class="campo" id="rec-u"><option value="dia">dia(s)</option><option value="semana">semana(s)</option><option value="mes">mês(es)</option><option value="ano">ano(s)</option></select></div>
+    <div id="rec-dias-bloco"><p class="rot" style="margin:6px 0">Nos dias</p><div class="rec-dias" id="rec-dias"></div></div>
+    <p class="rec-resumo" id="rec-resumo"></p>
+    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Salvar repetição</button><button class="btn btn-claro btn-grande" type="button" id="rec-cancelar">Cancelar</button></div>
+  </form>
+</div>
+
 <div class="veu" id="veu-oferta" hidden>
   <form class="cartao" role="dialog" aria-modal="true" aria-labelledby="of-tit" id="of-form" autocomplete="off">
     <p class="rot">Antes de cumprir</p>
@@ -1489,7 +1508,7 @@ textarea.campo{min-height:72px;resize:vertical}
     ['caridade','Caridade','Trabalho oferecido pelos outros'], ['piedade','Piedade','Oferecimento do dia e Ângelus']
   ];
   var AREAS_PADRAO = ['Saúde','Trabalho','Vida espiritual','Estudos','Hobbies','Casamento','Crianças'];
-  var RECORRENCIAS = [['','Não se repete'],['diaria','Todo dia'],['uteis','Dias úteis'],['semanal','Toda semana'],['mensal','Todo mês']];
+  var RECORRENCIAS = [['','Não se repete'],['diaria','Todo dia'],['uteis','Dias úteis'],['semanal','Toda semana'],['quinzenal','Quinzenal (semana sim, semana não)'],['mensal','Todo mês']];
   var FORMATOS = ['Trend','Depoimento','Antes e depois','Bastidores','Dica rápida','Pergunta e resposta','Mito ou verdade','Estático','Carrossel','VSL curta'];
   /* ---------- Oração do oferecimento: a da festa do dia, senão uma do tempo litúrgico ou geral, sem repetir em dias seguidos ---------- */
   var ORACOES = window.ORA_ORACOES || {geral:[], tempo:{}, festa:{}};
@@ -2368,16 +2387,29 @@ textarea.campo{min-height:72px;resize:vertical}
   function proximaData(base, rec){
     if (!rec) return null;
     var b = paraData(base||hoje), d = new Date(b), h = paraData(hoje), dd = b.getDate(), guarda = 0;
-    do {
-      if (rec==='diaria') d.setDate(d.getDate()+1);
-      else if (rec==='uteis'){ do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6); }
-      else if (rec==='semanal') d.setDate(d.getDate()+7);
-      else if (rec==='mensal'){ d.setDate(1); d.setMonth(d.getMonth()+1); d.setDate(Math.min(dd, diasNoMes(d))); }
-      else return null;
-    } while (d <= h && ++guarda < 800);
+    do { if (!passoRec(d, rec, dd)) return null; } while (d <= h && ++guarda < 3000);
     return iso(d);
   }
-  function nomeRec(r){ for (var i=0;i<RECORRENCIAS.length;i++) if (RECORRENCIAS[i][0]===r) return RECORRENCIAS[i][1]; return ''; }
+  var DIAS_CURTOS = ['dom','seg','ter','qua','qui','sex','sáb'];
+  function nomeRec(r){
+    for (var i=0;i<RECORRENCIAS.length;i++) if (RECORRENCIAS[i][0]===r) return r==='quinzenal' ? L('Quinzenal','Every two weeks','Quincenal','Quintodecimo die') : RECORRENCIAS[i][1];
+    var c = lerRec(r); if (!c) return '';
+    var un = {dia:[L('dia','day','día','die'),L('dias','days','días','diebus')], semana:[L('semana','week','semana','hebdomada'),L('semanas','weeks','semanas','hebdomadibus')],
+              mes:[L('mês','month','mes','mense'),L('meses','months','meses','mensibus')], ano:[L('ano','year','año','anno'),L('anos','years','años','annis')]}[c.u];
+    var t = c.n===1 ? (c.u==='semana' ? L('Toda ','Every ','Cada ','Omni ') : L('Todo ','Every ','Cada ','Omni '))+un[0] : L('A cada ','Every ','Cada ','Singulis ')+c.n+' '+un[1];
+    if (c.dias.length){
+      var ord = [1,2,3,4,5,6,0].filter(function(x){ return c.dias.indexOf(x)>=0; });
+      t += ' · '+ord.map(function(x){ return tr(DIAS_CURTOS[x]); }).join(', ');
+    }
+    return t;
+  }
+  /* opções do seletor "Repetir"; uma regra personalizada já salva aparece como opção própria */
+  function opcoesRec(sel){
+    sel = sel||'';
+    var h = RECORRENCIAS.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===sel?' selected':'')+'>'+o[1]+'</option>'; }).join('');
+    if (lerRec(sel)) h += '<option value="'+sel+'" selected>'+esc(nomeRec(sel))+'</option>';
+    return h + '<option value="__custom">Personalizado…</option>';
+  }
   function gerarRecorrente(m){
     var nd = proximaData(m.data, m.recorrencia); if (!nd) return null;
     var c = {id:uid(), titulo:m.titulo, descricao:m.descricao||'', resp:m.resp, data:nd, peso:m.peso, feita:false, feitaEm:null, exemplo:!!m.exemplo, tags:(m.tags||[]).slice(), anexos:[],
@@ -2712,7 +2744,7 @@ textarea.campo{min-height:72px;resize:vertical}
   }
   function editorMissao(m){
     var pesoOps = opcoesPeso(m.peso||'media');
-    var recOps = RECORRENCIAS.map(function(r){ return '<option value="'+r[0]+'"'+((m.recorrencia||'')===r[0]?' selected':'')+'>'+r[1]+'</option>'; }).join('');
+    var recOps = opcoesRec(m.recorrencia||'');
     return '<form class="sub-editor m-editor" data-m-form="'+m.id+'" autocomplete="off">'+
       '<label>Missão<input class="campo" name="titulo" required maxlength="200" value="'+esc(m.titulo)+'"></label>'+
       '<label>Descrição<textarea class="campo" name="descricao" rows="6" placeholder="Detalhes, links, combinados…">'+esc(m.descricao||'')+'</textarea></label>'+
@@ -2781,13 +2813,7 @@ textarea.campo{min-height:72px;resize:vertical}
   /* ---------- Reuniões: marcar como feita e repetir ---------- */
   function proximaReuniaoData(base, rec, minimo){
     var d = paraData(base), dd = d.getDate(), lim = paraData(minimo), g = 0;
-    do {
-      if (rec==='diaria') d.setDate(d.getDate()+1);
-      else if (rec==='uteis'){ do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6); }
-      else if (rec==='semanal') d.setDate(d.getDate()+7);
-      else if (rec==='mensal'){ d.setDate(1); d.setMonth(d.getMonth()+1); d.setDate(Math.min(dd, diasNoMes(d))); }
-      else return null;
-    } while (d < lim && ++g < 800);
+    do { if (!passoRec(d, rec, dd)) return null; } while (d < lim && ++g < 3000);
     return iso(d);
   }
   function manterSeriesReunioes(){
@@ -2866,12 +2892,43 @@ textarea.campo{min-height:72px;resize:vertical}
   /* ---------- Agenda ---------- */
   var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   /* ---------- Previsão das repetições: missões e reuniões recorrentes aparecem nas datas futuras ---------- */
+  /* Regra personalizada: "cada:N:dia" · "cada:N:semana[:1,3,5]" (dias 0=dom..6=sáb) · "cada:N:mes" · "cada:N:ano" */
+  function lerRec(r){
+    var p = String(r||'').split(':'); if (p[0]!=='cada') return null;
+    var n = Math.max(1, Math.min(99, parseInt(p[1],10)||1)), u = p[2];
+    if (['dia','semana','mes','ano'].indexOf(u)<0) return null;
+    var dias = (p[3]||'').split(',').filter(function(x){ return x!==''; }).map(Number).filter(function(x){ return x>=0 && x<=6; });
+    return {n:n, u:u, dias:u==='semana' ? dias : []};
+  }
+  function montarRec(n, u, dias){
+    n = Math.max(1, Math.min(99, parseInt(n,10)||1));
+    if (u==='dia' && n===1) return 'diaria';
+    if (u==='semana' && (!dias || !dias.length)){ if (n===1) return 'semanal'; if (n===2) return 'quinzenal'; }
+    if (u==='semana' && n===1 && dias && dias.slice().sort().join(',')==='1,2,3,4,5') return 'uteis';
+    if (u==='mes' && n===1) return 'mensal';
+    return 'cada:'+n+':'+u+(u==='semana' && dias && dias.length ? ':'+dias.slice().sort().join(',') : '');
+  }
   function passoRec(d, rec, dd){
     if (rec==='diaria') d.setDate(d.getDate()+1);
     else if (rec==='uteis'){ do { d.setDate(d.getDate()+1); } while (d.getDay()===0 || d.getDay()===6); }
     else if (rec==='semanal') d.setDate(d.getDate()+7);
+    else if (rec==='quinzenal') d.setDate(d.getDate()+14);
     else if (rec==='mensal'){ d.setDate(1); d.setMonth(d.getMonth()+1); d.setDate(Math.min(dd, diasNoMes(d))); }
-    else return false;
+    else {
+      var c = lerRec(rec); if (!c) return false;
+      if (c.u==='dia') d.setDate(d.getDate()+c.n);
+      else if (c.u==='semana' && !c.dias.length) d.setDate(d.getDate()+7*c.n);
+      else if (c.u==='semana'){
+        for (var k=0;k<8;k++){
+          d.setDate(d.getDate()+1);
+          if (d.getDay()===1 && c.n>1) d.setDate(d.getDate()+7*(c.n-1));   /* semana nova: pula as semanas de folga */
+          if (c.dias.indexOf(d.getDay())>=0) break;
+        }
+      }
+      else if (c.u==='mes'){ d.setDate(1); d.setMonth(d.getMonth()+c.n); d.setDate(Math.min(dd, diasNoMes(d))); }
+      else if (c.u==='ano'){ var mo = d.getMonth(); d.setDate(1); d.setFullYear(d.getFullYear()+c.n); d.setMonth(mo); d.setDate(Math.min(dd, diasNoMes(d))); }
+      else return false;
+    }
     return true;
   }
   function previstas(miss, ate){
@@ -3302,7 +3359,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!pessoal && ['cidade','ajustes','agenda','criativos','pessoal'].indexOf(vista)>=0){ vista='todas'; render(); }
     if (pessoal && vista!=='pessoal'){ vista='pessoal'; render(); }
     formR.hidden = true; formTags = filtroTag ? [filtroTag] : []; document.getElementById('f-tags').innerHTML = seletorTags('form', formTags);
-    document.getElementById('f-rec').innerHTML = RECORRENCIAS.map(function(r){ return '<option value="'+r[0]+'">'+r[1]+'</option>'; }).join('');
+    document.getElementById('f-rec').innerHTML = opcoesRec('');
     document.getElementById('f-aprov').innerHTML = '<option value="">Sem aprovação</option>'+state.equipe.map(function(p){ return '<option value="'+p.id+'">Aprovação de '+esc(p.nome)+'</option>'; }).join('');
     document.getElementById('f-area').innerHTML = areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(a===areaSel?' selected':'')+'>'+esc(a)+'</option>'; }).join('');
     document.getElementById('f-cri-aviso').innerHTML = ''; document.getElementById('f-cri-det').open = false; preencherListas();
@@ -3326,7 +3383,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var pes = fPessoal.checked;
     var m = { id:uid(), titulo:t, descricao:document.getElementById('f-desc').value.trim(), resp:pes ? eu : document.getElementById('f-resp').value, data:document.getElementById('f-data').value||null,
       peso:document.getElementById('f-peso').value, feita:false, feitaEm:null, exemplo:false, subs:[], tags:pes ? [] : formTags.slice(), anexos:[], criadaPor:eu, criadaEm:new Date().toISOString(),
-      recorrencia:document.getElementById('f-rec').value||null };
+      recorrencia:valorRec(document.getElementById('f-rec')) };
     if (pes){ m.privada = true; m.dono = eu; m.area = document.getElementById('f-area').value; }
     else {
       var ap = document.getElementById('f-aprov').value; if (ap && ap!==m.resp) m.aprovador = ap;
@@ -3358,8 +3415,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('r-fim').value = r ? (r.fim||'') : '11:00';
     document.getElementById('r-local').value = r ? (r.local||'') : '';
     document.getElementById('r-desc').value = r ? (r.descricao||'') : '';
-    document.getElementById('r-rec').innerHTML = RECORRENCIAS.map(function(x){ return '<option value="'+x[0]+'">'+x[1]+'</option>'; }).join('');
-    document.getElementById('r-rec').value = r ? (r.recorrencia||'') : '';
+    document.getElementById('r-rec').innerHTML = opcoesRec(r ? (r.recorrencia||'') : '');
     reuniaoPessoas = r ? r.pessoas.slice() : [eu]; reuniaoTags = r ? (r.tags||[]).slice() : (filtroTag ? [filtroTag] : []);
     renderPessoasReuniao(); document.getElementById('r-tags').innerHTML = seletorTags('reuniao', reuniaoTags);
     document.getElementById('excluir-reuniao').hidden = !r;
@@ -3385,7 +3441,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var fim = document.getElementById('r-fim').value;
     if (fim && fim<=ini){ avisar('O fim precisa ser depois do início.'); return; }
     if (!reuniaoPessoas.length) reuniaoPessoas = [eu];
-    var dados = {titulo:t, data:d, inicio:ini, fim:fim, pessoas:reuniaoPessoas.slice(), local:document.getElementById('r-local').value.trim(), descricao:document.getElementById('r-desc').value.trim(), tags:reuniaoTags.slice(), recorrencia:document.getElementById('r-rec').value||null};
+    var dados = {titulo:t, data:d, inicio:ini, fim:fim, pessoas:reuniaoPessoas.slice(), local:document.getElementById('r-local').value.trim(), descricao:document.getElementById('r-desc').value.trim(), tags:reuniaoTags.slice(), recorrencia:valorRec(document.getElementById('r-rec'))};
     if (editandoReuniao){ var re0 = acharReuniao(editandoReuniao); Object.assign(re0, dados); if (dados.recorrencia && !re0.serie) re0.serie = re0.id; }
     else { var nr = Object.assign({id:uid(), exemplo:false, criadaPor:eu, feita:false}, dados); if (nr.recorrencia) nr.serie = nr.id; state.reunioes.push(nr); }
     manterSeriesReunioes();
@@ -3453,7 +3509,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (fm){ e.preventDefault(); var mm = achar(fm.getAttribute('data-m-form')); if (!mm) return; var tt0 = fm.elements.titulo.value.trim(); if (!tt0) return;
       var antesM = JSON.stringify(state.missoes);
       mm.titulo = tt0; mm.descricao = fm.elements.descricao.value.trim(); if (fm.elements.resp) mm.resp = fm.elements.resp.value;
-      mm.data = fm.elements.data.value || null; mm.peso = fm.elements.peso.value || 'media'; mm.recorrencia = fm.elements.recorrencia.value || null;
+      mm.data = fm.elements.data.value || null; mm.peso = fm.elements.peso.value || 'media'; mm.recorrencia = valorRec(fm.elements.recorrencia);
       var esp = fm.elements.espaco ? fm.elements.espaco.value : '';
       if (esp && !mm.privada){ if (mm.resp!==eu){ avisar(L('Só dá para levar para a sua área as missões em que você é o responsável.','You can only move missions you own to your space.','Solo puedes llevar a tu área las misiones de las que eres responsable.','Solum missiones tuas in aream tuam transferre potes.')); return; } paraPessoal(mm, esp==='__sem' ? null : esp); }
       else if (esp && mm.privada) mm.area = esp==='__sem' ? null : esp;
@@ -3751,6 +3807,56 @@ textarea.campo{min-height:72px;resize:vertical}
   }
 
   /* Oferecer a missão antes de cumpri-la */
+  /* ---------- Repetição personalizada (vale para missões e reuniões) ---------- */
+  function valorRec(sel){ var v = sel && sel.value; return v && v!=='__custom' ? v : null; }
+  var veuRec = document.getElementById('veu-rec'), recSel = null, recAnt = '', recDias = [];
+  function resumoRec(){
+    var u = document.getElementById('rec-u').value;
+    document.getElementById('rec-dias-bloco').hidden = u!=='semana';
+    var v = montarRec(document.getElementById('rec-n').value, u, u==='semana' ? recDias : []);
+    document.getElementById('rec-resumo').textContent = nomeRec(v);
+    return v;
+  }
+  function pintarDias(){
+    document.getElementById('rec-dias').innerHTML = [1,2,3,4,5,6,0].map(function(x){ return '<button type="button" data-rec-dia="'+x+'" aria-pressed="'+(recDias.indexOf(x)>=0)+'">'+DIAS_CURTOS[x]+'</button>'; }).join('');
+    resumoRec();
+  }
+  function abrirRec(sel, ant){
+    recSel = sel; recAnt = ant||'';
+    var c = lerRec(recAnt), base = {diaria:[1,'dia'], uteis:[1,'semana',[1,2,3,4,5]], semanal:[1,'semana'], quinzenal:[2,'semana'], mensal:[1,'mes']}[recAnt];
+    if (!c) c = base ? {n:base[0], u:base[1], dias:base[2]||[]} : {n:1, u:'semana', dias:[]};
+    document.getElementById('rec-n').value = c.n; document.getElementById('rec-u').value = c.u;
+    recDias = c.dias.slice();
+    if (c.u==='semana' && !recDias.length){
+      var f = sel.form, dv = (f && (f.elements.data || f.querySelector('input[type=date]'))) ; dv = dv && dv.value;
+      recDias = [paraData(dv || hoje).getDay()];
+    }
+    pintarDias(); veuRec.hidden = false; document.getElementById('rec-n').focus();
+  }
+  function fecharRec(ok){
+    if (recSel){
+      var v = ok ? resumoRec() : recAnt;
+      recSel.innerHTML = opcoesRec(v); Array.prototype.forEach.call(recSel.options, function(o){ o.removeAttribute('selected'); }); recSel.value = v; recSel.dataset.ant = v;
+    }
+    veuRec.hidden = true; recSel = null;
+  }
+  document.addEventListener('focusin', function(e){ var t = e.target; if (t && t.tagName==='SELECT' && t.querySelector('option[value="__custom"]') && t.value!=='__custom') t.dataset.ant = t.value; });
+  document.addEventListener('change', function(e){
+    var t = e.target; if (!t || t.tagName!=='SELECT' || !t.querySelector('option[value="__custom"]')) return;
+    if (t.value!=='__custom'){ t.dataset.ant = t.value; return; }
+    abrirRec(t, t.dataset.ant || '');
+  }, true);
+  document.getElementById('rec-dias').addEventListener('click', function(e){
+    var b = e.target.closest('[data-rec-dia]'); if (!b) return; var x = +b.getAttribute('data-rec-dia'), i = recDias.indexOf(x);
+    if (i>=0){ if (recDias.length>1) recDias.splice(i,1); } else recDias.push(x);
+    pintarDias();
+  });
+  document.getElementById('rec-n').addEventListener('input', resumoRec);
+  document.getElementById('rec-u').addEventListener('change', function(e){ e.stopPropagation(); resumoRec(); });
+  document.getElementById('rec-cancelar').addEventListener('click', function(){ fecharRec(false); });
+  document.getElementById('rec-form').addEventListener('submit', function(e){ e.preventDefault(); e.stopPropagation(); fecharRec(true); });
+  veuRec.addEventListener('keydown', function(e){ if (e.key==='Escape'){ e.stopPropagation(); fecharRec(false); } });
+
   var veuOferta = document.getElementById('veu-oferta'), ofTexto = document.getElementById('of-texto'), ofDepois = null, ofMissao = null;
   function sugestoesOferta(){
     var l = [], d = ofertaDoDia(); if (d && d.texto) l.push(d.texto);
