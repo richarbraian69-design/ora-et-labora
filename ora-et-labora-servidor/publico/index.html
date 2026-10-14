@@ -622,6 +622,7 @@ textarea.campo{min-height:72px;resize:vertical}
 .btn-fim[aria-pressed="true"]{color:var(--tx2)}
 
 /* ---------- Estados de aprovação, recorrência, pessoal ---------- */
+.grupo-rot .so-voce{text-transform:none;letter-spacing:0;font-weight:400;opacity:.7}
 .grupo-vazio{margin:0;padding:10px 16px;font-size:13px;color:var(--tx2);opacity:.75}
 .st.tipo{background:transparent;border:1px solid var(--linha,rgba(127,127,127,.3))}
 .grupo.alvo-tipo > .grupo-rot{outline:2px dashed currentColor;outline-offset:4px;border-radius:6px}
@@ -2368,6 +2369,7 @@ textarea.campo{min-height:72px;resize:vertical}
     return g;
   }
   var XP_SUB = 5;
+  function xpSub(sb){ return sb && PESOS[sb.peso] ? PESOS[sb.peso].xp : XP_SUB; }
   function virtudesDe(id){
     var v = {}; VIRTUDES.forEach(function(x){ v[x[0]] = 0; });
     state.missoes.forEach(function(m){
@@ -2375,7 +2377,7 @@ textarea.campo{min-height:72px;resize:vertical}
         if (!sb.feita) return;
         var quem = m.privada ? m.dono : (sb.resp || m.resp); if (quem!==id) return;
         var noPrazo = !sb.data || !sb.feitaEm || iso(new Date(sb.feitaEm)) <= sb.data;
-        v[noPrazo ? 'diligencia' : 'perseveranca'] += XP_SUB;
+        v[noPrazo ? 'diligencia' : 'perseveranca'] += xpSub(sb);
       });
       if (!m.feita) return;
       if ((m.privada ? m.dono : m.resp)===id){ var g = ganhoMissao(m); for (var k in g) v[k] += g[k]; }
@@ -2690,7 +2692,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function renderNav(){
     var s = separar(doFiltro()), rh = reunioesDoDia(hoje).length;
     var ap = aprovacoes(), pes = minhasPessoais().filter(function(m){ return !m.feita && m.data && m.data<=hoje; }).length;
-    var qtd = { hoje:s.atras.length+s.hoje.length+rh+ap.minhas.length, todas:s.atras.length+s.hoje.length+s.prox.length+s.sem.length, atrasadas:s.atras.length, proximas:s.prox.length+s.sem.length, cumpridas:s.feitas.length,
+    var qtd = { hoje:s.atras.length+s.hoje.length+rh+ap.minhas.length+((filtro==='todos' || filtro===eu) && !filtroTag ? pes : 0), todas:s.atras.length+s.hoje.length+s.prox.length+s.sem.length, atrasadas:s.atras.length, proximas:s.prox.length+s.sem.length, cumpridas:s.feitas.length,
       agenda:reunioesFiltradas().filter(function(r){ return r.data>=hoje; }).length, aprovar:ap.minhas.length+ap.ajustes.length, pessoal:pes||null };
     var GRUPO_MISSOES = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'];
     var itemNav = function(v){
@@ -2764,13 +2766,14 @@ textarea.campo{min-height:72px;resize:vertical}
         '<label>Sub-missão<input class="campo" id="se-t-'+s.id+'" name="titulo" required maxlength="120" value="'+esc(s.titulo)+'"></label>'+
         '<label>Descrição<textarea class="campo" id="se-d-'+s.id+'" name="descricao" placeholder="Detalhes desta etapa.">'+esc(s.descricao||'')+'</textarea></label>'+
         '<div class="campos-sub"><label>Responsável<select class="campo" id="se-r-'+s.id+'" name="resp">'+opcoesPessoas(s.resp||m.resp)+'</select></label>'+
-        '<label>Data<input class="campo" id="se-a-'+s.id+'" name="data" type="date" value="'+esc(s.data||'')+'"></label></div>'+
+        '<label>Data<input class="campo" id="se-a-'+s.id+'" name="data" type="date" value="'+esc(s.data||'')+'"></label>'+
+        '<label>XP<select class="campo" id="se-p-'+s.id+'" name="peso" data-sem-tr>'+opcoesPeso(PESOS[s.peso] ? s.peso : 'minima')+'</select></label></div>'+
         seletorTags('s:'+k, s.tags, 'Cliente')+'<div class="det-bloco"><p class="det-tit">Anexos</p>'+htmlAnexos(s.anexos, 's:'+k, true)+'</div>'+
         '<div class="acoes"><button class="btn btn-escuro" type="submit">Salvar</button><button class="btn btn-claro" type="button" data-sub-cancelar>Cancelar</button><button class="link" type="button" data-sub-promover="'+k+'">Tornar missão</button></div></form></li>';
     }
     var meta = (s.resp && s.resp!==m.resp ? '<span class="sub-pessoa">'+av(s.resp)+esc(pessoa(s.resp).nome)+'</span>' : '');
     if (!s.feita && s.data){ var p = prazoTxt(s.data); meta += '<span class="'+p.c+'">'+esc(p.t)+'</span>'; }
-    meta += '<span class="sub-xp">'+XP_SUB+' XP</span>';
+    meta += '<span class="sub-xp">'+xpSub(s)+' XP</span>';
     var na = (s.anexos||[]).length;
     var sk = 's:'+k, sSel = !!selecao[sk];
     return '<li class="sub'+(s.feita?' feita':'')+(sSel?' selecionada':'')+'" data-sub="'+k+'"'+(selecionando && sSel ? ' draggable="true"' : '')+'>'+(selecionando ? '<button class="sel-box sel-sub'+(sSel?' on':'')+'" type="button" data-sel="'+sk+'" aria-pressed="'+sSel+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(s.titulo)+'">'+CHECK+'</button>' : '<button class="alca-sub" type="button" draggable="true" data-alca-sub="'+k+'" aria-label="Arrastar sub-missão" title="Arraste para fora para virar missão, ou para outra missão">'+ALCA+'</button>')+circ+
@@ -2900,7 +2903,14 @@ textarea.campo{min-height:72px;resize:vertical}
     else if (vista==='hoje'){
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
       agrupandoTipo = porTipo && !q;
-      g = [['Aguardando sua aprovação',am]].concat(agrupandoTipo ? gruposPorTipo(fora(s.atras), fora(s.hoje)) : [['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]]).concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
+      var pesHoje = (filtro==='todos' || filtro===eu) && !filtroTag ? minhasPessoais().filter(function(m){
+        if (m.feita || !m.data || m.data>hoje) return false;
+        if (!q) return true;
+        return (m.titulo+' '+(m.descricao||'')+' '+(m.area||'')).toLowerCase().indexOf(q)>=0;
+      }).sort(porData) : [];
+      g = [['Aguardando sua aprovação',am]].concat(agrupandoTipo ? gruposPorTipo(fora(s.atras), fora(s.hoje)) : [['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]])
+        .concat([[L('Minhas missões pessoais','My personal missions','Mis misiones personales','Missiones meae privatae')+' <span class="so-voce">· '+L('só você vê','only you see','solo tú ves','tu solus vides')+'</span>', pesHoje, pesHoje.some(function(m){ return m.data<hoje; }) ? 1 : 0, 'pessoais-hoje']])
+        .concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
     }
     else if (vista==='todas') g = [['Atrasadas',s.atras,1],['Hoje',s.hoje]].concat(gruposProximos(s.prox), [['Sem data',s.sem]]);
     else if (vista==='atrasadas') g = [['Atrasadas',s.atras,1]];
@@ -3523,7 +3533,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
     if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){
-        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; salvar(); render(); if (r.s.feita) avisar('+'+XP_SUB+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
+        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; salvar(); render(); if (r.s.feita) avisar('+'+xpSub(r.s)+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
         if (!r.s.feita && !r.s.oferecida && !(r.m.privada && r.m.dono!==eu)){ abrirOferta({id:'s:'+k, titulo:r.s.titulo, sub:true}, function(){ r.s.oferecida = true; marcarSub(); }); return; }
         marcarSub(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
@@ -3563,7 +3573,7 @@ textarea.campo{min-height:72px;resize:vertical}
       editandoMissao = null; salvar(); render(); avisar(L('Missão atualizada.','Mission updated.','Misión actualizada.','Missio renovata.'), antesM); return; }
     var fe = e.target.closest('[data-sub-form]');
     if (fe){ e.preventDefault(); var r = acharSub(fe.getAttribute('data-sub-form')); if (!r) return; var t = fe.elements.titulo.value.trim(); if (!t) return;
-      r.s.titulo = t; r.s.descricao = fe.elements.descricao.value.trim(); r.s.resp = fe.elements.resp.value; r.s.data = fe.elements.data.value || null; editandoSub = null; salvar(); render(); return; }
+      r.s.titulo = t; r.s.descricao = fe.elements.descricao.value.trim(); r.s.resp = fe.elements.resp.value; r.s.data = fe.elements.data.value || null; if (fe.elements.peso) r.s.peso = fe.elements.peso.value || 'minima'; editandoSub = null; salvar(); render(); return; }
     var f = e.target.closest('[data-sub-add]'); if (!f) return;
     e.preventDefault();
     var id = f.getAttribute('data-sub-add'), inp = f.querySelector('input'), tt = inp.value.trim(), m = achar(id); if (!tt || !m) return;
@@ -3685,7 +3695,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
     document.getElementById('massa-pessoal').textContent = L('Para Minha área','To My space','A Mi área','In Aream meam');
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
-    document.getElementById('massa-peso').disabled = !ids.length;
+    document.getElementById('massa-peso').disabled = !nTot;
     document.getElementById('massa-tipo').disabled = !ids.length;
     if (!document.getElementById('massa-tags-pop').hidden) renderPopTags();
   }
@@ -3727,7 +3737,7 @@ textarea.campo{min-height:72px;resize:vertical}
   });
   document.getElementById('massa-peso').addEventListener('change', function(){
     var v = this.value; if (!v) return;
-    emMassa(function(m){ if (m.peso===v) return false; m.peso = v; }, L('Peso trocado em {n} missões.','Weight changed on {n} missions.','Peso cambiado en {n} misiones.','Pondus mutatum in {n} missionibus.'));
+    emMassa(function(m){ if (m.peso===v) return false; m.peso = v; }, L('Peso trocado em {n} missões.','Weight changed on {n} missions.','Peso cambiado en {n} misiones.','Pondus mutatum in {n} missionibus.'), function(sb){ if (sb.peso===v) return false; sb.peso = v; });
   });
   document.getElementById('massa-data-b').addEventListener('click', function(){ var p = document.getElementById('massa-data-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; });
   document.getElementById('massa-tags-b').addEventListener('click', function(){ var p = document.getElementById('massa-tags-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; if (ab) renderPopTags(); });
