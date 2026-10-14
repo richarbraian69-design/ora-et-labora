@@ -1873,9 +1873,18 @@ textarea.campo{min-height:72px;resize:vertical}
   var SVGNS = 'http://www.w3.org/2000/svg', CAMISAS = ['#e2742c','#2f7fe6','#2b9a5a','#d6336c','#7a5af5','#c99a06','#0f9fb5','#d64545'];
   var mundos = [], raf = null, ultimoTs = 0, felicidadeAtual = 60;
   function el(tag, at){ var e=document.createElementNS(SVGNS, tag); for (var k in at) e.setAttribute(k, at[k]); return e; }
+  /* ---------- A cidade cresce por XP: cada 25 XP de missões da equipe = 1 melhoria ---------- */
+  var XP_MELHORIA = 25;
+  function somarCidade(xp){
+    var antes = state.obras||0;
+    state.xpCidade = Math.max(0, (typeof state.xpCidade==='number' ? state.xpCidade : antes*XP_MELHORIA) + xp);
+    state.obras = Math.floor(state.xpCidade / XP_MELHORIA);
+    return state.obras - antes;
+  }
+  function faltaMelhoria(){ var x = typeof state.xpCidade==='number' ? state.xpCidade : (state.obras||0)*XP_MELHORIA; return XP_MELHORIA - (x % XP_MELHORIA); }
   function felicidade(){
     var agora = Date.now(), f = 35;
-    state.missoes.forEach(function(m){ if (!m.privada && m.feita && m.feitaEm){ var d=(agora-new Date(m.feitaEm).getTime())/864e5; if (d<7) f += 14*(1-d/7); } });
+    state.missoes.forEach(function(m){ if (!m.privada && m.feita && m.feitaEm){ var d=(agora-new Date(m.feitaEm).getTime())/864e5; if (d<7) f += 14*Math.min(3, (PESOS[m.peso] ? PESOS[m.peso].xp : 25)/25)*(1-d/7); } });
     f -= state.missoes.filter(function(m){ return !m.privada && !m.feita && m.data && m.data<hoje; }).length*4;
     if (visitaAtiva()) f += 10;
     return Math.max(5, Math.min(100, Math.round(f)));
@@ -2223,6 +2232,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!state.prefs || typeof state.prefs!=='object') state.prefs = {};
     if (typeof state.obras!=='number') state.obras = state.missoes.filter(function(m){ return m.feita && !m.privada; }).length;
     if (!state.v3){ if (temExemplos) state.obras = Math.max(state.obras, 42); state.semVisita = state.semVisita||0; state.v3 = true; }
+    if (typeof state.xpCidade!=='number') state.xpCidade = (state.obras||0)*XP_MELHORIA;
     if (!state.v4){ if (temExemplos) exemplosV4(); state.v4 = true; }
   }
   /* Exemplos das funções novas: recorrência, aprovação, criativos, área pessoal e hábitos. */
@@ -2755,7 +2765,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('cid-n').textContent = plural(n+1,'melhoria','melhorias');
     document.getElementById('cid-visita').innerHTML = htmlVisita();
     document.getElementById('alegria').innerHTML = htmlAlegria(felicidadeAtual);
-    document.getElementById('cid-prox').innerHTML = 'Próxima missão cumprida: <b>+ '+esc(proximaPeca(n))+'</b>';
+    document.getElementById('cid-prox').innerHTML = '<span data-sem-tr>'+L('Faltam '+faltaMelhoria()+' XP para: ', faltaMelhoria()+' XP to go: ', 'Faltan '+faltaMelhoria()+' XP para: ', 'Desunt '+faltaMelhoria()+' XP: ')+'<b>+ '+esc(tr(proximaPeca(n)))+'</b></span>';
     var chaveCard = n+'|'+(visitaAtiva()?state.visita.santo:'');
     if (cidadeN.card!==chaveCard){ cidadeN.card = chaveCard; montarMundo(document.getElementById('cid-arte'), n, 5.5, 'card'); var l = document.createElement('span'); l.className='cid-lupa'; l.textContent='Ver de perto'; document.getElementById('cid-arte').appendChild(l); }
     var sv = document.querySelector('#cid-arte svg'); if (sv) sv.classList.toggle('luzes', !!exameDeHoje());
@@ -3133,7 +3143,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('cg-sub').textContent = plural(n+1,'melhoria','melhorias')+' · '+plural(state.missoes.filter(function(m){ return m.feita && !m.privada; }).length,'missão cumprida','missões cumpridas')+(pe ? ' · '+L('faltam '+(pe[0]-n)+' para virar '+pe[1], (pe[0]-n)+' to become '+umEstagio(pe[1]), 'faltan '+(pe[0]-n)+' para ser '+umEstagio(pe[1]), 'desunt '+(pe[0]-n)+' ut '+umEstagio(pe[1])+' fiat') : '');
     document.getElementById('cg-alegria').innerHTML = htmlAlegria(f);
     document.getElementById('cg-visita').innerHTML = htmlVisita();
-    document.getElementById('cg-prox').innerHTML = L('Cada missão cumprida acrescenta um detalhe e, a cada seis, uma construção nova. A próxima melhoria será ', 'Each completed mission adds a detail and, every six, a new building. The next improvement will be ', 'Cada misión cumplida añade un detalle y, cada seis, una construcción nueva. La próxima mejora será ', 'Quaeque missio perfecta aliquid addit et, sexta quaque, novum aedificium. Proximum incrementum erit: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
+    document.getElementById('cg-prox').innerHTML = L('A cidade cresce com o XP das missões da equipe: a cada 25 XP surge um detalhe novo e, a cada seis detalhes, uma construção. Uma missão heroica (100 XP) vale quatro melhorias; uma mínima (5 XP), um quinto. Faltam '+faltaMelhoria()+' XP para a próxima, que será ', 'The city grows with the team\'s mission XP: every 25 XP adds a new detail and, every six details, a building. A heroic mission (100 XP) is worth four improvements; a minimal one (5 XP), a fifth. '+faltaMelhoria()+' XP to go until the next one, which will be ', 'La ciudad crece con el XP de las misiones del equipo: cada 25 XP aparece un detalle nuevo y, cada seis, una construcción. Una misión heroica (100 XP) vale cuatro mejoras; una mínima (5 XP), un quinto. Faltan '+faltaMelhoria()+' XP para la próxima, que será ', 'Urbs crescit XP missionum sodalium: singulis XXV XP novum aliquid oritur et, sexto quoque, aedificium. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
     var ch = n+'|'+(visitaAtiva()?state.visita.santo:'');
     if (cidadeN.grande!==ch || !document.querySelector('#cg-arte svg')){ cidadeN.grande = ch; montarMundo(document.getElementById('cg-arte'), n, 14, 'grande'); }
     var l = state.equipe.map(function(p){
@@ -3545,7 +3555,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
     if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){
-        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; salvar(); render(); if (r.s.feita) avisar('+'+xpSub(r.s)+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
+        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; if (!r.m.privada){ if (r.s.feita){ r.s.cidadeXp = xpSub(r.s); somarCidade(r.s.cidadeXp); } else if (r.s.cidadeXp){ somarCidade(-r.s.cidadeXp); delete r.s.cidadeXp; } } salvar(); render(); if (r.s.feita) avisar('+'+xpSub(r.s)+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
         if (!r.s.feita && !r.s.oferecida && !(r.m.privada && r.m.dono!==eu)){ abrirOferta({id:'s:'+k, titulo:r.s.titulo, sub:true}, function(){ r.s.oferecida = true; marcarSub(); }); return; }
         marcarSub(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
@@ -3881,7 +3891,7 @@ textarea.campo{min-height:72px;resize:vertical}
     m.feita = false; m.feitaEm = null; m.oferecida = false;
     if (m.aprovadaPor) delete m.aprovadaPor;
     if (m.aprov && m.aprov.estado!=='ajustes') m.aprov = null;
-    if (!m.privada) state.obras = Math.max(0, (state.obras||0)-1);
+    if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_MELHORIA)); delete m.cidadeXp; }
     /* a repetição criada quando ela foi cumprida some (senão a próxima ficaria duplicada) */
     if (m.recorrencia){
       var raiz = m.origem || m.id, filhas = state.missoes.filter(function(x){ return x!==m && !x.feita && (x.origem===raiz) && (!quando || (x.criadaEm||'') >= quando); })
@@ -4000,8 +4010,9 @@ textarea.campo{min-height:72px;resize:vertical}
     if (aprovou){ m.aprovadaPor = eu; m.aprov = null; }
     pendenteVisita = {visita:state.visita||null, semVisita:state.semVisita||0};
     var novoSanto = null;
+    var ganhoObras = 0;
     if (!m.privada){
-      state.obras += 1;
+      m.cidadeXp = PESOS[m.peso] ? PESOS[m.peso].xp : 25; ganhoObras = somarCidade(m.cidadeXp);
       if (!visitaAtiva()){
         state.semVisita = (state.semVisita||0)+1;
         if (Math.random()<0.18 || state.semVisita>=10){ novoSanto = SANTOS[Math.floor(Math.random()*SANTOS.length)]; state.visita = {santo:novoSanto.id, ate:Date.now()+3*3600e3}; state.semVisita = 0; }
@@ -4010,14 +4021,19 @@ textarea.campo{min-height:72px;resize:vertical}
     var rec = m.recorrencia ? gerarRecorrente(m) : null; pendenteRec = rec ? rec.id : null;
     if (rec && rec.resp===eu) marcarVistas(eu, [rec.id]);
     salvar();
-    var depois = nivel(xpDe(dono)).atual.nome, n = state.obras, felizDepois = felicidade(), peca = m.privada ? null : elementoN(n-1);
+    var depois = nivel(xpDe(dono)).atual.nome, n = state.obras, felizDepois = felicidade(), peca = m.privada || !ganhoObras ? null : elementoN(n-1);
     var k; do { k = Math.floor(Math.random()*CIT_FE.length); } while (k===ultimaFe && CIT_FE.length>1); ultimaFe = k;
     var p = pessoa(dono), ga = document.getElementById('g-arte');
     ga.hidden = !!m.privada;
-    if (!m.privada) ga.innerHTML = cidadeSVG(n, 8, {nova:n-1, rotulo:'A cidade com a melhoria nova'});
+    if (!m.privada) ga.innerHTML = cidadeSVG(n, 8, ganhoObras ? {nova:n-1, rotulo:'A cidade com a melhoria nova'} : {rotulo:'A cidade'});
     document.getElementById('g-cidade').innerHTML = m.privada ? 'Uma missão pessoal, longe dos olhos da equipe e perto do coração de Deus.' :
       '<span data-sem-tr>'+seuEstagio(n)+L(' ganhou ',' gained ',' ganó ',' accepit ')+'<strong>'+esc(tr(peca ? peca.nome : 'uma melhoria'))+'</strong>.'+(felizDepois>felizAntes ? L(' Os moradores ficaram mais felizes.',' The residents got happier.',' Los habitantes quedaron más felices.',' Incolae laetiores facti sunt.') : '')+
       (estagio(n)!==estagio(n-1) ? ' <strong>'+L('Agora é '+umEstagio(estagio(n))+'!','It is now '+umEstagio(estagio(n))+'!','¡Ahora es '+umEstagio(estagio(n))+'!','Iam '+umEstagio(estagio(n))+' est!')+'</strong>' : '')+'</span>';
+    if (!m.privada && !ganhoObras){
+      document.getElementById('g-cidade').innerHTML = '<span data-sem-tr>'+L('<strong>+'+m.cidadeXp+' XP</strong> para a cidade. Faltam '+faltaMelhoria()+' XP para a próxima melhoria: ', '<strong>+'+m.cidadeXp+' XP</strong> for the city. '+faltaMelhoria()+' XP to go until the next improvement: ', '<strong>+'+m.cidadeXp+' XP</strong> para la ciudad. Faltan '+faltaMelhoria()+' XP para la próxima mejora: ', '<strong>+'+m.cidadeXp+' XP</strong> urbi. Desunt '+faltaMelhoria()+' XP ad proximum incrementum: ')+'<strong>'+esc(tr(proximaPeca(n)))+'</strong>.</span>';
+    } else if (ganhoObras > 1){
+      document.getElementById('g-cidade').innerHTML += ' <span data-sem-tr>'+L('Foram <strong>'+ganhoObras+' melhorias</strong> de uma vez.', '<strong>'+ganhoObras+' improvements</strong> at once.', 'Fueron <strong>'+ganhoObras+' mejoras</strong> de una vez.', '<strong>'+ganhoObras+' incrementa</strong> simul.')+'</span>';
+    }
     var gv = document.getElementById('g-visita');
     gv.hidden = !novoSanto && !rec;
     gv.innerHTML = novoSanto ? '<span class="halo"></span><span data-sem-tr><b>'+L('Uma visita!','A visit!','¡Una visita!','Visitatio!')+'</b> '+esc(tr(novoSanto.nome))+L(' chegou para passar um tempo com os moradores.',' came to spend some time with the residents.',' llegó para pasar un tiempo con los habitantes.',' venit ut paulisper cum incolis maneat.')+'</span>' :
@@ -4045,7 +4061,7 @@ textarea.campo{min-height:72px;resize:vertical}
   document.getElementById('g-desfazer').addEventListener('click', function(){
     var m = pendente;
     if (m){
-      m.feita = false; m.feitaEm = null; if (!m.privada) state.obras = Math.max(0, state.obras-1);
+      m.feita = false; m.feitaEm = null; if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_MELHORIA)); delete m.cidadeXp; }
       (m.subs||[]).forEach(function(s,i){ if (pendenteSubs && i<pendenteSubs.length) s.feita = pendenteSubs[i]; });
       if (pendenteVisita){ state.visita = pendenteVisita.visita; state.semVisita = pendenteVisita.semVisita; }
       if (pendenteAprov){ m.aprov = pendenteAprov.aprov; if (pendenteAprov.aprovadaPor) m.aprovadaPor = pendenteAprov.aprovadaPor; else delete m.aprovadaPor; }
@@ -4544,7 +4560,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function itensLocais(){
     var r = {};
     COLS.forEach(function(c){ (state[c]||[]).forEach(function(x){ if (x && x.id) r[c+'|'+x.id] = {col:c, id:x.id, privado:privadoDe(c,x), dados:x}; }); });
-    r['meta|cidade'] = {col:'meta', id:'cidade', privado:false, dados:{obras:state.obras, visita:state.visita||null, semVisita:state.semVisita||0}};
+    r['meta|cidade'] = {col:'meta', id:'cidade', privado:false, dados:{obras:state.obras, xpCidade:state.xpCidade, visita:state.visita||null, semVisita:state.semVisita||0}};
     r['prefs|'+eu] = {col:'prefs', id:eu, privado:true, dados:prefsEu()};
     return r;
   }
@@ -4571,7 +4587,7 @@ textarea.campo{min-height:72px;resize:vertical}
       if (!it.apagado && SYNC.ultimo[k]===j) return;
       if (it.apagado && !(k in SYNC.ultimo)) return;
       mudou = true;
-      if (it.col==='meta'){ if (!it.apagado && it.id==='cidade'){ state.obras = it.dados.obras||0; state.visita = it.dados.visita||null; state.semVisita = it.dados.semVisita||0; } }
+      if (it.col==='meta'){ if (!it.apagado && it.id==='cidade'){ state.obras = it.dados.obras||0; state.xpCidade = typeof it.dados.xpCidade==='number' ? it.dados.xpCidade : state.obras*XP_MELHORIA; state.visita = it.dados.visita||null; state.semVisita = it.dados.semVisita||0; } }
       else if (it.col==='prefs'){ if (!it.apagado) state.prefs[it.id] = it.dados; }
       else if (state[it.col]){
         var arr = state[it.col], i = -1; for (var x=0;x<arr.length;x++) if (arr[x].id===it.id){ i = x; break; }
