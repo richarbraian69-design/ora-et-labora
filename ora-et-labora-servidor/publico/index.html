@@ -579,11 +579,11 @@ textarea.campo{min-height:72px;resize:vertical}
 .rec-dias button[aria-pressed="true"]{background:var(--tx,#111);color:var(--bg,#fff);border-color:var(--tx,#111)}
 .rec-resumo{margin:0;font-size:13px;opacity:.75}
 .veu{position:fixed;inset:0;z-index:20;background:rgba(10,10,9,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:grid;place-items:center;padding:16px;overflow-y:auto;animation:aparecer .25s ease}
-.graca{width:100%;max-width:480px;background:var(--painel);border:1px solid var(--linha);border-radius:20px;box-shadow:var(--sombra);padding:24px clamp(20px,5vw,34px) 24px;display:grid;gap:10px;justify-items:center;text-align:center}
-.graca .g-arte{width:100%;max-width:300px;background:var(--bg);border-radius:14px;padding:10px}
+.graca{width:100%;max-width:480px;background:var(--painel);border:1px solid var(--linha);border-radius:20px;box-shadow:var(--sombra);padding:24px clamp(20px,5vw,34px) 24px;display:grid;gap:10px;justify-items:start;text-align:left}
+.graca .g-arte{justify-self:center;width:100%;max-width:300px;background:var(--bg);border-radius:14px;padding:10px}
 .graca .rot{margin:4px 0 0;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ok)}
-.graca h2{margin:0;font-size:1.05rem;font-weight:500;text-wrap:balance}
-.graca blockquote{margin:4px 0 0;font-family:var(--f-serif);font-style:italic;font-size:1.45rem;line-height:1.22;text-wrap:balance}
+.graca h2{margin:0;font-size:1.05rem;font-weight:500;text-wrap:pretty}
+.graca blockquote{margin:4px 0 0;font-family:var(--f-serif);font-style:italic;font-size:1.45rem;line-height:1.22;text-wrap:pretty}
 .graca cite{font-style:normal;font-size:.86rem;color:var(--tx2)}
 .recompensa{margin:4px 0 0;font-size:.88rem;color:var(--tx2)}
 .recompensa strong{color:var(--tx);font-weight:600}
@@ -1137,7 +1137,7 @@ textarea.campo{min-height:72px;resize:vertical}
     <cite id="g-autor"></cite>
     <p class="recompensa" id="g-recompensa"></p>
     <p class="subiu" id="g-subiu" hidden></p>
-    <div class="acoes" style="justify-content:center;margin-top:6px">
+    <div class="acoes" style="justify-content:flex-start;margin-top:6px">
       <button class="btn btn-escuro btn-grande" id="g-amem" type="button">Amém</button>
       <button class="btn btn-claro btn-grande" id="g-desfazer" type="button">Desfazer</button>
     </div>
