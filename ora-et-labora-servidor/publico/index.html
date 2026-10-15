@@ -1494,34 +1494,83 @@ textarea.campo{min-height:72px;resize:vertical}
 
   /* Santos que visitam a cidade. As falas são diálogos do jogo, não citações. */
   var SANTOS = [
-    {id:'francisco', nome:'São Francisco de Assis', habito:'#7a5a3a', efeito:'aves', falas:['Paz e bem!','Louvado sejas pelos irmãos pássaros!','Que alegria ver esta casa!']},
-    {id:'bento', nome:'São Bento', habito:'#2a2a2a', efeito:'sino', falas:['Ora et labora!','Bom trabalho, irmãos.','Vamos rezar um pouco?']},
-    {id:'teresinha', nome:'Santa Teresinha', habito:'#6b4a2f', efeito:'rosas', falas:['Trouxe rosas para vocês!','Pequenas coisas com amor.','Que dia de graça!']},
-    {id:'jose', nome:'São José', habito:'#8a6a3c', efeito:'obra', falas:['Deixe que eu ajudo nessa obra.','Trabalho bem feito!','Essa cerca ficou firme.']},
-    {id:'bosco', nome:'São João Bosco', habito:'#1d1d1d', efeito:'alegria', falas:['Vamos brincar um pouco!','Sejam alegres!','Quem chega primeiro?']},
-    {id:'madre', nome:'Santa Teresa de Calcutá', habito:'#f4f4f0', faixa:'#2f6fd6', efeito:'coracoes', falas:['Como vocês estão?','Um sorriso faz bem.','Vamos servir juntos.']},
-    {id:'pio', nome:'São Pio de Pietrelcina', habito:'#6e4f33', efeito:'paz', falas:['Reza, espera e não te preocupes.','Paz nesta casa.','Coragem!']},
-    {id:'antonio', nome:'Santo Antônio', habito:'#6e5034', efeito:'coracoes', falas:['Achei o que estava perdido!','Pão para os pobres!','A paz do Senhor nesta casa.']},
-    {id:'jorge', nome:'São Jorge', habito:'#8f969e', faixa:'#a8261d', efeito:'obra', falas:['Coragem na batalha de hoje!','Nenhum dragão resiste à fé.','Estou de guarda por aqui.']},
-    {id:'judas', nome:'São Judas Tadeu', habito:'#3f6b3a', faixa:'#d8b04a', efeito:'paz', falas:['Nenhuma causa está perdida.','Confiem, irmãos!','Vim ajudar no que parecia impossível.']},
-    {id:'rita', nome:'Santa Rita de Cássia', habito:'#262626', faixa:'#f4f4f0', efeito:'rosas', falas:['Para Deus nada é impossível.','Trouxe uma rosa do inverno!','Paciência e perdão.']},
-    {id:'luzia', nome:'Santa Luzia', habito:'#b7342b', faixa:'#f2ede4', efeito:'paz', falas:['Que Deus ilumine os olhos de vocês.','Muita luz nesta casa!','Vejam com os olhos da fé.']},
-    {id:'sebastiao', nome:'São Sebastião', habito:'#9b2d20', efeito:'obra', falas:['Firmes na fé!','Soldado de Cristo, sempre.','Nada de desanimar!']},
-    {id:'expedito', nome:'Santo Expedito', habito:'#a33224', faixa:'#d8b04a', efeito:'obra', falas:['Hoje! Não deixe para amanhã.','Missão resolvida é missão cumprida.','Rápido e bem feito!']},
-    {id:'dulce', nome:'Santa Dulce dos Pobres', habito:'#f4f4f0', faixa:'#3b6fb6', efeito:'coracoes', falas:['O que eu puder fazer, eu faço.','Amar e servir.','Alguém precisa de ajuda?']},
-    {id:'pedro', nome:'São Pedro', habito:'#3b5a8c', faixa:'#d8a43a', efeito:'aves', falas:['Senhor, tu sabes que te amo.','Lancem as redes de novo!','Que casa firme, como rocha.']},
-    {id:'paulo', nome:'São Paulo', habito:'#8b2e2e', faixa:'#3a4f7a', efeito:'paz', falas:['Tudo posso naquele que me fortalece.','Combati o bom combate!','Alegrai-vos sempre no Senhor.']},
-    {id:'agostinho', nome:'Santo Agostinho', habito:'#2b2522', efeito:'paz', falas:['Nosso coração está inquieto até repousar em Deus.','Ama e faze o que quiseres.','Tarde te amei!']},
-    {id:'tomas', nome:'São Tomás de Aquino', habito:'#f2efe8', faixa:'#1d1d1d', efeito:'paz', falas:['Vamos estudar um pouco?','A graça supõe a natureza.','Bem pensado!']},
-    {id:'teresa-avila', nome:'Santa Teresa d\'Ávila', habito:'#6b4a2f', faixa:'#f4f4f0', efeito:'rosas', falas:['Nada te perturbe, nada te espante.','Só Deus basta.','Entre as panelas também anda o Senhor.']},
-    {id:'jp2', nome:'São João Paulo II', habito:'#f4f4f0', faixa:'#d8b04a', efeito:'alegria', falas:['Não tenhais medo!','Abri as portas a Cristo!','Totus tuus.']},
-    {id:'inacio', nome:'Santo Inácio de Loyola', habito:'#222222', efeito:'obra', falas:['Para a maior glória de Deus!','Em tudo amar e servir.','Vamos discernir com calma.']},
-    {id:'xavier', nome:'São Francisco Xavier', habito:'#262626', efeito:'aves', falas:['Ainda há tanto mundo para alcançar!','Coragem, irmãos!','Que bom chegar até aqui.']},
-    {id:'domingos', nome:'São Domingos de Gusmão', habito:'#f2efe8', faixa:'#1d1d1d', efeito:'rosas', falas:['Rezemos o rosário juntos!','Falar com Deus ou de Deus.','A verdade liberta.']},
-    {id:'clara', nome:'Santa Clara de Assis', habito:'#7a5a3a', faixa:'#f4f4f0', efeito:'aves', falas:['Olha, considera, contempla.','Vamos rezar um pouco?','Que simplicidade bonita!']},
-    {id:'carlo', nome:'São Carlo Acutis', habito:'#c0392b', faixa:'#2c3e66', efeito:'alegria', falas:['A Eucaristia é minha autoestrada para o céu!','Todos nascem originais.','Bora rezar?']},
-    {id:'faustina', nome:'Santa Faustina', habito:'#e8e4dc', faixa:'#1d1d1d', efeito:'coracoes', falas:['Jesus, eu confio em vós!','Misericórdia sem medida.','Às três da tarde, rezemos.']}
+    {id:'francisco', dias:['10-04'], nome:'São Francisco de Assis', habito:'#7a5a3a', efeito:'aves', falas:['Paz e bem!','Louvado sejas pelos irmãos pássaros!','Que alegria ver esta casa!']},
+    {id:'bento', dias:['07-11'], nome:'São Bento', habito:'#2a2a2a', efeito:'sino', falas:['Ora et labora!','Bom trabalho, irmãos.','Vamos rezar um pouco?']},
+    {id:'teresinha', dias:['10-01'], nome:'Santa Teresinha', habito:'#6b4a2f', efeito:'rosas', falas:['Trouxe rosas para vocês!','Pequenas coisas com amor.','Que dia de graça!']},
+    {id:'jose', dias:['03-19','05-01','12-25'], nome:'São José', habito:'#8a6a3c', efeito:'obra', falas:['Deixe que eu ajudo nessa obra.','Trabalho bem feito!','Essa cerca ficou firme.']},
+    {id:'bosco', dias:['01-31'], nome:'São João Bosco', habito:'#1d1d1d', efeito:'alegria', falas:['Vamos brincar um pouco!','Sejam alegres!','Quem chega primeiro?']},
+    {id:'madre', dias:['09-05'], nome:'Santa Teresa de Calcutá', habito:'#f4f4f0', faixa:'#2f6fd6', efeito:'coracoes', falas:['Como vocês estão?','Um sorriso faz bem.','Vamos servir juntos.']},
+    {id:'pio', dias:['09-23'], nome:'São Pio de Pietrelcina', habito:'#6e4f33', efeito:'paz', falas:['Reza, espera e não te preocupes.','Paz nesta casa.','Coragem!']},
+    {id:'antonio', dias:['06-13'], nome:'Santo Antônio', habito:'#6e5034', efeito:'coracoes', falas:['Achei o que estava perdido!','Pão para os pobres!','A paz do Senhor nesta casa.']},
+    {id:'jorge', dias:['04-23'], nome:'São Jorge', habito:'#8f969e', faixa:'#a8261d', efeito:'obra', falas:['Coragem na batalha de hoje!','Nenhum dragão resiste à fé.','Estou de guarda por aqui.']},
+    {id:'judas', dias:['10-28'], nome:'São Judas Tadeu', habito:'#3f6b3a', faixa:'#d8b04a', efeito:'paz', falas:['Nenhuma causa está perdida.','Confiem, irmãos!','Vim ajudar no que parecia impossível.']},
+    {id:'rita', dias:['05-22'], nome:'Santa Rita de Cássia', habito:'#262626', faixa:'#f4f4f0', efeito:'rosas', falas:['Para Deus nada é impossível.','Trouxe uma rosa do inverno!','Paciência e perdão.']},
+    {id:'luzia', dias:['12-13'], nome:'Santa Luzia', habito:'#b7342b', faixa:'#f2ede4', efeito:'paz', falas:['Que Deus ilumine os olhos de vocês.','Muita luz nesta casa!','Vejam com os olhos da fé.']},
+    {id:'sebastiao', dias:['01-20'], nome:'São Sebastião', habito:'#9b2d20', efeito:'obra', falas:['Firmes na fé!','Soldado de Cristo, sempre.','Nada de desanimar!']},
+    {id:'expedito', dias:['04-19'], nome:'Santo Expedito', habito:'#a33224', faixa:'#d8b04a', efeito:'obra', falas:['Hoje! Não deixe para amanhã.','Missão resolvida é missão cumprida.','Rápido e bem feito!']},
+    {id:'dulce', dias:['08-13'], nome:'Santa Dulce dos Pobres', habito:'#f4f4f0', faixa:'#3b6fb6', efeito:'coracoes', falas:['O que eu puder fazer, eu faço.','Amar e servir.','Alguém precisa de ajuda?']},
+    {id:'pedro', dias:['06-29','02-22','11-18'], nome:'São Pedro', habito:'#3b5a8c', faixa:'#d8a43a', efeito:'aves', falas:['Senhor, tu sabes que te amo.','Lancem as redes de novo!','Que casa firme, como rocha.']},
+    {id:'paulo', dias:['06-29','01-25','11-18'], nome:'São Paulo', habito:'#8b2e2e', faixa:'#3a4f7a', efeito:'paz', falas:['Tudo posso naquele que me fortalece.','Combati o bom combate!','Alegrai-vos sempre no Senhor.']},
+    {id:'agostinho', dias:['08-28'], nome:'Santo Agostinho', habito:'#2b2522', efeito:'paz', falas:['Nosso coração está inquieto até repousar em Deus.','Ama e faze o que quiseres.','Tarde te amei!']},
+    {id:'tomas', dias:['01-28'], nome:'São Tomás de Aquino', habito:'#f2efe8', faixa:'#1d1d1d', efeito:'paz', falas:['Vamos estudar um pouco?','A graça supõe a natureza.','Bem pensado!']},
+    {id:'teresa-avila', dias:['10-15'], nome:'Santa Teresa d\'Ávila', habito:'#6b4a2f', faixa:'#f4f4f0', efeito:'rosas', falas:['Nada te perturbe, nada te espante.','Só Deus basta.','Entre as panelas também anda o Senhor.']},
+    {id:'jp2', dias:['10-22'], nome:'São João Paulo II', habito:'#f4f4f0', faixa:'#d8b04a', efeito:'alegria', falas:['Não tenhais medo!','Abri as portas a Cristo!','Totus tuus.']},
+    {id:'inacio', dias:['07-31'], nome:'Santo Inácio de Loyola', habito:'#222222', efeito:'obra', falas:['Para a maior glória de Deus!','Em tudo amar e servir.','Vamos discernir com calma.']},
+    {id:'xavier', dias:['12-03'], nome:'São Francisco Xavier', habito:'#262626', efeito:'aves', falas:['Ainda há tanto mundo para alcançar!','Coragem, irmãos!','Que bom chegar até aqui.']},
+    {id:'domingos', dias:['08-08'], nome:'São Domingos de Gusmão', habito:'#f2efe8', faixa:'#1d1d1d', efeito:'rosas', falas:['Rezemos o rosário juntos!','Falar com Deus ou de Deus.','A verdade liberta.']},
+    {id:'clara', dias:['08-11'], nome:'Santa Clara de Assis', habito:'#7a5a3a', faixa:'#f4f4f0', efeito:'aves', falas:['Olha, considera, contempla.','Vamos rezar um pouco?','Que simplicidade bonita!']},
+    {id:'carlo', dias:['10-12'], nome:'São Carlo Acutis', habito:'#c0392b', faixa:'#2c3e66', efeito:'alegria', falas:['A Eucaristia é minha autoestrada para o céu!','Todos nascem originais.','Bora rezar?']},
+    {id:'faustina', dias:['10-05'], nome:'Santa Faustina', habito:'#e8e4dc', faixa:'#1d1d1d', efeito:'coracoes', falas:['Jesus, eu confio em vós!','Misericórdia sem medida.','Às três da tarde, rezemos.']},
+    /* santos que aparecem só no dia deles */
+    {id:'nossa-senhora', dias:['01-01','02-11','05-13','05-31','07-16','08-15','08-22','09-08','09-15','10-07','10-12','11-21','12-08','12-10','12-12','12-25'], festa:true, nome:'Nossa Senhora', habito:'#f4f4f0', faixa:'#2f5fa8', efeito:'rosas', falas:['Fazei tudo o que Ele vos disser.','Eis a serva do Senhor.','Rezem o terço todos os dias.']},
+    {id:'edwiges', dias:['10-16'], festa:true, nome:'Santa Edwiges', habito:'#6b3f5a', faixa:'#e8d49a', efeito:'coracoes', falas:['Vim cuidar de quem está apertado.','Deus provê.','Confiem: a Providência não falha.']},
+    {id:'margarida-maria', dias:['10-16'], festa:true, nome:'Santa Margarida Maria Alacoque', habito:'#2a2a2a', faixa:'#f4f4f0', efeito:'coracoes', falas:['Eis o Coração que tanto amou os homens!','Confiem no Sagrado Coração.','Um ato de amor vale muito.']},
+    {id:'inacio-antioquia', dias:['10-17'], festa:true, nome:'Santo Inácio de Antioquia', habito:'#9b2d20', faixa:'#e8d49a', efeito:'paz', falas:['Sou trigo de Deus.','Onde está o bispo, ali esteja o povo.','Agora começo a ser discípulo.']},
+    {id:'lucas', dias:['10-18'], festa:true, nome:'São Lucas', habito:'#8b5a2b', faixa:'#c63d3d', efeito:'paz', falas:['Para Deus nada é impossível.','Escrevi tudo com cuidado, desde o princípio.','Que bela história esta casa conta!']},
+    {id:'paulo-cruz', dias:['10-19'], festa:true, nome:'São Paulo da Cruz', habito:'#1d1d1d', faixa:'#f4f4f0', efeito:'paz', falas:['Lembrem-se da Paixão de Cristo.','No sofrimento também há amor.','Paz e coragem.']},
+    {id:'brebeuf', dias:['10-19'], festa:true, nome:'São João de Brébeuf', habito:'#222222', efeito:'obra', falas:['Coragem na missão!','Vale a pena levar Cristo longe.','Firmes, irmãos.']},
+    {id:'capistrano', dias:['10-23'], festa:true, nome:'São João de Capistrano', habito:'#6e5034', faixa:'#8f969e', efeito:'obra', falas:['Avante, com fé!','Jesus, Jesus, Jesus!','Nada de medo.']},
+    {id:'claret', dias:['10-24'], festa:true, nome:'Santo Antônio Maria Claret', habito:'#1d1d1d', faixa:'#c63d3d', efeito:'coracoes', falas:['O amor de Cristo nos impele!','Vamos anunciar o Evangelho.','Trabalho bem oferecido é oração.']},
+    {id:'frei-galvao', dias:['10-25'], festa:true, nome:'Santo Frei Galvão', habito:'#6e5034', faixa:'#f4f4f0', efeito:'paz', falas:['Trouxe as pílulas de oração!','Deus abençoe este trabalho.','O primeiro santo nascido no Brasil, a seu dispor.']},
+    {id:'simao', dias:['10-28'], festa:true, nome:'São Simão', habito:'#5a4a7a', faixa:'#d8b04a', efeito:'paz', falas:['Zelo pelo Senhor!','Vim junto com Judas Tadeu.','A paz esteja convosco.']},
+    {id:'martinho-porres', dias:['11-03'], festa:true, nome:'São Martinho de Lima', habito:'#f4f4f0', faixa:'#1d1d1d', efeito:'aves', falas:['Trouxe a vassoura, vamos limpar?','Cuidem dos bichinhos também.','Servir é alegria.']},
+    {id:'carlos-borromeu', dias:['11-04'], festa:true, nome:'São Carlos Borromeu', habito:'#b7342b', faixa:'#f4f4f0', efeito:'obra', falas:['Para aquecer os outros, é preciso arder.','Humildade!','A reforma começa por dentro.']},
+    {id:'leao', dias:['11-10'], festa:true, nome:'São Leão Magno', habito:'#f2efe8', faixa:'#d8b04a', efeito:'paz', falas:['Cristão, reconhece a tua dignidade!','Firmes na fé.','Paz nesta casa.']},
+    {id:'martinho-tours', dias:['11-11'], festa:true, nome:'São Martinho de Tours', habito:'#9b2d20', faixa:'#8f969e', efeito:'coracoes', falas:['Dividi meu manto com um pobre.','Não recuso o trabalho.','Quem precisa de um agasalho?']},
+    {id:'josafa', dias:['11-12'], festa:true, nome:'São Josafá', habito:'#2b2522', faixa:'#d8b04a', efeito:'paz', falas:['Que todos sejam um.','Unidade, irmãos!','Paz entre os cristãos.']},
+    {id:'alberto', dias:['11-15'], festa:true, nome:'Santo Alberto Magno', habito:'#f2efe8', faixa:'#1d1d1d', efeito:'aves', falas:['Vamos observar a natureza?','Ciência e fé caminham juntas.','Que pássaros bonitos!']},
+    {id:'margarida-escocia', dias:['11-16'], festa:true, nome:'Santa Margarida da Escócia', habito:'#3b5a8c', faixa:'#d8b04a', efeito:'coracoes', falas:['Os pobres primeiro à mesa.','Uma casa em ordem honra a Deus.','Que lar acolhedor!']},
+    {id:'gertrudes', dias:['11-16'], festa:true, nome:'Santa Gertrudes', habito:'#2a2a2a', faixa:'#f4f4f0', efeito:'coracoes', falas:['O Coração de Jesus está aberto.','Rezemos pelas almas.','Silêncio que escuta.']},
+    {id:'isabel-hungria', dias:['11-17'], festa:true, nome:'Santa Isabel da Hungria', habito:'#7a3b5a', faixa:'#d8b04a', efeito:'rosas', falas:['Trouxe pão… e virou rosas!','Servir os pobres é servir a Cristo.','Partilhem o que têm.']},
+    {id:'cecilia', dias:['11-22'], festa:true, nome:'Santa Cecília', habito:'#b7342b', faixa:'#e8d49a', efeito:'sino', falas:['Vamos cantar ao Senhor!','Música também é oração.','Cantem com o coração.']},
+    {id:'clemente', dias:['11-23'], festa:true, nome:'São Clemente I', habito:'#f2efe8', faixa:'#c63d3d', efeito:'paz', falas:['Paz e concórdia entre vocês.','Cada um no seu lugar, com humildade.','Vim de Roma visitar!']},
+    {id:'columbano', dias:['11-23'], festa:true, nome:'São Columbano', habito:'#6e5034', efeito:'aves', falas:['Peregrinos por Cristo!','Vamos plantar e rezar.','O mundo é grande, o amor é maior.']},
+    {id:'dung-lac', dias:['11-24'], festa:true, nome:'Santo André Dung-Lac', habito:'#2b2522', faixa:'#c63d3d', efeito:'paz', falas:['Fiéis até o fim.','Coragem, irmãos!','A fé vale tudo.']},
+    {id:'catarina-alexandria', dias:['11-25'], festa:true, nome:'Santa Catarina de Alexandria', habito:'#8a2b4a', faixa:'#d8b04a', efeito:'paz', falas:['A sabedoria vem de Deus.','Vamos estudar e rezar.','Firmeza na verdade.']},
+    {id:'andre', dias:['11-30'], festa:true, nome:'Santo André', habito:'#3f6b3a', faixa:'#c63d3d', efeito:'aves', falas:['Encontramos o Messias!','Venham e vejam!','Vamos pescar gente?']},
+    {id:'joao-damasceno', dias:['12-04'], festa:true, nome:'São João Damasceno', habito:'#2b2522', faixa:'#d8b04a', efeito:'paz', falas:['A oração eleva a mente a Deus.','Que belos ícones nesta casa!','Louvado seja Deus.']},
+    {id:'nicolau', dias:['12-06'], festa:true, nome:'São Nicolau', habito:'#b7342b', faixa:'#f4f4f0', efeito:'alegria', falas:['Trouxe presentes escondidos!','Generosidade em segredo.','Quem foi bonzinho este ano?']},
+    {id:'ambrosio', dias:['12-07'], festa:true, nome:'Santo Ambrósio', habito:'#f2efe8', faixa:'#d8b04a', efeito:'sino', falas:['Onde está Pedro, aí está a Igreja.','Vamos cantar um hino?','Paz nesta casa.']},
+    {id:'juan-diego', dias:['12-09'], festa:true, nome:'São Juan Diego', habito:'#c9b48a', faixa:'#3f6b3a', efeito:'rosas', falas:['Trouxe rosas no meu manto!','A Senhora me mandou aqui.','Que alegria!']},
+    {id:'damaso', dias:['12-11'], festa:true, nome:'São Dâmaso I', habito:'#f2efe8', faixa:'#c63d3d', efeito:'paz', falas:['Honrem os mártires!','Vamos ler a Escritura.','Paz nesta casa.']},
+    {id:'joao-cruz', dias:['12-14'], festa:true, nome:'São João da Cruz', habito:'#6b4a2f', faixa:'#f4f4f0', efeito:'paz', falas:['No entardecer da vida, seremos julgados pelo amor.','Onde não há amor, ponha amor, e colherá amor.','Paz na alma.']},
+    {id:'canisio', dias:['12-21'], festa:true, nome:'São Pedro Canísio', habito:'#222222', efeito:'obra', falas:['Vamos estudar o catecismo?','Ensinar é amar.','Firmes na doutrina.']},
+    {id:'joao-kanty', dias:['12-23'], festa:true, nome:'São João Câncio', habito:'#2b2522', efeito:'coracoes', falas:['Combatam o erro, mas amem quem erra.','Partilhem com os pobres.','Estudo e caridade.']},
+    {id:'estevao', dias:['12-26'], festa:true, nome:'Santo Estêvão', habito:'#c63d3d', faixa:'#f4f4f0', efeito:'paz', falas:['Senhor, não lhes leves em conta este pecado.','Vejo os céus abertos!','Perdoem sempre.']},
+    {id:'joao-evangelista', dias:['12-27'], festa:true, nome:'São João Evangelista', habito:'#c63d3d', faixa:'#3f6b3a', efeito:'aves', falas:['Deus é amor.','Filhinhos, amai-vos uns aos outros.','No princípio era o Verbo.']},
+    {id:'becket', dias:['12-29'], festa:true, nome:'São Tomás Becket', habito:'#b7342b', faixa:'#f4f4f0', efeito:'paz', falas:['Pela Igreja, tudo.','Firme na consciência.','Paz nesta casa.']},
+    {id:'silvestre', dias:['12-31'], festa:true, nome:'São Silvestre I', habito:'#f2efe8', faixa:'#d8b04a', efeito:'alegria', falas:['Que o ano termine em graça!','Vamos agradecer pelo ano!','Feliz ano-novo, irmãos!']}
   ];
+  var DIAS_SANTOS = {}; SANTOS.forEach(function(x){ (x.dias||[]).forEach(function(d){ (DIAS_SANTOS[d] = DIAS_SANTOS[d] || []).push(x.id); }); });
+  function santoPorId(id){ for (var i=0;i<SANTOS.length;i++) if (SANTOS[i].id===id) return SANTOS[i]; return null; }
+  /* santos do dia (ficam no sítio até 23:59); Sagrada Família e Todos os Santos têm visitas especiais */
+  function santosDoDia(ds){
+    ds = ds || hoje; var ids = (DIAS_SANTOS[ds.slice(5)]||[]).slice(), lt = liturgia(ds);
+    if (lt.fes && lt.fes.nome==='Sagrada Família') ids = ['jose','nossa-senhora'];
+    if (ds.slice(5)==='11-01') ids = ['francisco','teresinha','antonio'];
+    return ids.map(santoPorId).filter(Boolean).slice(0,3);
+  }
+  function santosPresentes(){ var l = santosDoDia(hoje).slice(), v = visitaAtiva(); if (v && !l.some(function(x){ return x.id===v.id; })) l.push(v); return l; }
   var FALAS = {
     alta:['Que dia abençoado!','Obrigado pelo trabalho de hoje!','Ora et labora!','A horta está linda.','Deo gratias!','Nossa casa está crescendo!'],
     media:['Bom dia!','Mais uma missão e a casa cresce.','Tudo tranquilo por aqui.','Vamos ao trabalho!'],
@@ -1591,6 +1640,7 @@ textarea.campo{min-height:72px;resize:vertical}
     ['12-13','Santa Luzia','M','vermelho'],['12-14','São João da Cruz','M','branco','','João da Cruz'],['12-25','Natal do Senhor','S','branco'],['12-26','Santo Estêvão','F','vermelho'],
     ['12-27','São João Evangelista','F','branco'],['12-28','Santos Inocentes','F','vermelho']
   ];
+  FIXAS = FIXAS.concat([['10-16','Santa Edwiges e Santa Margarida Maria Alacoque','m','branco'],['10-19','São Paulo da Cruz','m','branco'],['10-23','São João de Capistrano','m','branco'],['10-24','Santo Antônio Maria Claret','m','branco'],['10-25','Santo Antônio de Sant’Ana Galvão','M','branco'],['11-03','São Martinho de Lima','m','branco'],['11-10','São Leão Magno','M','branco'],['11-12','São Josafá','M','vermelho'],['11-15','Santo Alberto Magno','m','branco'],['11-16','Santa Margarida da Escócia e Santa Gertrudes','m','branco'],['11-17','Santa Isabel da Hungria','M','branco'],['11-18','Dedicação das Basílicas de São Pedro e São Paulo','m','branco'],['11-23','São Clemente I e São Columbano','m','vermelho'],['11-24','Santo André Dung-Lac e companheiros','M','vermelho'],['11-25','Santa Catarina de Alexandria','m','vermelho'],['12-04','São João Damasceno','m','branco'],['12-06','São Nicolau','m','branco'],['12-07','Santo Ambrósio','M','branco'],['12-09','São Juan Diego','m','branco'],['12-10','Nossa Senhora de Loreto','m','branco'],['12-11','São Dâmaso I','m','branco'],['12-29','São Tomás Becket','m','vermelho'],['12-31','São Silvestre I','m','branco']]);
   var FIXAS_MAP = {}; FIXAS.forEach(function(f){ FIXAS_MAP[f[0]] = {nome:f[1], grau:f[2], cor:f[3], santo:f[4]||'', autor:f[5]||''}; });
   var ORD = ['','1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11ª','12ª','13ª','14ª','15ª','16ª','17ª','18ª','19ª','20ª','21ª','22ª','23ª','24ª','25ª','26ª','27ª','28ª','29ª','30ª','31ª','32ª','33ª','34ª'];
   var DIAS_SEM = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
@@ -1906,11 +1956,11 @@ textarea.campo{min-height:72px;resize:vertical}
     var agora = Date.now(), f = 35;
     state.missoes.forEach(function(m){ if (!m.privada && m.feita && m.feitaEm){ var d=(agora-new Date(m.feitaEm).getTime())/864e5; if (d<7) f += 14*Math.min(3, (PESOS[m.peso] ? PESOS[m.peso].xp : 25)/25)*(1-d/7); } });
     f -= state.missoes.filter(function(m){ return !m.privada && !m.feita && m.data && m.data<hoje; }).length*4;
-    if (visitaAtiva()) f += 10;
+    if (santosPresentes().length) f += 10;
     return Math.max(5, Math.min(100, Math.round(f)));
   }
   function humor(f){ return f>=80 ? 'Radiantes' : f>=55 ? 'Felizes' : f>=30 ? 'Tranquilos' : 'Desanimados'; }
-  function visitaAtiva(){ return state.visita && state.visita.ate > Date.now() ? SANTOS.filter(function(x){ return x.id===state.visita.santo; })[0] : null; }
+  function visitaAtiva(){ return state.visita && !state.visita.festa && state.visita.ate > Date.now() ? SANTOS.filter(function(x){ return x.id===state.visita.santo; })[0] : null; }
   function figura(s, cor, santo){
     var g = el('g',{}), pa = el('line',{}), pb = el('line',{});
     g.appendChild(pa); g.appendChild(pb);
@@ -1948,15 +1998,17 @@ textarea.campo{min-height:72px;resize:vertical}
       w.pessoas.push({wr:fg.wr, g:fg.g, pa:fg.pa, pb:fg.pb, cor:fg.cor, lane:ln, x:p0[0], y:p0[1], alvo:pontoLane(ln, Math.random()), pausa:Math.random()*2, vel:.8+Math.random()*.5,
         pulo:0, puloT:2+Math.random()*6, coracaoT:-1, fase:Math.random()*6, fala:null, falaT:0});
     }
-    var v = visitaAtiva();
-    if (v){
+    w.santos = [];
+    santosPresentes().forEach(function(v, k){
       var sf = figura(s, null, v); var swr = el('g',{'class':'vida'}); swr.appendChild(sf.g); vida.appendChild(swr);
-      var sl = lanes[0], sp = pontoLane(sl, .5);
-      w.santo = {wr:swr, def:v, g:sf.g, pa:sf.pa, pb:sf.pb, cor:sf.cor, lane:sl, x:sp[0], y:sp[1], alvo:pontoLane(sl,.2), pausa:1, vel:.6, pulo:0, puloT:99, coracaoT:-1, fase:0, fala:null, falaT:0, acao:4};
+      var sl = lanes[k % lanes.length], sp = pontoLane(sl, [.5,.25,.75][k%3]);
+      var sa = {wr:swr, def:v, g:sf.g, pa:sf.pa, pb:sf.pb, cor:sf.cor, lane:sl, x:sp[0], y:sp[1], alvo:pontoLane(sl,[.2,.7,.4][k%3]), pausa:1+k, vel:.6, pulo:0, puloT:99, coracaoT:-1, fase:k*2, fala:null, falaT:0, acao:4+k*3, extras:[]};
       for (var e2=0;e2<4;e2++){ var ex = v.efeito==='aves' ? el('path',{'class':'ave', d:''}) : v.efeito==='rosas' ? el('circle',{'class':'petala', r:.09*s}) : v.efeito==='coracoes' ? el('text',{'class':'coracao','font-size':.6*s}) : el('text',{'class':'brilho','font-size':.55*s});
         if (ex.tagName==='text') ex.textContent = v.efeito==='coracoes' ? '♥' : '✦';
-        vida.appendChild(ex); w.extras.push(ex); }
-    }
+        vida.appendChild(ex); sa.extras.push(ex); }
+      w.santos.push(sa);
+    });
+    w.santo = w.santos[0] || null;
     for (var f=0; f<3; f++){ var cc = el('circle',{'class':'fumo', r:1}); vida.appendChild(cc); w.fumo.push(cc); }
     w.pousos = POUSOS.filter(function(p){ return nb>=p.min; }).map(function(p){ return pr(p.p, s); });
     novaAve(w, false);
@@ -2025,7 +2077,7 @@ textarea.campo{min-height:72px;resize:vertical}
     return q;
   }
   function atualizar(w, dt, t){
-    var s = w.s, feliz = felicidadeAtual, alegre = w.santo && w.santo.def.efeito==='alegria', orando = Date.now() < pausaAngelusAte;
+    var s = w.s, feliz = felicidadeAtual, alegre = (w.santos||[]).some(function(x){ return x.def.efeito==='alegria'; }), orando = Date.now() < pausaAngelusAte;
     w.pessoas.forEach(function(p){
       if (orando){ p.pausa = Math.max(p.pausa, .3); p.puloT = Math.max(p.puloT, 1); }
       if ((feliz>=55 || alegre) && dt>0){
@@ -2034,8 +2086,8 @@ textarea.campo{min-height:72px;resize:vertical}
       }
       mover(p, dt, t, s); profundidade(w, p);
     });
-    if (w.santo){
-      var sa = w.santo, q = mover(sa, dt, t, s), ef = sa.def.efeito; profundidade(w, sa);
+    (w.santos||[]).forEach(function(sa){
+      var q = mover(sa, dt, t, s), ef = sa.def.efeito; profundidade(w, sa);
       if (dt>0){
         sa.acao -= dt;
         if (sa.acao<=0){
@@ -2047,14 +2099,14 @@ textarea.campo{min-height:72px;resize:vertical}
           if (ef==='sino') tocarSino(w);
         }
       }
-      w.extras.forEach(function(x, i){
+      sa.extras.forEach(function(x, i){
         var a = t*1.6 + i*Math.PI/2;
         if (ef==='aves'){ var bx = q[0]+Math.cos(a)*.9*s, by = q[1]-2*s+Math.sin(a)*.35*s, bt = Math.sin(t*16+i)*.18*s;
           x.setAttribute('d','M'+(bx-.22*s)+' '+(by-bt)+' Q'+bx+' '+(by-.06*s)+' '+bx+' '+by+' Q'+bx+' '+(by-.06*s)+' '+(bx+.22*s)+' '+(by-bt)); }
         else if (ef==='rosas'){ var ph = (t*.4+i/4)%1; x.setAttribute('cx',(q[0]+(i-1.5)*.5*s+Math.sin(t*2+i)*.2*s).toFixed(1)); x.setAttribute('cy',(q[1]-2.6*s+ph*2.6*s).toFixed(1)); x.setAttribute('opacity',(1-ph).toFixed(2)); }
         else { var ph2 = (t*.5+i/4)%1; x.setAttribute('x',(q[0]+(i-1.5)*.4*s).toFixed(1)); x.setAttribute('y',(q[1]-1.9*s-ph2*1.3*s).toFixed(1)); x.setAttribute('opacity',(ef==='paz'||ef==='sino' ? .6*(1-ph2) : 1-ph2).toFixed(2)); }
       });
-    }
+    });
     w.fumo.forEach(function(c, i){
       var f = (t*.32 + i/3) % 1;
       c.setAttribute('cx',(w.chamine[0] + f*.9*s).toFixed(2)); c.setAttribute('cy',(w.chamine[1] - f*2.8*s).toFixed(2));
@@ -2767,10 +2819,16 @@ textarea.campo{min-height:72px;resize:vertical}
   var cidadeN = {};
   function htmlAlegria(f){ return '<div class="alegria-topo"><strong style="font-weight:500">Alegria da casa</strong><span>'+humor(f)+' · '+f+'%</span></div><div class="alegria-barra"><i style="width:'+f+'%"></i></div>'; }
   function proximaPeca(n){ var e = elementoN(n); return e ? e.nome : 'mais uma construção'; }
+  function listaNomes(l){ var n = l.map(function(x){ return tr(x.nome); }); return n.length<2 ? n.join('') : n.slice(0,-1).join(', ')+L(' e ',' and ',' y ',' et ')+n[n.length-1]; }
   function htmlVisita(){
-    var v = visitaAtiva(); if (!v) return '';
+    var fd = santosDoDia(hoje), v = visitaAtiva(), h = '', ltv = liturgia(hoje);
+    /* Nossa Senhora aparece com o título do dia (Guadalupe, Imaculada Conceição, Aparecida…) */
+    fd = fd.map(function(x){ if (x.id!=='nossa-senhora') return x; var nm = hoje.slice(5)==='12-08' ? 'Nossa Senhora da Imaculada Conceição' : ltv.fes && /^(Nossa Senhora|Santa Maria)/.test(ltv.fes.nome) ? ltv.fes.nome.split(',')[0] : ''; return nm ? Object.assign({}, x, {nome:nm}) : x; });
+    if (fd.length && hoje.slice(5)==='11-01') h += '<p class="visita"><span class="halo"></span><span data-sem-tr>'+L('Hoje é dia de Todos os Santos: ','Today is All Saints\' Day: ','Hoy es Todos los Santos: ','Hodie Omnium Sanctorum: ')+'<b>'+esc(listaNomes(fd))+'</b>'+L(' vieram representar todos e ficam no sítio até as 23:59.',' came on behalf of all and stay until 11:59 pm.',' vinieron en nombre de todos y se quedan hasta las 23:59.',' pro omnibus venerunt.')+'</span></p>';
+    else if (fd.length) h += '<p class="visita"><span class="halo"></span><span data-sem-tr>'+L('Hoje é dia de ','Today is the feast of ','Hoy es el día de ','Hodie festum ')+'<b>'+esc(listaNomes(fd))+'</b>'+(fd.length>1 ? L(', que ficam no sítio até as 23:59.',' — they stay at the farm until 11:59 pm.',', que se quedan hasta las 23:59.',' — manent usque ad mediam noctem.') : L(', que fica no sítio até as 23:59.',' — staying at the farm until 11:59 pm.',', que se queda hasta las 23:59.',' — manet usque ad mediam noctem.'))+'</span></p>';
+    if (!v || fd.some(function(x){ return x.id===v.id; })) return h;
     var ate = new Date(state.visita.ate);
-    return '<p class="visita"><span class="halo"></span><span><b>'+esc(tr(v.nome))+'</b> '+L('está visitando. Fica até as ','is visiting until ','está de visita hasta las ','visitat usque ad horam ')+pad(ate.getHours())+':'+pad(ate.getMinutes())+'.</span></p>';
+    return h + '<p class="visita"><span class="halo"></span><span><b>'+esc(tr(v.nome))+'</b> '+L('está visitando. Fica até as ','is visiting until ','está de visita hasta las ','visitat usque ad horam ')+pad(ate.getHours())+':'+pad(ate.getMinutes())+'.</span></p>';
   }
   function renderLado(){
     var s = separar(doFiltro()), rh = reunioesDoDia(hoje).length;
@@ -2786,7 +2844,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('cid-visita').innerHTML = htmlVisita();
     document.getElementById('alegria').innerHTML = htmlAlegria(felicidadeAtual);
     document.getElementById('cid-prox').innerHTML = '<span data-sem-tr>'+L('Faltam '+faltaMelhoria()+' XP para: ', faltaMelhoria()+' XP to go: ', 'Faltan '+faltaMelhoria()+' XP para: ', 'Desunt '+faltaMelhoria()+' XP: ')+'<b>+ '+esc(tr(proximaPeca(n)))+'</b></span>';
-    var chaveCard = n+'|'+(visitaAtiva()?state.visita.santo:'');
+    var chaveCard = n+'|'+santosPresentes().map(function(x){ return x.id; }).join(',');
     if (cidadeN.card!==chaveCard){ cidadeN.card = chaveCard; montarMundo(document.getElementById('cid-arte'), n, 5.5, 'card'); var l = document.createElement('span'); l.className='cid-lupa'; l.textContent='Ver de perto'; document.getElementById('cid-arte').appendChild(l); }
     var sv = document.querySelector('#cid-arte svg'); if (sv) sv.classList.toggle('luzes', !!exameDeHoje());
   }
@@ -3164,7 +3222,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('cg-alegria').innerHTML = htmlAlegria(f);
     document.getElementById('cg-visita').innerHTML = htmlVisita();
     document.getElementById('cg-prox').innerHTML = L('A cidade cresce com o XP das missões da equipe: a cada 25 XP surge um detalhe novo e, a cada seis detalhes, uma construção. Uma missão heroica (100 XP) vale quatro melhorias; uma mínima (5 XP), um quinto. Faltam '+faltaMelhoria()+' XP para a próxima, que será ', 'The city grows with the team\'s mission XP: every 25 XP adds a new detail and, every six details, a building. A heroic mission (100 XP) is worth four improvements; a minimal one (5 XP), a fifth. '+faltaMelhoria()+' XP to go until the next one, which will be ', 'La ciudad crece con el XP de las misiones del equipo: cada 25 XP aparece un detalle nuevo y, cada seis, una construcción. Una misión heroica (100 XP) vale cuatro mejoras; una mínima (5 XP), un quinto. Faltan '+faltaMelhoria()+' XP para la próxima, que será ', 'Urbs crescit XP missionum sodalium: singulis XXV XP novum aliquid oritur et, sexto quoque, aedificium. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
-    var ch = n+'|'+(visitaAtiva()?state.visita.santo:'');
+    var ch = n+'|'+santosPresentes().map(function(x){ return x.id; }).join(',');
     if (cidadeN.grande!==ch || !document.querySelector('#cg-arte svg')){ cidadeN.grande = ch; montarMundo(document.getElementById('cg-arte'), n, 14, 'grande'); }
     var l = state.equipe.map(function(p){
       var v = virtudesDe(p.id), top = null; VIRTUDES.forEach(function(x){ if (v[x[0]]>0 && (!top || v[x[0]]>v[top[0]])) top = x; });
@@ -3365,7 +3423,6 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!logado || abertura.hidden || abertura.classList.contains('saindo')) return;
     abertura.classList.add('saindo');
     var lt = liturgia(hoje);
-    if (lt.fes && lt.fes.santo && !visitaAtiva()){ var fim = new Date(); fim.setHours(23,59,0,0); state.visita = {santo:lt.fes.santo, ate:fim.getTime(), festa:true}; salvar(); }
     setTimeout(function(){
       abertura.hidden = true; abertura.classList.remove('saindo');
       app.hidden = false; app.classList.remove('surgindo'); void app.offsetWidth; app.classList.add('surgindo');
@@ -4035,7 +4092,7 @@ textarea.campo{min-height:72px;resize:vertical}
       m.cidadeXp = PESOS[m.peso] ? PESOS[m.peso].xp : 25; ganhoObras = somarCidade(m.cidadeXp);
       if (!visitaAtiva()){
         state.semVisita = (state.semVisita||0)+1;
-        if (Math.random()<0.18 || state.semVisita>=10){ var possiveis = SANTOS.filter(function(x){ return x.id!==(state.ultimoSanto||'') && (!state.visita || x.id!==state.visita.santo); }); novoSanto = possiveis[Math.floor(Math.random()*possiveis.length)] || SANTOS[0]; state.ultimoSanto = novoSanto.id; state.visita = {santo:novoSanto.id, ate:Date.now()+3*3600e3}; state.semVisita = 0; }
+        if (Math.random()<0.18 || state.semVisita>=10){ var doDia = santosDoDia(hoje).map(function(x){ return x.id; }); var possiveis = SANTOS.filter(function(x){ return !x.festa && doDia.indexOf(x.id)<0 && x.id!==(state.ultimoSanto||'') && (!state.visita || x.id!==state.visita.santo); }); novoSanto = possiveis[Math.floor(Math.random()*possiveis.length)] || SANTOS[0]; state.ultimoSanto = novoSanto.id; state.visita = {santo:novoSanto.id, ate:Date.now()+3*3600e3}; state.semVisita = 0; }
       }
     }
     var rec = m.recorrencia ? gerarRecorrente(m) : null; pendenteRec = rec ? rec.id : null;
@@ -4097,7 +4154,7 @@ textarea.campo{min-height:72px;resize:vertical}
   var zoomMundo = null, veuZoom = document.getElementById('veu-zoom');
   function abrirZoom(){
     var n = state.obras, v = visitaAtiva();
-    document.getElementById('z-tit').innerHTML = '<span data-sem-tr>'+seuEstagio(n, true)+(v ? L(' · com ',' · with ',' · con ',' · cum ')+esc(tr(v.nome)) : '')+'</span>';
+    document.getElementById('z-tit').innerHTML = '<span data-sem-tr>'+seuEstagio(n, true)+(santosPresentes().length ? L(' · com ',' · with ',' · con ',' · cum ')+esc(listaNomes(santosPresentes())) : '')+'</span>';
     veuZoom.hidden = false;
     zoomMundo = montarMundo(document.getElementById('z-arte'), n, 20, 'zoom', {zoom:true});
     var b = '<button class="btn btn-claro btn-p" type="button" data-z="luzes">Acender as luzes</button><button class="btn btn-claro btn-p" type="button" data-z="chamar">Chamar os moradores</button><button class="btn btn-claro btn-p" type="button" data-z="aves">Dar comida aos pássaros</button>';
@@ -4129,7 +4186,7 @@ textarea.campo{min-height:72px;resize:vertical}
     else if (acao==='chamar'){ w.pessoas.forEach(function(p, i){ p.alvo = [PORTA[0]-1.6+(i%5)*.8, PORTA[1]+.3+Math.floor(i/5)*.7]; p.pausa = 0; p.voltar = true; p.vel = 1.4; setTimeout(function(){ p.vel = .8+Math.random()*.5; }, 6000); }); if (w.pessoas[0]) falar(w, w.pessoas[0], 'Já vamos!', 2.5); }
     else if (acao==='aves'){ var base = w.pessoas[0] ? [w.pessoas[0].x, w.pessoas[0].y] : PORTA; for (var i=0;i<3;i++) novaAve(w, true, [base[0]+.6+i*.5, base[1]+.4+(i%2)*.4]); }
     else if (acao==='sino'){ tocarSino(w); }
-    else if (acao==='conversa'){ var p = w.pessoas[Math.floor(Math.random()*w.pessoas.length)]; if (p) falar(w, p, fraseMorador(), 3); if (w.santo) setTimeout(function(){ falar(w, w.santo, w.santo.def.falas[Math.floor(Math.random()*w.santo.def.falas.length)], 3); }, 900); }
+    else if (acao==='conversa'){ var p = w.pessoas[Math.floor(Math.random()*w.pessoas.length)]; if (p) falar(w, p, fraseMorador(), 3); (w.santos||[]).forEach(function(sa, k){ setTimeout(function(){ falar(w, sa, sa.def.falas[Math.floor(Math.random()*sa.def.falas.length)], 3); }, 900+k*1300); }); }
   });
 
   document.addEventListener('keydown', function(e){
