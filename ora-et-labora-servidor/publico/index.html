@@ -748,6 +748,26 @@ textarea.campo{min-height:72px;resize:vertical}
 .anjo .ln{stroke:var(--iso-linha);stroke-width:1.2;stroke-linejoin:round;stroke-linecap:round}
 .faisca{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;color:var(--ouro);font-size:12px;line-height:10px;text-align:center;animation:faisca 1.6s ease-out forwards}
 @keyframes faisca{from{opacity:1;transform:scale(1)}to{opacity:0;transform:translateY(18px) scale(.4)}}
+.ritual{padding:22px clamp(18px,4vw,30px);display:grid;gap:6px}
+.ritual .rot{margin:0;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3)}
+.ritual h3{margin:0 0 8px;font-family:var(--f-serif);font-weight:400;font-size:1.5rem}
+.rit-lista{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.rit-passo{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--linha)}
+.rit-n{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--tx3);display:grid;place-items:center;font-size:.85rem;font-weight:600;color:var(--tx2)}
+.rit-passo.feito .rit-n{background:var(--tx);border-color:var(--tx);color:var(--painel)}
+.rit-ck svg{width:14px;height:14px}
+.rit-c{display:grid;gap:8px;justify-items:start}
+.rit-tit{margin:3px 0 0;font-size:1rem;font-weight:500}
+.rit-passo.feito .rit-tit{color:var(--tx3)}
+.rit-dica{margin:0;font-size:.85rem;color:var(--tx2)}
+.rit-oracao{font-family:var(--f-serif);font-size:1.08rem;line-height:1.45;padding:4px 0 4px 14px;border-left:2px solid var(--ouro,#d8b04a)}
+.rit-oracao p{margin:0}
+.rit-passo.feito .rit-oracao{display:none}
+.nota-limpa{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;background:var(--sup);font-size:.9rem;margin-bottom:4px}
+.versiculos{padding:4px 18px 10px;display:grid;gap:8px}
+.versiculos blockquote{margin:0;font-family:var(--f-serif);font-style:italic;font-size:1.02rem;line-height:1.35}
+.versiculos cite{display:block;font-family:inherit;font-style:normal;font-size:.78rem;color:var(--tx3);margin-top:2px}
+#horas-card textarea{font-family:inherit;font-size:.92rem;resize:vertical}
 .angelus{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:36;width:min(340px,calc(100% - 32px));background:var(--painel);border:1px solid var(--linha);border-radius:16px;box-shadow:var(--sombra);padding:16px 18px;display:grid;gap:8px;animation:aparecer .4s ease}
 .angelus .rot{margin:0;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3)}
 .angelus p{margin:0;font-family:var(--f-serif);font-size:1.12rem;line-height:1.3}
@@ -1076,6 +1096,7 @@ textarea.campo{min-height:72px;resize:vertical}
             <div class="campos-eq" id="campos-eq"></div>
           </div>
           <div class="painel ajustes-painel" id="aj-conta" hidden></div>
+          <div class="painel ajustes-painel" id="aj-ritual" hidden data-sem-tr></div>
           <div class="painel ajustes-painel">
             <p class="det-tit">Idioma</p>
             <label style="max-width:260px" data-sem-tr><select class="campo" id="aj-idioma" aria-label="Idioma / Language"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option><option value="la">Latina</option></select></label>
@@ -2985,7 +3006,43 @@ textarea.campo{min-height:72px;resize:vertical}
       '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo">'+esc(r.titulo)+'</h4>'+pilulas(r.tags)+(r.recorrencia ? '<span class="st" title="'+L('Reunião recorrente','Recurring meeting','Reunión recurrente','Conventus iteratus')+'">'+I_REPETE+esc(nomeRec(r.recorrencia))+'</span>' : '')+'</div>'+(local?'<span class="r-local">'+local+'</span>':'')+(r.descricao?'<p class="r-desc">'+esc(r.descricao)+'</p>':'')+'</div>'+
       '<div class="r-acoes"><button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião '+esc(r.titulo)+'" title="Editar">'+I_EDITAR+'</button></div></article>';
   }
+  /* ---------- Antes das missões (só a conta de administrador): celular, limpa nas demandas e Oração de São Francisco ---------- */
+  var ORACAO_PAZ = ['Senhor, fazei de mim um instrumento de vossa paz.','Onde houver ódio, que eu leve o amor;','onde houver ofensa, que eu leve o perdão;','onde houver discórdia, que eu leve a união;','onde houver dúvida, que eu leve a fé;','onde houver erro, que eu leve a verdade;','onde houver desespero, que eu leve a esperança;','onde houver tristeza, que eu leve a alegria;','onde houver trevas, que eu leve a luz.','Ó Mestre, fazei que eu procure mais','consolar que ser consolado;','compreender que ser compreendido;','amar que ser amado.','Pois é dando que se recebe,','é perdoando que se é perdoado,','e é morrendo que se vive para a vida eterna.','Amém.'];
+  var VISTAS_MISSOES = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'];
+  function ritualAtivo(){ return SERVIDOR && !!pessoa(eu).admin && prefsEu().ritual!==false; }
+  function ritualPassos(){ var p = prefsEu().ritualPassos; return p && p.data===hoje ? p : {data:hoje}; }
+  function ritualBloqueado(){ return ritualAtivo() && prefsEu().ritualFeito!==hoje && VISTAS_MISSOES.indexOf(vista)>=0; }
+  function htmlRitual(){
+    var p = ritualPassos(), CK = '<span class="rit-ck" aria-hidden="true">'+CHECK+'</span>';
+    function passo(k, n, tit, corpo, btn){
+      var feito = !!p[k];
+      return '<li class="rit-passo'+(feito?' feito':'')+'"><span class="rit-n">'+(feito ? CK : n)+'</span><div class="rit-c"><p class="rit-tit">'+tit+'</p>'+(corpo||'')+
+        (feito ? '' : '<button class="btn btn-escuro btn-p" type="button" data-ritual="'+k+'">'+btn+'</button>')+'</div></li>';
+    }
+    return '<div class="painel ritual" data-sem-tr><p class="rot">'+L('Antes das missões','Before the missions','Antes de las misiones','Ante missiones')+'</p>'+
+      '<h3>'+L('Três passos para liberar o seu dia','Three steps to unlock your day','Tres pasos para liberar tu día','Tres gradus ut dies aperiatur')+'</h3>'+
+      '<ol class="rit-lista">'+
+      passo('cel', 1, L('Deixei o celular com a minha esposa.','I left my phone with my wife.','Dejé el celular con mi esposa.','Telephonum uxori reliqui.'), '', L('Confirmo','Confirm','Confirmo','Confirmo'))+
+      passo('limpa', 2, L('Vou fazer uma limpa real nas demandas e definir as prioridades de hoje.','I will do a real clean-up of the tasks and set today’s priorities.','Haré una limpieza real de las tareas y definiré las prioridades de hoy.','Negotia vere purgabo et hodierna praecipua statuam.'), '<p class="rit-dica">'+L('Logo depois de liberar, revise a lista: o que não é para hoje, remarque ou exclua.','Right after unlocking, review the list: reschedule or delete what is not for today.','Justo después de liberar, revisa la lista: reprograma o elimina lo que no es para hoy.','Statim post, indicem recense.')+'</p>', L('Confirmo','Confirm','Confirmo','Confirmo'))+
+      passo('paz', 3, L('Oração de São Francisco de Assis','Prayer of Saint Francis','Oración de San Francisco de Asís','Oratio Sancti Francisci'), '<div class="rit-oracao">'+ORACAO_PAZ.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('')+'</div>', L('Amém, rezei','Amen, I prayed','Amén, recé','Amen, oravi'))+
+      '</ol></div>';
+  }
+  function htmlNotaLimpa(){
+    if (!ritualAtivo() || prefsEu().ritualFeito!==hoje || prefsEu().limpaFeita===hoje || vista!=='hoje') return '';
+    return '<div class="nota-limpa" data-sem-tr><span>'+L('Hora da limpa: tire de hoje o que não é prioridade (remarque, mude o tipo ou exclua).','Clean-up time: move out of today what is not a priority (reschedule, change the type or delete).','Hora de la limpieza: saca de hoy lo que no es prioridad.','Tempus purgandi.')+'</span><button class="btn btn-claro btn-p" type="button" data-limpa-ok>'+L('Limpa feita','Clean-up done','Limpieza hecha','Factum')+'</button></div>';
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('[data-ritual]');
+    if (b){
+      var p = ritualPassos(); p[b.getAttribute('data-ritual')] = true; prefsEu().ritualPassos = p;
+      if (p.cel && p.limpa && p.paz){ prefsEu().ritualFeito = hoje; salvar(); render(); avisar(L('Missões liberadas. Bom trabalho, e que Deus abençoe o dia!','Missions unlocked. Good work, and God bless your day!','Misiones liberadas. ¡Buen trabajo y que Dios bendiga el día!','Missiones apertae. Deus diem benedicat!')); window.scrollTo({top:0, behavior:'smooth'}); }
+      else { salvar(); renderLista(); }
+      return;
+    }
+    if (e.target.closest('[data-limpa-ok]')){ prefsEu().limpaFeita = hoje; salvar(); renderLista(); }
+  });
   function renderLista(){
+    if (ritualBloqueado()){ gruposNaTela = []; document.getElementById('lista').innerHTML = htmlRitual(); renderGruposTg(); return; }
     var q = busca.trim().toLowerCase();
     var vis = doFiltro().filter(function(m){
       if (!q) return true;
@@ -3031,7 +3088,7 @@ textarea.campo{min-height:72px;resize:vertical}
       var vz = { hoje:'Nenhuma missão para hoje. <em>Deo gratias.</em>', todas:'Nenhuma missão em aberto.', atrasadas:'Nenhuma missão atrasada. <em>Deo gratias.</em>', proximas:'Nada agendado para os próximos dias.', cumpridas:'Nenhuma missão cumprida ainda.', aprovar:'Nada aguardando aprovação.' };
       html += '<div class="painel"><p class="vazio">'+(q ? 'Nenhuma missão encontrada para “'+esc(busca.trim())+'”.' : filtroTag ? 'Nenhuma missão deste cliente aqui.' : vz[vista])+'</p></div>';
     }
-    document.getElementById('lista').innerHTML = html + bfeitas;
+    document.getElementById('lista').innerHTML = htmlNotaLimpa() + html + bfeitas;
     renderGruposTg();
     ultimaNova = null;
     document.getElementById('aviso').hidden = !state.missoes.some(function(m){ return m.exemplo; });
@@ -3332,6 +3389,9 @@ textarea.campo{min-height:72px;resize:vertical}
     txtImportar();
     document.getElementById('aj-eu').innerHTML = opcoesPessoas(eu);
     document.getElementById('aj-eu-painel').hidden = SERVIDOR;
+    var ajr = document.getElementById('aj-ritual');
+    ajr.hidden = !(SERVIDOR && pessoa(eu).admin);
+    if (!ajr.hidden) ajr.innerHTML = '<p class="det-tit">'+L('Antes das missões','Before the missions','Antes de las misiones','Ante missiones')+'</p><label class="check"><input type="checkbox" id="aj-ritual-on"'+(prefsEu().ritual!==false?' checked':'')+'> '+L('Pedir os três passos (celular, limpa e Oração de São Francisco) antes de liberar as minhas missões. Só vale para a conta de administrador.','Ask for the three steps before unlocking my missions. Admin account only.','Pedir los tres pasos antes de liberar mis misiones. Solo para la cuenta de administrador.','Tres gradus ante missiones petere.')+'</label>';
     if (SERVIDOR){
       var souAdmin = !!(pessoa(eu).admin);
       document.getElementById('campos-eq').className = 'membros';
@@ -4553,13 +4613,37 @@ textarea.campo{min-height:72px;resize:vertical}
   function marcarHora(k){
     var x = horaPorChave(k); if (!x) return;
     if (horasFeitas().indexOf(k)<0){
-      state.oferecimentos.push({id:uid(), dono:eu, tipo:'hora', hora:k, data:hoje, em:new Date().toISOString()}); salvar();
+      var rec = {id:uid(), dono:eu, tipo:'hora', hora:k, data:hoje, em:new Date().toISOString()};
+      state.oferecimentos.push(rec); salvar();
       avisar(L(nomeHora(x)+' rezada. +5 Piedade.', nomeHora(x)+' prayed. +5 Piety.', nomeHora(x)+' rezada. +5 Piedad.', nomeHora(x)+' recitatum. +5 Pietas.'));
-    }
-    cartaoHora.hidden = true;
+      perguntarVersiculo(rec, x);
+    } else cartaoHora.hidden = true;
     if (!app.hidden && vista==='pessoal') renderPessoal();
-    if (k==='completas' && !exameDeHoje()) setTimeout(function(){ exameDispensado = false; abrirExame(false); }, 500);
   }
+  /* depois de rezar: qual versículo mais chamou atenção? */
+  var hvRec = null;
+  function perguntarVersiculo(rec, x){
+    hvRec = rec;
+    cartaoHora.innerHTML = '<form data-sem-tr style="display:grid;gap:8px" id="hv-form" autocomplete="off"><p class="rot">'+tituloLH()+' · '+esc(nomeHora(x))+'</p>'+
+      '<p>'+L('Qual foi o versículo que mais te chamou atenção?','Which verse struck you the most?','¿Qué versículo te llamó más la atención?','Quis versus te maxime movit?')+'</p>'+
+      '<textarea class="campo" id="hv-texto" rows="3" maxlength="400" placeholder="'+esc(L('Escreva ou cole o versículo…','Type or paste the verse…','Escribe o pega el versículo…','Scribe versum…'))+'"></textarea>'+
+      '<div class="acoes"><button class="btn btn-escuro btn-p" type="submit">'+L('Guardar','Save','Guardar','Servare')+'</button><button class="btn btn-claro btn-p" type="button" id="hv-pular">'+L('Pular','Skip','Omitir','Omittere')+'</button></div></form>';
+    cartaoHora.hidden = false;
+    var t = document.getElementById('hv-texto'); if (t) t.focus();
+  }
+  function fecharVersiculo(){
+    var k = hvRec && hvRec.hora; hvRec = null; cartaoHora.hidden = true;
+    if (!app.hidden && vista==='pessoal') renderPessoal();
+    if (k==='completas' && !exameDeHoje()) setTimeout(function(){ exameDispensado = false; abrirExame(false); }, 400);
+  }
+  cartaoHora.addEventListener('submit', function(e){
+    if (e.target.id!=='hv-form') return; e.preventDefault();
+    var v = (document.getElementById('hv-texto').value||'').trim();
+    if (hvRec && v){ hvRec.versiculo = v; salvar(); avisar(L('Versículo guardado.','Verse saved.','Versículo guardado.','Versus servatus.')); }
+    fecharVersiculo();
+  });
+  cartaoHora.addEventListener('click', function(e){ if (e.target.id==='hv-pular') fecharVersiculo(); });
+  cartaoHora.addEventListener('keydown', function(e){ if (e.target.id==='hv-texto' && e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('hv-form').requestSubmit(); } });
   function htmlHoras(){
     var f = horasFeitas(), agora = new Date().getHours();
     return '<div data-sem-tr><div class="horas">'+HORAS.map(function(x){
@@ -4568,7 +4652,15 @@ textarea.campo{min-height:72px;resize:vertical}
         '<small>'+x.h+'h</small><b>'+esc(nomeHora(x))+'</b><span>'+(feita ? CHECK+L('Rezada','Prayed','Rezada','Recitatum') : cur ? L('Agora','Now','Ahora','Nunc') : '&nbsp;')+'</span></a>';
     }).join('')+'</div><div class="horas-pe"><a class="link" href="'+esc(LANG==='pt' ? LH_PT : IB+'ufficio_delle_letture')+'" target="_blank" rel="noopener">'+L('Ofício das Leituras','Office of Readings','Oficio de Lectura','Officium lectionis')+'</a>'+
       '<label class="check"><input type="checkbox" id="horas-lembrar"'+(horasAtivas()?' checked':'')+'> '+L('Lembrar em cada hora','Remind me at each hour','Recordarme en cada hora','Singulis horis monere')+'</label></div>'+
+      htmlVersiculos()+
       '<p class="dica-hora" style="padding:0 18px 16px">'+dicaSite()+'</p></div>';
+  }
+  function htmlVersiculos(){
+    var vs = state.oferecimentos.filter(function(o){ return o.dono===eu && o.tipo==='hora' && o.versiculo; }).sort(function(a,b){ return a.em<b.em?1:-1; }).slice(0,6);
+    if (!vs.length) return '';
+    return '<div class="versiculos"><p class="det-tit">'+L('Versículos que te chamaram atenção','Verses that struck you','Versículos que te llamaron la atención','Versus qui te moverunt')+'</p>'+vs.map(function(o){
+      var x = horaPorChave(o.hora); return '<blockquote>“'+esc(o.versiculo)+'”<cite>'+esc(x ? nomeHora(x) : '')+' · '+esc(o.data===hoje ? L('hoje','today','hoy','hodie') : dataLonga(o.data))+'</cite></blockquote>';
+    }).join('')+'</div>';
   }
   document.addEventListener('click', function(e){
     var a = e.target.closest('[data-hora-abrir]');
@@ -4577,6 +4669,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (e.target.closest('[data-hora-fechar]')) cartaoHora.hidden = true;
   });
   document.addEventListener('change', function(e){
+    if (e.target.id==='aj-ritual-on'){ prefsEu().ritual = e.target.checked; salvar(); avisar(e.target.checked ? L('Os três passos voltam amanhã cedo.','The three steps are on.','Los tres pasos están activados.','Accensum.') : L('Os três passos foram desligados.','The three steps are off.','Los tres pasos están desactivados.','Exstinctum.')); return; }
     if (e.target.id==='horas-lembrar'){ prefsEu().horas = e.target.checked; salvar(); avisar(e.target.checked ? L('Lembretes das horas ligados.','Hour reminders on.','Recordatorios de las horas activados.','Monitiones horarum accensae.') : L('Lembretes das horas desligados.','Hour reminders off.','Recordatorios de las horas desactivados.','Monitiones horarum exstinctae.')); }
   });
   setInterval(checarHoras, 15000);
