@@ -941,7 +941,7 @@ textarea.campo{min-height:72px;resize:vertical}
             <label class="so-pes" hidden>Área da vida<select class="campo" id="f-area"></select></label>
             <label>Data<input class="campo" id="f-data" name="data" type="date"></label>
             <label>Peso<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
-            <label>Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
+            <label id="f-tipo-l">Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
             <label>Repetir<select class="campo" id="f-rec"></select></label>
             <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
             <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
@@ -1138,7 +1138,7 @@ textarea.campo{min-height:72px;resize:vertical}
   <div class="massa-pop-w"><button class="massa-b" type="button" id="massa-tags-b"></button>
     <div class="massa-pop" id="massa-tags-pop" hidden></div></div>
   <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
-  <label class="massa-campo"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
+  <label class="massa-campo" id="massa-tipo-l"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
   <button class="massa-b" type="button" id="massa-pessoal"></button>
   <button class="massa-b perigo" type="button" id="massa-excluir"></button>
   <button class="massa-x" type="button" id="massa-fechar" aria-label="Fechar">×</button>
@@ -2441,7 +2441,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var todos = gruposNaTela.length && gruposNaTela.every(function(k){ return gruposFechados[k]; });
     b.hidden = gruposNaTela.length < 2;
     var tt = document.getElementById('tipo-tg');
-    if (tt){ tt.hidden = vista!=='hoje'; tt.textContent = porTipo ? L('Organizar por data','Organize by date','Organizar por fecha','Per diem ordinare') : L('Organizar por tipo','Organize by type','Organizar por tipo','Per genus ordinare'); tt.title = porTipo ? L('Hoje está separado por tipo de demanda','Today is split by task type','Hoy está separado por tipo','Hodie per genus divisum') : ''; }
+    if (tt){ tt.hidden = vista!=='hoje' || !usaTipos(); tt.textContent = porTipo ? L('Organizar por data','Organize by date','Organizar por fecha','Per diem ordinare') : L('Organizar por tipo','Organize by type','Organizar por tipo','Per genus ordinare'); tt.title = porTipo ? L('Hoje está separado por tipo de demanda','Today is split by task type','Hoy está separado por tipo','Hodie per genus divisum') : ''; }
     b.textContent = todos ? L('Expandir tudo','Expand all','Expandir todo','Omnia explicare') : L('Recolher tudo','Collapse all','Contraer todo','Omnia contrahere');
   }
   function salvarGrupos(){ lsSet('ora-grupos', JSON.stringify(gruposFechados)); }
@@ -2538,6 +2538,8 @@ textarea.campo{min-height:72px;resize:vertical}
     return '<option value="">'+(vazio ? '—' : L('Sem tipo','No type','Sin tipo','Sine genere'))+'</option>'+tiposLista().map(function(t){ return '<option value="'+t[0]+'"'+(t[0]===sel?' selected':'')+'>'+t[1]+'</option>'; }).join('')+(vazio ? '<option value="__nenhum">'+L('Sem tipo','No type','Sin tipo','Sine genere')+'</option>' : '');
   }
   var porTipo = lsGet('ora-por-tipo')!=='0', agrupandoTipo = false;
+  /* os tipos são só do administrador (Richar); a equipe não vê */
+  function usaTipos(){ return !SERVIDOR || !!pessoa(eu).admin; }
   /* Hoje por tipo: atrasadas + de hoje, separadas em Rápidas, Mensagens, Tráfego… (as atrasadas vêm primeiro em cada grupo) */
   function gruposPorTipo(atras, deHoje){
     var todas = atras.concat(deHoje), g = [];
@@ -2909,7 +2911,7 @@ textarea.campo{min-height:72px;resize:vertical}
       '<div class="campos-sub">'+(m.privada ? '' : '<label>Responsável<select class="campo" name="resp">'+opcoesPessoas(m.resp)+'</select></label>')+
         '<label>Data<input class="campo" name="data" type="date" value="'+esc(m.data||'')+'"></label>'+
         '<label>Peso<select class="campo" name="peso">'+pesoOps+'</select></label>'+
-        '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(m.tipo||'')+'</select></label>'+
+        (usaTipos() ? '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(m.tipo||'')+'</select></label>' : '')+
         '<label>Repetir<select class="campo" name="recorrencia">'+recOps+'</select></label>'+
         '<label>'+L('Área','Area','Área','Area')+'<select class="campo" name="espaco">'+
           (m.privada || m.resp===eu ? '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>'+areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(m.privada && m.area===a?' selected':'')+'>'+L('Minha área · ','My space · ','Mi área · ','Area mea · ')+esc(a)+'</option>'; }).join('')+'<option value="__sem"'+(m.privada && !m.area?' selected':'')+'>'+L('Minha área · sem área','My space · no area','Mi área · sin área','Area mea · sine area')+'</option>'
@@ -2940,7 +2942,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length;
     var ind = (subs.length ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'" aria-label="'+nf+' de '+subs.length+' sub-missões"><span class="caret" aria-hidden="true">▸</span>'+I_RAMO+nf+'/'+subs.length+'</button>' : '')+(na ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
     if (m.vemDe) ind += '<span class="st" title="'+esc(L('Veio da missão','Came from mission','Vino de la misión','Ex missione'))+'">↳ '+esc(m.vemDe)+'</span>';
-    if (m.tipo && nomeTipo(m.tipo) && !agrupandoTipo) ind += '<span class="st tipo">'+esc(nomeTipo(m.tipo))+'</span>';
+    if (m.tipo && nomeTipo(m.tipo) && !agrupandoTipo && usaTipos()) ind += '<span class="st tipo">'+esc(nomeTipo(m.tipo))+'</span>';
     if (m.recorrencia) ind += '<span class="st" title="Missão recorrente">'+I_REPETE+esc(nomeRec(m.recorrencia))+'</span>';
     if (m.privada && m.area) ind += '<span class="st priv">'+esc(m.area)+'</span>';
     if (m.criativo && m.criativo.cidade) ind += '<span class="st" title="Criativo">'+esc(m.criativo.cidade)+' · '+esc(m.criativo.formato||'criativo')+'</span>';
@@ -3057,7 +3059,7 @@ textarea.campo{min-height:72px;resize:vertical}
     }
     else if (vista==='hoje'){
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
-      agrupandoTipo = porTipo && !q;
+      agrupandoTipo = porTipo && !q && usaTipos();
       var pesHoje = (filtro==='todos' || filtro===eu) && !filtroTag ? minhasPessoais().filter(function(m){
         if (m.feita || !m.data || m.data>hoje) return false;
         if (!q) return true;
@@ -3439,7 +3441,7 @@ textarea.campo{min-height:72px;resize:vertical}
       (rh ? ' · '+plural(rh,'reunião','reuniões') : '')+(s.atras.length ? ' · <span class="alerta">'+plural(s.atras.length,'atrasada','atrasadas')+'</span>' : '')+'</span>';
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
-  function render(){ if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); }
+  function render(){ if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -3583,7 +3585,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!/^f-cri-/.test(e.target.id||'')) return;
     document.getElementById('f-cri-aviso').innerHTML = htmlAvisoCriativo(document.getElementById('f-cri-cid').value, document.getElementById('f-cri-for').value, document.getElementById('f-cri-gan').value);
   });
-  function preencherPesoNova(){ var fp = document.getElementById('f-peso'); if (fp) fp.innerHTML = opcoesPeso('media'); var ft = document.getElementById('f-tipo'); if (ft) ft.innerHTML = opcoesTipo(''); }
+  function preencherPesoNova(){ var fp = document.getElementById('f-peso'); if (fp) fp.innerHTML = opcoesPeso('media'); var ft = document.getElementById('f-tipo'); if (ft) ft.innerHTML = opcoesTipo(''); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
   preencherPesoNova();
   document.getElementById('cancelar-nova').addEventListener('click', function(){ form.reset(); form.hidden = true; preencherPesoNova(); });
   form.addEventListener('submit', function(e){
@@ -3859,6 +3861,7 @@ textarea.campo{min-height:72px;resize:vertical}
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
     document.getElementById('massa-peso').disabled = !nTot;
     document.getElementById('massa-tipo').disabled = !ids.length;
+    document.getElementById('massa-tipo-l').hidden = !usaTipos();
     if (!document.getElementById('massa-tags-pop').hidden) renderPopTags();
   }
   function alvosTag(){ return idsSel().map(achar).filter(function(m){ return m && !m.privada; }).concat(subsSel().filter(function(x){ return !x.m.privada; }).map(function(x){ return x.s; })); }
