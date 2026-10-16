@@ -55,7 +55,7 @@ a{color:inherit}
 .iso polygon{stroke:var(--iso-linha);stroke-width:.9;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .iso .f-top{fill:var(--iso-top)} .iso .f-esq{fill:var(--iso-esq)} .iso .f-dir{fill:var(--iso-dir)} .iso .f-vao{fill:var(--iso-vao)}
 .iso .f-chao{fill:var(--iso-chao)} .iso .f-ctop{fill:var(--copa-top)} .iso .f-cesq{fill:var(--copa-esq)} .iso .f-cdir{fill:var(--copa-dir)}
-.iso .f-agua{fill:var(--agua)} .iso .f-luz{fill:var(--luz)}
+.iso .f-agua{fill:var(--agua)} .iso .f-rua{fill:var(--iso-esq)} .iso .f-mad{fill:#b88a55} .iso .f-luz{fill:var(--luz)}
 .iso .f-flor-a{fill:#e5487a} .iso .f-flor-b{fill:#f2c94c} .iso .f-flor-c{fill:#8e6cf0} .iso .f-manto{fill:#3b6fd8} .iso .f-mel{fill:#e9b949}
 .iso.escuro{--iso-top:#2c2b29;--iso-esq:#1f1e1d;--iso-dir:#161615;--iso-vao:#050505;--iso-linha:#b5b4ae}
 .iso.luzes [data-tipo="casa"] .f-vao{fill:var(--luz)}
@@ -1822,117 +1822,189 @@ textarea.campo{min-height:72px;resize:vertical}
   function torre(x,y){ var f = caixa(x,y,0,2.2,2.2,5), pts=[], cx=x+1.1, cz=4;
     for (var i=0;i<12;i++){ var t=Math.PI*2*i/12; pts.push([cx+.55*Math.cos(t), y+2.2, cz+.55*Math.sin(t)]); }
     return f.concat([{c:'f-top', p:pts}]).concat(piramide(x-.1,y-.1,5,2.4,2.4,1.6)); }
-  /* pequenas melhorias */
-  var PEQ = {
-    flores:{n:'um canteiro de flores', w:1, d:.6, p:3, f:function(x,y){ return tingir(caixa(x,y,0,1,.6,.16),{'f-top':'f-cesq'}).concat(tingir(caixa(x+.12,y+.12,.16,.16,.16,.16),'f-flor-a')).concat(tingir(caixa(x+.45,y+.3,.16,.16,.16,.16),'f-flor-b')).concat(tingir(caixa(x+.75,y+.12,.16,.16,.16,.16),'f-flor-c')); }},
-    arbusto:{n:'um arbusto', w:.8, d:.8, p:3, f:function(x,y){ return tingir(caixa(x,y,0,.8,.8,.5),COPA).concat(tingir(caixa(x+.15,y+.15,.5,.5,.5,.25),COPA)); }},
-    cerca:{n:'um pedaço de cerca', w:1.3, d:.2, p:3, f:function(x,y){ return caixa(x,y,0,.1,.1,.6).concat(caixa(x+.6,y,0,.1,.1,.6)).concat(caixa(x+1.2,y,0,.1,.1,.6)).concat(caixa(x,y+.02,.22,1.3,.06,.06)).concat(caixa(x,y+.02,.46,1.3,.06,.06)); }},
-    pedras:{n:'pedras no caminho', w:1.1, d:.5, p:2, f:function(x,y){ return caixa(x,y,0,.5,.45,.05).concat(caixa(x+.62,y+.05,0,.45,.4,.05)); }},
-    arvoreP:{n:'uma árvore jovem', w:.9, d:.9, p:3, f:function(x,y){ return caixa(x+.35,y+.35,0,.2,.2,.5).concat(tingir(piramide(x,y,.45,.9,.9,1.1),COPA)); }},
-    vaso:{n:'um vaso de flores', w:.4, d:.4, p:2, f:function(x,y){ return caixa(x+.05,y+.05,0,.3,.3,.28).concat(tingir(caixa(x+.12,y+.12,.28,.16,.16,.14),'f-flor-a')); }},
-    galinha:{n:'uma galinha', w:.35, d:.3, p:2, f:function(x,y){ return caixa(x,y,.08,.28,.18,.2).concat(caixa(x+.22,y+.04,.25,.12,.1,.12)).concat(tingir(caixa(x+.3,y+.07,.3,.05,.04,.05),'f-flor-a')); }},
-    lenha:{n:'uma pilha de lenha', w:.9, d:.45, p:1, f:function(x,y){ return caixa(x,y,0,.9,.2,.2).concat(caixa(x,y+.22,0,.9,.2,.2)).concat(caixa(x,y+.11,.2,.9,.2,.2)); }},
-    correio:{n:'uma caixa de correio', w:.4, d:.4, p:1, f:function(x,y){ return caixa(x+.15,y+.15,0,.1,.1,.75).concat(caixa(x,y+.05,.75,.4,.3,.25)).concat(tingir(caixa(x+.38,y+.12,.85,.04,.04,.2),'f-flor-a')); }},
-    carrinho:{n:'um carrinho de mão', w:.8, d:.45, p:1, f:function(x,y){ return caixa(x+.6,y+.17,0,.12,.08,.16).concat(caixa(x,y,.15,.6,.4,.25)).concat(caixa(x-.15,y+.05,.3,.2,.05,.05)).concat(caixa(x-.15,y+.3,.3,.2,.05,.05)); }},
-    varal:{n:'um varal', w:1.7, d:.2, p:1, f:function(x,y){ return caixa(x,y,0,.08,.08,1.1).concat(caixa(x+1.6,y,0,.08,.08,1.1)).concat(caixa(x,y+.02,1.05,1.68,.03,.03)).concat(tingir(caixa(x+.3,y,.65,.3,.04,.38),'f-flor-b')).concat(tingir(caixa(x+.8,y,.7,.35,.04,.33),'f-flor-c')).concat(tingir(caixa(x+1.25,y,.68,.25,.04,.35),'f-flor-a')); }},
-    bebedouro:{n:'um bebedouro para pássaros', w:.5, d:.5, p:1, f:function(x,y){ return caixa(x+.18,y+.18,0,.14,.14,.6).concat(caixa(x,y,.6,.5,.5,.08)).concat([{c:'f-agua', p:[[x+.07,y+.07,.68],[x+.43,y+.07,.68],[x+.43,y+.43,.68],[x+.07,y+.43,.68]]}]); }},
-    gato:{n:'um gato', w:.45, d:.25, p:1, f:function(x,y){ return caixa(x,y,0,.32,.16,.16).concat(caixa(x+.28,y,.12,.14,.14,.14)).concat(caixa(x-.08,y+.06,.1,.1,.04,.04)); }},
-    cachorro:{n:'um cachorro', w:.6, d:.3, p:1, f:function(x,y){ return caixa(x,y,.1,.42,.2,.22).concat(caixa(x+.36,y+.02,.25,.18,.16,.16)).concat(caixa(x+.02,y+.02,0,.06,.06,.1)).concat(caixa(x+.32,y+.12,0,.06,.06,.1)); }},
-    colmeia:{n:'uma colmeia', w:.5, d:.5, p:1, f:function(x,y){ return caixa(x,y,0,.45,.45,.15).concat(tingir(caixa(x+.03,y+.03,.15,.39,.39,.22),'f-mel')).concat(caixa(x,y,.37,.45,.45,.06)); }},
-    lampiaoP:{n:'um lampião', w:.5, d:.5, p:1, f:function(x,y){ return lampiao(x+.15,y+.15); }},
-    bancoP:{n:'um banco de praça', w:1.6, d:.5, p:1, f:function(x,y){ return banco(x,y,1.6); }},
-    gruta:{n:'uma gruta de Nossa Senhora', w:1.4, d:1.2, p:.35, f:function(x,y){ return piramide(x,y,0,1.4,1.2,1.3).concat(tingir(caixa(x+.6,y+1.05,0,.2,.15,.5),'f-manto')).concat(caixa(x+.64,y+1.08,.5,.12,.1,.12)); }},
-    cruzeiro:{n:'um cruzeiro', w:.6, d:.6, p:.35, f:function(x,y){ return caixa(x,y,0,.6,.6,.2).concat(caixa(x+.25,y+.25,.2,.1,.1,1.5)).concat(caixa(x+.05,y+.25,1.25,.5,.1,.1)); }},
-    oratorio:{n:'um oratório', w:.6, d:.6, p:.45, f:function(x,y){ return caixa(x+.25,y+.25,0,.1,.1,.8).concat(caixa(x+.05,y+.05,.8,.5,.5,.5)).concat(arco('y', y+.55, x+.15, .85, .3, .38)).concat(telhado(x,y,1.3,.6,.6,.25)); }}
-  };
-  var PEQ_LISTA = Object.keys(PEQ), PEQ_TOTAL = PEQ_LISTA.reduce(function(a,k){ return a+PEQ[k].p; },0);
-
-  var CASA_PRINCIPAL = {nome:'a sua casa', fp:[10,10,3.6,3], tipo:'casa', f:function(){ return casa(10,10,3.6,3,2.4,1.5); }};
-  function E(nome, fp, f, tipo){ return {nome:nome, fp:fp, f:f, tipo:tipo||''}; }
-  var ELEMENTOS = [
-    E('uma árvore', [7.8,10.6,1.2,1.2], function(){ return arvore(7.8,10.6); }, 'arvore'),
-    E('uma horta', [10,14.3,3.2,1.8], function(){ return horta(10,14.3,3.2,1.8); }),
-    E('um poço', [14.5,10.6,1.6,1.6], function(){ return poco(14.6,10.8); }),
-    E('outra árvore', [8.15,13.9,1.2,1.2], function(){ return arvore(8.15,13.9); }, 'arvore'),
-    E('um banco', [13.9,14.6,1.6,.5], function(){ return banco(13.9,14.6,1.6); }),
-    E('um anexo na casa', [10.15,7.25,2.9,2.5], function(){ return casa(10.3,7.4,2.6,2.2,1.9,1.1); }, 'casa'),
-    E('mais uma árvore', [14.9,7.8,1.2,1.2], function(){ return arvore(14.9,7.8); }, 'arvore'),
-    E('uma casa vizinha', [16.45,9.85,3.3,2.9], function(){ return casa(16.6,10,3,2.6,2.2,1.3); }, 'casa'),
-    E('um lampião', [15.6,15.35,.5,.5], function(){ return lampiao(15.75,15.5); }),
-    E('uma árvore', [20,12.9,1.2,1.2], function(){ return arvore(20,12.9); }, 'arvore'),
-    E('uma casa nova', [16.45,14.65,3.3,2.9], function(){ return casa(16.6,14.8,3,2.6,2.2,1.3); }, 'casa'),
-    E('uma árvore', [5.6,9.8,1.2,1.2], function(){ return arvore(5.6,9.8); }, 'arvore'),
-    E('uma casa nova', [4.85,13.25,3.3,2.7], function(){ return casa(5,13.4,3,2.4,2.1,1.2); }, 'casa'),
-    E('uma capela', [8.9,2.3,6,2.8], function(){ return capela(9,2.4); }, 'casa'),
-    E('uma fonte na praça', [12,17.6,2,2], function(){ return fonte(12,17.6); }),
-    E('uma casa nova', [16.45,5.45,3.3,2.9], function(){ return casa(16.6,5.6,3,2.6,2.2,1.3); }, 'casa'),
-    E('uma árvore', [4.4,6.8,1.2,1.2], function(){ return arvore(4.4,6.8); }, 'arvore'),
-    E('uma casa nova', [4.85,17.05,3.3,2.7], function(){ return casa(5,17.2,3,2.4,2.1,1.2); }, 'casa'),
-    E('uma casa nova', [16.45,18.45,3.3,2.7], function(){ return casa(16.6,18.6,3,2.4,2.1,1.2); }, 'casa'),
-    E('uma árvore', [8.6,19,1.2,1.2], function(){ return arvore(8.6,19); }, 'arvore'),
-    E('uma torre do relógio', [1.1,5.1,2.4,2.4], function(){ return torre(1.2,5.2); }, 'casa'),
-    E('uma casa nova', [20.45,6.45,3.3,2.9], function(){ return casa(20.6,6.6,3,2.6,2.2,1.3); }, 'casa'),
-    E('uma casa nova', [20.45,15.25,3.3,2.9], function(){ return casa(20.6,15.4,3,2.6,2.2,1.3); }, 'casa'),
-    E('uma árvore', [23.8,11.2,1.2,1.2], function(){ return arvore(23.8,11.2); }, 'arvore'),
-    E('uma casa nova', [.85,10.25,3.3,2.7], function(){ return casa(1,10.4,3,2.4,2.1,1.2); }, 'casa')
-  ];
-  var LANES = [
-    {a:[9.5,13.65], b:[15.9,13.65], min:0}, {a:[9.6,9.2], b:[9.6,17], min:1}, {a:[16.1,8.4], b:[16.1,18.2], min:3},
-    {a:[4.6,12.6], b:[4.6,20.2], min:13}, {a:[8.2,17.1], b:[16,17.1], min:15}, {a:[20.1,6], b:[20.1,19.2], min:22}
-  ];
-  var POUSOS = [ {p:[11.8,11.5,3.9], min:0}, {p:[11.6,8.5,3.0], min:6}, {p:[18.1,11.3,3.5], min:8}, {p:[14.97,3.53,6.05], min:14} ];
-  var CHAMINE = [12.74,10.67,4.2], PORTA = [11.6,13.5], SINO = [14.2,3.3,4.6];
-
-  /* Sequência de melhorias: a cada 6 missões, uma construção grande; nas outras, um detalhe. */
-  var GRADE = {x0:-14, y0:-14, res:.4, n:135, cel:null};
-  function gi(v, o){ return Math.floor((v-o)/GRADE.res); }
-  function varrer(fp, m, fn){
-    var a0=gi(fp[0]-m,GRADE.x0), a1=gi(fp[0]+fp[2]+m,GRADE.x0), b0=gi(fp[1]-m,GRADE.y0), b1=gi(fp[1]+fp[3]+m,GRADE.y0);
-    if (a0<0||b0<0||a1>=GRADE.n||b1>=GRADE.n) return false;
-    for (var j=b0;j<=b1;j++) for (var i=a0;i<=a1;i++) if (fn(j*GRADE.n+i)===false) return false;
-    return true;
+  /* ---------- Plano de obras do sítio ----------
+     Cada melhoria (25 XP) é uma etapa de uma obra planejada: a entrada da casa, a horta, a capelinha, o poço, a cerca,
+     a rua, o pomar, a praça, casas novas e uma catedral inteira, que sobe parede por parede. Depois disso, novos lotes
+     (casa + jardim) vão ocupando as ruas. O número de melhorias é o mesmo de antes: só o desenho mudou. */
+  var CASA_PRINCIPAL = {nome:'a sua casa', fp:[10,10,3.6,3], tipo:'casa', ocl:true, f:function(){ return casa(10,10,3.6,3,2.4,1.5); }};
+  var CHAMINE = [12.74,10.67,4.2], PORTA = [11.6,13.5];
+  function telhadoY(x,y,z,w,d,r){ var m=x+w/2; return [
+    {c:'f-esq', p:[[x,y,z],[x,y+d,z],[m,y+d,z+r],[m,y,z+r]]}, {c:'f-esq', p:[[x,y+d,z],[x+w,y+d,z],[m,y+d,z+r]]},
+    {c:'f-top', p:[[x+w,y,z],[x+w,y+d,z],[m,y+d,z+r],[m,y,z+r]]} ]; }
+  function pedra(x,y){ return tingir(caixa(x,y,0,.5,.4,.06),{'f-top':'f-rua'}); }
+  function rua(x0,x1,y){ return tingir(caixa(x0,y,0,x1-x0,1.2,.05),{'f-top':'f-rua'}); }
+  function cercaX(x0,x1,y){ var f=[], n=Math.max(1,Math.round((x1-x0)/.9)), p=(x1-x0)/n;
+    for (var i=0;i<=n;i++) f = f.concat(tingir(caixa(x0+i*p-.05,y,0,.1,.1,.62),'f-mad'));
+    return f.concat(tingir(caixa(x0,y+.02,.24,x1-x0,.06,.06),'f-mad')).concat(tingir(caixa(x0,y+.02,.48,x1-x0,.06,.06),'f-mad')); }
+  function cercaY(y0,y1,x){ var f=[], n=Math.max(1,Math.round((y1-y0)/.9)), p=(y1-y0)/n;
+    for (var i=0;i<=n;i++) f = f.concat(tingir(caixa(x,y0+i*p-.05,0,.1,.1,.62),'f-mad'));
+    return f.concat(tingir(caixa(x+.02,y0,.24,.06,y1-y0,.06),'f-mad')).concat(tingir(caixa(x+.02,y0,.48,.06,y1-y0,.06),'f-mad')); }
+  function cruz(x,y,z){ return caixa(x,y,z,.14,.14,.95).concat(caixa(x-.22,y,z+.55,.58,.14,.14)); }
+  function flores(x,y){ return tingir(caixa(x,y,0,1,.6,.16),{'f-top':'f-cesq'}).concat(tingir(caixa(x+.12,y+.12,.16,.16,.16,.16),'f-flor-a')).concat(tingir(caixa(x+.45,y+.3,.16,.16,.16,.16),'f-flor-b')).concat(tingir(caixa(x+.75,y+.1,.16,.16,.16,.16),'f-flor-c')); }
+  function vaso(x,y){ return caixa(x+.05,y+.05,0,.3,.3,.28).concat(tingir(caixa(x+.12,y+.12,.28,.16,.16,.14),'f-flor-a')); }
+  /* uma etapa da obra */
+  function ET(nome, fp, f, op){ var e = {nome:nome, fp:fp, f:f}; for (var k in (op||{})) e[k] = op[k]; return e; }
+  /* casa nova em 6 etapas (fundação, paredes, paredes prontas, telhado, chaminé, jardim) */
+  function obraCasa(x,y,rot,ys){
+    var w=3, d=2.6, h=2.2, r=1.3, fp=[x,y,w,d], q = rot ? ' '+rot : '';
+    var et = [
+      ET('a fundação de uma casa nova'+q, [x-.15,y-.15,w+.3,d+.3], function(){ var f = caixa(x-.15,y-.15,0,w+.3,d+.3,.15); return ys!=null ? rua(x-.8,x+w+.8,ys).concat(f) : f; }, {ord:x+y, lane:ys!=null ? {a:[x-.6,ys+.6], b:[x+w+.6,ys+.6]} : null}),
+      ET('as paredes da casa nova'+q, fp, function(){ return caixa(x,y,.15,w,d,1); }, {ocl:true, tipo:'casa'}),
+      ET('a porta e as janelas da casa nova'+q, fp, function(){ return caixa(x,y,1.15,w,d,h-1.15).concat(arco('y',y+d,x+w*.38,.15,.72,1.35)).concat(arco('x',x+w,y+d*.3,.95,.68,.78)); }, {tipo:'casa'}),
+      ET('o telhado da casa nova'+q, fp, function(){ return telhado(x-.15,y-.15,h+.15,w+.3,d+.3,r); }, {tipo:'casa', pouso:[x+w/2,y+d/2,h+.15+r]}),
+      ET('a chaminé da casa nova'+q, fp, function(){ return caixa(x+w*.7,y+d*.12,h+.15+r*.25,.42,.42,r*.95); }, {tipo:'casa'}),
+      ET('o jardim da casa nova'+q, [x+w+.2,y+.8,1.2,1.2], function(){ return arvore(x+w+.2,y+.8); }, {tipo:'arvore', ocl:true})
+    ];
+    return {andaime:{fp:fp, ate:4, h:[.15,1.15,h+.15,h+.15]}, etapas:et};
   }
-  function ocupar(fp, m){ varrer(fp, m, function(k){ GRADE.cel[k]=1; }); }
-  function livre(fp, m){ return varrer(fp, m, function(k){ return GRADE.cel[k]?false:true; }); }
-  function iniciarGrade(){
-    GRADE.cel = new Uint8Array(GRADE.n*GRADE.n);
-    ocupar(CASA_PRINCIPAL.fp,.3); ELEMENTOS.forEach(function(e){ ocupar(e.fp,.3); });
-    LANES.forEach(function(l){ ocupar([Math.min(l.a[0],l.b[0])-.35, Math.min(l.a[1],l.b[1])-.35, Math.abs(l.b[0]-l.a[0])+.7, Math.abs(l.b[1]-l.a[1])+.7], 0); });
+  function montarPlano(){
+    var P = [];
+    P.push({etapas:[
+      ET('pedras no caminho da porta', [11.1,13.2,1.2,.9], function(){ return pedra(11.15,13.25).concat(pedra(11.75,13.75)); }),
+      ET('mais pedras até o portão', [11.1,14.2,1.2,.9], function(){ return pedra(11.2,14.25).concat(pedra(11.75,14.8)); }),
+      ET('um vaso de flores na porta', [10.5,13.15,.4,.4], function(){ return vaso(10.5,13.15); }),
+      ET('outro vaso de flores na porta', [12.5,13.15,.4,.4], function(){ return vaso(12.5,13.15); })
+    ]});
+    P.push({etapas:[
+      ET('os canteiros da horta', [7.9,12.5,1.9,1.8], function(){ return caixa(7.9,12.5,0,1.9,1.8,.18); }),
+      ET('as primeiras mudas da horta', [7.9,12.5,1.9,1.8], function(){ return tingir(caixa(8.15,12.75,.18,1.4,.16,.16),COPA).concat(tingir(caixa(8.15,13.15,.18,1.4,.16,.16),COPA)); }),
+      ET('mais fileiras na horta', [7.9,12.5,1.9,1.8], function(){ return tingir(caixa(8.15,13.55,.18,1.4,.16,.16),COPA).concat(tingir(caixa(8.15,13.95,.18,1.4,.16,.18),COPA)); }),
+      ET('um espantalho na horta', [9.5,12.6,.3,.3], function(){ return tingir(caixa(9.55,12.65,0,.1,.1,1.25),'f-mad').concat(tingir(caixa(9.25,12.65,.85,.7,.08,.08),'f-mad')).concat(tingir(caixa(9.45,12.6,1.0,.3,.2,.32),'f-flor-b')).concat(caixa(9.42,12.57,1.32,.36,.26,.08)); })
+    ]});
+    var cx=18.2, cy=9.6, tx=22.4, ty=10.1;
+    P.push({andaime:{fp:[cx,cy,4,2.6], ate:6, h:[.2,.9,1.6,2.2,2.2,2.2]}, etapas:[
+      ET('a fundação da capelinha', [cx-.2,cy-.2,6.2,3], function(){ return caixa(cx-.2,cy-.2,0,6.2,3,.2); }, {ord:cx+cy}),
+      ET('as primeiras paredes da capelinha', [cx,cy,4,2.6], function(){ return caixa(cx,cy,.2,4,2.6,.7); }, {ocl:true, tipo:'casa'}),
+      ET('as paredes da capelinha subindo', [cx,cy,4,2.6], function(){ return caixa(cx,cy,.9,4,2.6,.7); }, {tipo:'casa'}),
+      ET('as paredes da capelinha prontas', [cx,cy,4,2.6], function(){ return caixa(cx,cy,1.6,4,2.6,.6); }, {tipo:'casa'}),
+      ET('a porta e as janelas da capelinha', [cx,cy,4,2.6], function(){ return arco('y',cy+2.6,cx+1.6,.2,.75,1.4).concat(arco('y',cy+2.6,cx+.5,.95,.45,.9)).concat(arco('y',cy+2.6,cx+3.0,.95,.45,.9)); }, {tipo:'casa'}),
+      ET('o telhado da capelinha', [cx,cy,4,2.6], function(){ return telhado(cx-.1,cy-.1,2.2,4.2,2.8,1.2); }, {tipo:'casa', pouso:[cx+2,cy+1.3,3.4]}),
+      ET('a base do campanário', [tx,ty,1.6,1.6], function(){ return caixa(tx,ty,.2,1.6,1.6,1.8); }, {ocl:true, tipo:'casa'}),
+      ET('o campanário subindo', [tx,ty,1.6,1.6], function(){ return caixa(tx,ty,2,1.6,1.6,1.6).concat(arco('y',ty+1.6,tx+.5,2.4,.6,.95)).concat(arco('x',tx+1.6,ty+.5,2.4,.6,.95)); }, {tipo:'casa'}),
+      ET('o sino e o telhado do campanário', [tx,ty,1.6,1.6], function(){ return tingir(caixa(tx+.62,ty+1.45,2.55,.36,.12,.4),'f-mel').concat(piramide(tx,ty,3.6,1.6,1.6,1.4)); }, {tipo:'casa', sino:[tx+.8,ty+.8,3.0], pouso:[tx+.8,ty+.8,5.0]}),
+      ET('a cruz da capelinha', [tx,ty,1.6,1.6], function(){ return cruz(tx+.73,ty+.73,5.0); })
+    ]});
+    P.push({etapas:[
+      ET('a base do poço', [14.6,10.5,1.6,1.6], function(){ return caixa(14.6,10.6,0,1.3,1.3,.7).concat([{c:'f-agua', p:[[14.82,10.82,.7],[15.68,10.82,.7],[15.68,11.68,.7],[14.82,11.68,.7]]}]); }, {ocl:true}),
+      ET('as colunas do poço', [14.6,10.5,1.6,1.6], function(){ return tingir(caixa(14.68,11.18,.7,.14,.14,1.1),'f-mad').concat(tingir(caixa(15.68,11.18,.7,.14,.14,1.1),'f-mad')); }),
+      ET('o telhadinho do poço', [14.6,10.5,1.6,1.6], function(){ return telhado(14.5,10.75,1.8,1.5,1,.5); })
+    ]});
+    var cerca = [
+      ['a cerca da frente', [7.6,14.5,3.4,.1], function(){ return cercaX(7.6,11.0,14.5); }],
+      ['mais cerca na frente', [12.4,14.5,4,.1], function(){ return cercaX(12.4,16.4,14.5); }],
+      ['a cerca do lado direito', [16.3,11,.1,3.6], function(){ return cercaY(11.0,14.6,16.3); }],
+      ['a cerca do lado esquerdo', [7.6,11,.1,3.6], function(){ return cercaY(11.0,14.6,7.6); }],
+      ['mais cerca à direita', [16.3,7.4,.1,3.6], function(){ return cercaY(7.4,11.0,16.3); }],
+      ['mais cerca à esquerda', [7.6,7.4,.1,3.6], function(){ return cercaY(7.4,11.0,7.6); }],
+      ['a cerca dos fundos', [12,7.4,4.4,.1], function(){ return cercaX(12.0,16.4,7.4); }],
+      ['o resto da cerca dos fundos', [7.6,7.4,4.4,.1], function(){ return cercaX(7.6,12.0,7.4); }],
+      ['o portão', [11,14.5,1.4,.12], function(){ return tingir(caixa(10.98,14.48,0,.14,.14,1.15),'f-mad').concat(tingir(caixa(12.28,14.48,0,.14,.14,1.15),'f-mad')).concat(tingir(caixa(10.9,14.48,1.15,1.6,.14,.12),'f-mad')); }]
+    ];
+    P.push({etapas:cerca.map(function(c){ return ET(c[0], c[1], c[2]); })});
+    P.push({etapas:[
+      ET('a rua em frente ao portão', [8.4,15.4,7.2,1.2], function(){ return rua(8.4,15.6,15.4); }, {lane:{a:[8.8,16.0], b:[15.2,16.0]}}),
+      ET('a rua até a capelinha', [15.6,15.4,4.2,1.2], function(){ return rua(15.6,19.8,15.4); }, {lane:{a:[15.2,16.0], b:[19.6,16.0]}}),
+      ET('a rua do lado esquerdo', [4.2,15.4,4.2,1.2], function(){ return rua(4.2,8.4,15.4); }, {lane:{a:[4.4,16.0], b:[8.8,16.0]}}),
+      ET('a rua até o fim da capelinha', [19.8,15.4,4.6,1.2], function(){ return rua(19.8,24.4,15.4); }, {lane:{a:[19.6,16.0], b:[24.2,16.0]}})
+    ]});
+    P.push({etapas:[
+      ET('uma árvore no pomar', [8.0,8.0,1.2,1.2], function(){ return arvore(8.0,8.0); }, {tipo:'arvore', ocl:true}),
+      ET('outra árvore no pomar', [8.0,10.1,1.2,1.2], function(){ return arvore(8.0,10.1); }, {tipo:'arvore', ocl:true}),
+      ET('mais uma árvore no pomar', [14.7,7.9,1.2,1.2], function(){ return arvore(14.7,7.9); }, {tipo:'arvore', ocl:true})
+    ]});
+    P.push({etapas:[
+      ET('o piso da praça', [8.6,17,6.8,2.2], function(){ return caixa(8.6,17,0,6.8,2.2,.06); }, {ord:8.6+17, lane:{a:[9.3,17.8], b:[14.7,17.8]}}),
+      ET('o resto do piso da praça', [8.6,19.2,6.8,2.2], function(){ return caixa(8.6,19.2,0,6.8,2.2,.06); }, {ord:8.6+19.2, lane:{a:[9.3,21.0], b:[14.7,21.0]}}),
+      ET('a base da fonte', [11,18.2,2,2], function(){ return caixa(11,18.2,.06,2,2,.35).concat([{c:'f-agua', p:[[11.25,18.45,.41],[12.75,18.45,.41],[12.75,19.95,.41],[11.25,19.95,.41]]}]); }, {ocl:true}),
+      ET('a taça da fonte', [11,18.2,2,2], function(){ return caixa(11.85,19.05,.41,.3,.3,.9).concat(caixa(11.6,18.8,1.31,.8,.8,.15)).concat([{c:'f-agua', p:[[11.7,18.9,1.46],[12.3,18.9,1.46],[12.3,19.5,1.46],[11.7,19.5,1.46]]}]); }),
+      ET('um banco na praça', [9.2,18.4,1.6,.5], function(){ return banco(9.2,18.4,1.6); }),
+      ET('outro banco na praça', [13.4,18.4,1.6,.5], function(){ return banco(13.4,18.4,1.6); }),
+      ET('um lampião na praça', [8.8,17.1,.5,.5], function(){ return lampiao(8.95,17.25); }),
+      ET('outro lampião na praça', [15.0,17.1,.5,.5], function(){ return lampiao(15.05,17.25); }),
+      ET('um lampião no fundo da praça', [8.8,20.8,.5,.5], function(){ return lampiao(8.95,20.95); }),
+      ET('o último lampião da praça', [15.0,20.8,.5,.5], function(){ return lampiao(15.05,20.95); }),
+      ET('um canteiro de flores na praça', [9.3,19.7,1,.6], function(){ return flores(9.3,19.7); }),
+      ET('outro canteiro de flores na praça', [13.7,19.7,1,.6], function(){ return flores(13.7,19.7); })
+    ]});
+    P.push(obraCasa(17.6,20.4,'perto da praça',23.4));
+    /* Catedral: nave ao longo de y, fachada com duas torres virada para a casa */
+    var nv = [1.6,2.0,3.8,6.0], z0 = .3;
+    var cat = [
+      ET('a fundação da catedral', [-.1,.6,7.2,8.4], function(){ return caixa(-.1,.6,0,7.2,8.4,z0); }, {ord:1}),
+      ET('a escadaria da catedral', [2.3,8.9,2.4,.9], function(){ return caixa(2.3,8.9,0,2.4,.9,.2).concat(caixa(2.45,8.9,.2,2.1,.45,.1)); }, {ord:13})
+    ];
+    var alturas = [[z0,1.0],[1.3,1.0],[2.3,1.0],[3.3,1.0],[4.3,1.0]];
+    alturas.forEach(function(a, i){ cat.push(ET(['as primeiras paredes da catedral','as paredes da catedral subindo','as paredes da catedral na metade','as paredes da catedral mais altas','as paredes da catedral prontas'][i], nv, function(){ return caixa(nv[0],nv[1],a[0],nv[2],nv[3],a[1]); }, {ord:8.5, ocl:i===0, tipo:'casa'})); });
+    [[z0,1.4],[1.7,1.4],[3.1,1.4]].forEach(function(a, i){
+      cat.push(ET(['o transepto da catedral','o transepto subindo','o transepto pronto'][i], [5.4,3.2,1.4,1.8], function(){ return caixa(.2,3.2,a[0],1.4,1.8,a[1]).concat(caixa(5.4,3.2,a[0],1.4,1.8,a[1])); }, {ord:9.6, tipo:'casa', ocl:i===0}));
+    });
+    cat.push(ET('a abside da catedral', [2.4,.8,2.2,1.2], function(){ return caixa(2.4,.8,z0,2.2,1.2,3.8); }, {ord:4.9, tipo:'casa'}));
+    cat.push(ET('o grande portal da catedral', nv, function(){ return arco('y',8,2.95,z0,1.1,2.4).concat(arco('y',8,1.95,1.4,.5,1.4)).concat(arco('y',8,4.55,1.4,.5,1.4)); }, {ord:8.5, tipo:'casa'}));
+    cat.push(ET('a rosácea da catedral', nv, function(){ var pts=[]; for (var i=0;i<16;i++){ var t=Math.PI*2*i/16; pts.push([3.5+.6*Math.cos(t), 8, 4.1+.6*Math.sin(t)]); } return [{c:'f-vao', p:pts}]; }, {ord:8.5, tipo:'casa'}));
+    cat.push(ET('os vitrais da nave', nv, function(){ return arco('x',5.4,2.25,1.6,.5,1.9).concat(arco('x',5.4,5.45,1.6,.5,1.9)).concat(arco('x',5.4,6.55,1.6,.5,1.9)); }, {ord:8.5, tipo:'casa'}));
+    cat.push(ET('os vitrais do transepto', [5.4,3.2,1.4,1.8], function(){ return arco('y',5,5.85,1.3,.5,1.7).concat(arco('x',6.8,3.85,1.3,.5,1.7)); }, {ord:9.6, tipo:'casa'}));
+    cat.push(ET('o telhado da nave', nv, function(){ return telhadoY(1.5,1.95,5.3,4.0,6.1,2.0); }, {ord:8.5, tipo:'casa', pouso:[3.5,5,7.3]}));
+    cat.push(ET('o telhado do transepto', [5.4,3.2,1.4,1.8], function(){ return telhado(.1,3.1,4.5,1.6,2.0,1.1).concat(telhado(5.3,3.1,4.5,1.6,2.0,1.1)); }, {ord:9.6, tipo:'casa'}));
+    cat.push(ET('o telhado da abside', [2.4,.8,2.2,1.2], function(){ return piramide(2.3,.7,4.1,2.4,1.4,1.2); }, {ord:4.9, tipo:'casa'}));
+    var tz = [[z0,2.2],[2.5,2.2],[4.7,2.2],[6.9,1.9]];
+    [['a torre esquerda da catedral',.2],['a torre direita da catedral',5.4]].forEach(function(tw, j){
+      tz.forEach(function(a, i){
+        cat.push(ET(tw[0]+(i===0 ? '' : i===3 ? ' (o campanário)' : ' subindo'), [tw[1],6.8,1.4,1.5], function(){ var f = caixa(tw[1],6.8,a[0],1.4,1.5,a[1]); if (i===3) f = f.concat(arco('y',8.3,tw[1]+.4,7.15,.6,1.2)).concat(arco('x',tw[1]+1.4,7.25,7.15,.6,1.2)); return f; }, {ord:j ? 13.6 : 8.4, tipo:'casa', ocl:i===0}));
+      });
+    });
+    cat.push(ET('a flecha da torre esquerda', [.2,6.8,1.4,1.5], function(){ return piramide(.1,6.7,8.8,1.6,1.7,3.0); }, {ord:8.4, pouso:[.9,7.55,11.8]}));
+    cat.push(ET('a flecha da torre direita', [5.4,6.8,1.4,1.5], function(){ return piramide(5.3,6.7,8.8,1.6,1.7,3.0); }, {ord:13.6, pouso:[6.1,7.55,11.8]}));
+    cat.push(ET('a cúpula da catedral', [2.5,3.1,2,2.2], function(){ var f = caixa(2.6,3.2,6.0,1.8,1.8,1.3); f = f.concat(arco('y',5.0,3.25,6.2,.5,.8)).concat(arco('x',4.4,3.85,6.2,.5,.8)); return f.concat(piramide(2.5,3.1,7.3,2.0,2.0,1.5)); }, {ord:8.6, tipo:'casa'}));
+    cat.push(ET('os sinos da catedral', [5.4,6.8,1.4,1.5], function(){ return tingir(caixa(.5,8.15,7.3,.4,.12,.45),'f-mel').concat(tingir(caixa(5.7,8.15,7.3,.4,.12,.45),'f-mel')); }, {ord:13.7}));
+    cat.push(ET('as cruzes da catedral', [2.5,3.1,2,2.2], function(){ return cruz(3.43,4.03,8.8).concat(cruz(.83,7.48,11.8)).concat(cruz(6.03,7.48,11.8)); }, {ord:13.8}));
+    cat.push(ET('o cruzeiro no adro da catedral', [3.2,10.2,.6,.6], function(){ return caixa(3.2,10.2,0,.6,.6,.2).concat(caixa(3.45,10.45,.2,.1,.1,1.6)).concat(caixa(3.2,10.45,1.3,.6,.1,.1)); }, {lane:{a:[7.0,3.0], b:[7.0,15.2]}}));
+    P.push({andaime:{fp:nv, ate:16, h:[.3,.3,1.3,2.3,3.3,4.3,5.3]}, etapas:cat});
+    P.push(obraCasa(4.6,20.4,'perto da praça',23.4));
+    P.push(obraCasa(2.6,12.4,'na rua principal',15.4));
+    P.push(obraCasa(25.2,12.4,'depois da capelinha',15.4));
+    return P;
   }
-  var SEQ = [], CAND_P = null, CAND_G = null;
-  function hash(a,b){ var h = Math.sin(a*127.1+b*311.7)*43758.5453; return h-Math.floor(h); }
-  function rng(seed){ var s = seed>>>0; return function(){ s = (Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
-  function gerarProximo(){
-    if (!GRADE.cel) iniciarGrade();
-    var k = SEQ.length;
-    if (k%6===5){
-      var bi = (k-5)/6;
-      if (bi < ELEMENTOS.length){ SEQ.push(ELEMENTOS[bi]); return; }
-      if (!CAND_G){ CAND_G=[]; for (var gx=-12; gx<=36; gx+=4.6) for (var gy=-12; gy<=36; gy+=4.6) CAND_G.push([gx,gy]); CAND_G.sort(function(a,b){ return Math.hypot(a[0]-12,a[1]-12)-Math.hypot(b[0]-12,b[1]-12); }); }
-      var arv = bi%3===2;
-      for (var i=0;i<CAND_G.length;i++){
-        var c = CAND_G[i], fp = arv ? [c[0]+1,c[1]+1,1.2,1.2] : [c[0]+.15,c[1]+.15,3.3,2.9];
-        if (!livre(fp,.4)) continue;
-        ocupar(fp,.3);
-        (function(cx,cy){ SEQ.push(arv ? E('uma árvore', fp, function(){ return arvore(cx+1,cy+1); }, 'arvore') : E('uma casa nova', fp, function(){ return casa(cx+.3,cy+.3,3,2.6,2.2,1.3); }, 'casa')); })(c[0],c[1]);
-        return;
+  /* depois do plano: lotes novos (casa + jardim) ao longo das ruas, do centro para fora */
+  var LOTES = null;
+  function lotes(){
+    if (LOTES) return LOTES;
+    var cand = [], usados = [[17.6,20.4],[4.6,20.4],[2.6,12.4],[25.2,12.4]];
+    [[15.4,[-24,44]],[23.4,[-24,44]],[7.4,[-24,44]],[31.4,[-24,44]],[-0.6,[-24,44]],[39.4,[-24,44]],[47.4,[-24,44]]].forEach(function(r){
+      for (var x=r[1][0]; x<=r[1][1]; x+=4.6){
+        var y = r[0]-3, xx = Math.round(x*10)/10;
+        if (r[0]===15.4 && xx>-0.6 && xx<29) continue;          /* casa, cerca e capelinha */
+        if (r[0]===23.4 && xx>7.6 && xx<15.8) continue;         /* praça */
+        if (r[0]===7.4 && xx>-4.6 && xx<17.2) continue;          /* catedral e quintal */
+        if (usados.some(function(u){ return Math.abs(u[0]-xx)<3.5 && Math.abs(u[1]-y)<1; })) continue;
+        cand.push([xx, y, r[0], Math.hypot(xx+1.5-12, y-13)]);
       }
-      SEQ.push(null); return;
-    }
-    var r = rng(k*7919+13), alvo = r()*PEQ_TOTAL, tipo = PEQ_LISTA[0];
-    for (var t=0;t<PEQ_LISTA.length;t++){ alvo -= PEQ[PEQ_LISTA[t]].p; if (alvo<=0){ tipo = PEQ_LISTA[t]; break; } }
-    var pq = PEQ[tipo];
-    if (!CAND_P){ CAND_P=[]; for (var x=-9; x<=33; x+=.7) for (var y=-9; y<=33; y+=.7) CAND_P.push([x,y,Math.hypot(x-11.8,y-11.5)+hash(x,y)*2.2]); CAND_P.sort(function(a,b){ return a[2]-b[2]; }); }
-    for (var q=0;q<CAND_P.length;q++){
-      var cp = CAND_P[q], f2 = [cp[0],cp[1],pq.w,pq.d];
-      if (!livre(f2,.25)) continue;
-      ocupar(f2,.12);
-      (function(px,py,p){ SEQ.push({nome:p.n, fp:f2, f:function(){ return p.f(px,py); }, tipo:(tipo==='arvoreP'||tipo==='arbusto')?'arvore':''}); })(cp[0],cp[1],pq);
-      return;
-    }
-    SEQ.push(null);
+    });
+    cand.sort(function(a,b){ return a[3]-b[3]; });
+    LOTES = cand; return LOTES;
   }
-  function elementoN(k){ while (SEQ.length<=k) gerarProximo(); return SEQ[k]; }
+  var PLANO = null, SEQ = [], FIXO = 0;
+  function juntar(p){ p.inicio = SEQ.length; var pi = PLANO.length-1; p.etapas.forEach(function(e, i){ e.proj = pi; e.i = i; SEQ.push(e); }); }
+  function prepararPlano(){ if (PLANO) return; var base = montarPlano(); PLANO = []; base.forEach(function(p){ PLANO.push(p); juntar(p); }); FIXO = SEQ.length; }
+  function elementoN(k){
+    prepararPlano(); var lt = lotes();
+    while (SEQ.length<=k){ var l = lt[(SEQ.length-FIXO)/6]; if (!l) return null; var ob = obraCasa(l[0], l[1], '', l[2]); PLANO.push(ob); juntar(ob); }
+    return SEQ[k] || null;
+  }
+  function temSino(n){ for (var k=0;k<n;k++){ var e = elementoN(k); if (e && e.sino) return e.sino; } return null; }
+  function lanesDe(n){ var l = [{a:[10.4,13.85], b:[15.8,13.85]}, {a:[11.75,13.5], b:[11.75,15.9]}]; for (var k=0;k<n;k++){ var e = elementoN(k); if (e && e.lane) l.push(e.lane); } return l; }
+  function pousosDe(n){ var l = [[11.8,11.5,3.9]]; for (var k=0;k<n;k++){ var e = elementoN(k); if (e && e.pouso) l.push(e.pouso); } return l; }
+  function andaimes(n){
+    var l = []; elementoN(Math.max(0,n-1));
+    (PLANO||[]).forEach(function(p){
+      if (!p.andaime || p.inicio>=n) return;
+      var feitas = n - p.inicio; if (feitas >= p.andaime.ate) return;
+      var a = p.andaime, f = a.fp, h = (a.h[Math.min(feitas, a.h.length)-1] || .3) + .9, faces = [];
+      [[f[0]+f[2]+.12, f[1]-.2], [f[0]+f[2]+.12, f[1]+f[3]+.12], [f[0]-.2, f[1]+f[3]+.12]].forEach(function(c){ faces = faces.concat(tingir(caixa(c[0],c[1],0,.08,.08,h),'f-mad')); });
+      for (var z=.9; z<h; z+=.9){ faces = faces.concat(tingir(caixa(f[0]-.2,f[1]+f[3]+.12,z,f[2]+.4,.08,.06),'f-mad')).concat(tingir(caixa(f[0]+f[2]+.12,f[1]-.2,z,.08,f[3]+.4,.06),'f-mad')); }
+      l.push({nome:'andaime', fp:f, f:function(){ return faces; }, ord:f[0]+f[2]/2+f[1]+f[3]/2+.01, k:1e6});
+    });
+    return l;
+  }
   function grandes(n){ return Math.floor(n/6); }
   var ESTAGIOS = [[0,'casa'],[30,'sítio'],[100,'vila'],[200,'cidadezinha'],[350,'cidade']];
   function estagio(n){ var e='casa'; ESTAGIOS.forEach(function(x){ if (n>=x[0]) e=x[1]; }); return e; }
@@ -1950,12 +2022,14 @@ textarea.campo{min-height:72px;resize:vertical}
     o = o||{};
     var els = [Object.assign({k:-1}, CASA_PRINCIPAL)];
     for (var k=0;k<n;k++){ var e = elementoN(k); if (e) els.push(Object.assign({k:k}, e)); }
+    els = els.concat(andaimes(n));
     var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     els.forEach(function(e){ var f=e.fp; x0=Math.min(x0,f[0]); y0=Math.min(y0,f[1]); x1=Math.max(x1,f[0]+f[2]); y1=Math.max(y1,f[1]+f[3]); });
     var m = 2; x0-=m; y0-=m; x1+=m; y1+=m;
     var chao = {f:tingir(caixa(x0,y0,-.35,x1-x0,y1-y0,.35),{'f-top':'f-chao'}), i:0};
-    var ord = els.slice().sort(function(a,b){ return (a.fp[0]+a.fp[2]/2+a.fp[1]+a.fp[3]/2) - (b.fp[0]+b.fp[2]/2+b.fp[1]+b.fp[3]/2); });
-    var pecas = [chao].concat(ord.map(function(e){ return {f:e.f(), i:e.k+1, tipo:e.tipo, fp:e.fp, cls:(o.nova!=null && e.k===o.nova ? 'cai' : '')}; }));
+    function chave(e){ return e.ord!=null ? e.ord : e.fp[0]+e.fp[2]/2+e.fp[1]+e.fp[3]/2; }
+    var ord = els.slice().sort(function(a,b){ return (chave(a)-chave(b)) || (a.k-b.k); });
+    var pecas = [chao].concat(ord.map(function(e){ return {f:e.f(), i:Math.min(e.k, n)+1, tipo:e.tipo, fp:e.ocl ? e.fp : null, cls:(o.nova!=null && e.k===o.nova ? 'cai' : '')}; }));
     var passo = Math.max(6, Math.min(85, Math.round(1800/Math.max(1,els.length))));
     return svgIso(pecas, {escala:s, vida:o.vida, classe:o.classe, rotulo:o.rotulo, margem:6, ceu:3*s, estilo:'--passo:'+passo+'ms'});
   }
@@ -2012,7 +2086,7 @@ textarea.campo{min-height:72px;resize:vertical}
     var nb = grandes(n);
     var blocos = Array.prototype.map.call(svg.querySelectorAll('g.peca[data-fp]'), function(g){ var f = g.getAttribute('data-fp').split(',').map(Number); return {g:g, x0:f[0], y0:f[1], x1:f[0]+f[2], y1:f[1]+f[3], sx0:(f[0]-f[1]-f[3])*C30, sx1:(f[0]+f[2]-f[1])*C30}; });
     var w = {chave:chave, svg:svg, vida:vida, s:s, vb:box, blocos:blocos, pessoas:[], fumo:[], aves:[], extras:[], visivel:true, zoom:!!opt.zoom, falaT:5};
-    var lanes = LANES.filter(function(l){ return nb>=l.min; }), np = Math.min(2+Math.floor(nb/2)+Math.floor(n/45), 14);
+    var lanes = lanesDe(n), np = Math.min(2+Math.floor(n/12)+Math.floor(n/45), 14);
     for (var i=0;i<np;i++){
       var fg = figura(s, CAMISAS[i%CAMISAS.length]); fg.g.setAttribute('data-pessoa', i); var wr = el('g',{'class':'vida'}); wr.appendChild(fg.g); vida.appendChild(wr); fg.wr = wr;
       var ln = lanes[i%lanes.length], t0 = Math.random(), p0 = pontoLane(ln, t0);
@@ -2031,7 +2105,7 @@ textarea.campo{min-height:72px;resize:vertical}
     });
     w.santo = w.santos[0] || null;
     for (var f=0; f<3; f++){ var cc = el('circle',{'class':'fumo', r:1}); vida.appendChild(cc); w.fumo.push(cc); }
-    w.pousos = POUSOS.filter(function(p){ return nb>=p.min; }).map(function(p){ return pr(p.p, s); });
+    w.pousos = pousosDe(n).map(function(p){ return pr(p, s); });
     novaAve(w, false);
     w.chamine = pr(CHAMINE, s);
     if ('IntersectionObserver' in window){ var io = new IntersectionObserver(function(es){ w.visivel = es[0].isIntersecting; }); io.observe(svg); }
@@ -2169,7 +2243,7 @@ textarea.campo{min-height:72px;resize:vertical}
   }
   function fraseMorador(){ var l = felicidadeAtual>=55 ? FALAS.alta : felicidadeAtual>=30 ? FALAS.media : FALAS.baixa; return l[Math.floor(Math.random()*l.length)]; }
   function tocarSino(w){
-    var cap = grandes(state.obras)>=14 ? pr(SINO, w.s) : pr([11.8,11.5,3.9], w.s);
+    var sn = temSino(state.obras), cap = sn ? pr(sn, w.s) : pr([11.8,11.5,3.9], w.s);
     w.ondas = w.ondas||[];
     for (var i=0;i<3;i++){ var c = el('circle',{'class':'onda', cx:cap[0], cy:cap[1], r:1}); w.vida.appendChild(c); w.ondas.push({c:c, t:-i*.35}); }
     w.pessoas.forEach(function(p){ p.pulo = .45; });
@@ -3280,7 +3354,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('cg-sub').textContent = plural(n+1,'melhoria','melhorias')+' · '+plural(state.missoes.filter(function(m){ return m.feita && !m.privada; }).length,'missão cumprida','missões cumpridas')+(pe ? ' · '+L('faltam '+(pe[0]-n)+' para virar '+pe[1], (pe[0]-n)+' to become '+umEstagio(pe[1]), 'faltan '+(pe[0]-n)+' para ser '+umEstagio(pe[1]), 'desunt '+(pe[0]-n)+' ut '+umEstagio(pe[1])+' fiat') : '');
     document.getElementById('cg-alegria').innerHTML = htmlAlegria(f);
     document.getElementById('cg-visita').innerHTML = htmlVisita();
-    document.getElementById('cg-prox').innerHTML = L('A cidade cresce com o XP das missões da equipe: a cada 25 XP surge um detalhe novo e, a cada seis detalhes, uma construção. Uma missão heroica (100 XP) vale quatro melhorias; uma mínima (5 XP), um quinto. Faltam '+faltaMelhoria()+' XP para a próxima, que será ', 'The city grows with the team\'s mission XP: every 25 XP adds a new detail and, every six details, a building. A heroic mission (100 XP) is worth four improvements; a minimal one (5 XP), a fifth. '+faltaMelhoria()+' XP to go until the next one, which will be ', 'La ciudad crece con el XP de las misiones del equipo: cada 25 XP aparece un detalle nuevo y, cada seis, una construcción. Una misión heroica (100 XP) vale cuatro mejoras; una mínima (5 XP), un quinto. Faltan '+faltaMelhoria()+' XP para la próxima, que será ', 'Urbs crescit XP missionum sodalium: singulis XXV XP novum aliquid oritur et, sexto quoque, aedificium. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
+    document.getElementById('cg-prox').innerHTML = L('O sítio cresce com o XP das missões da equipe: cada 25 XP é mais uma etapa das obras. Primeiro a entrada e a horta, depois a capelinha, o poço, a cerca, a rua, o pomar, a praça, casas novas e, parede por parede, uma catedral. Faltam '+faltaMelhoria()+' XP para a próxima etapa: ', 'The farm grows with the team\'s mission XP: every 25 XP is one more construction step: the entrance and the garden, then the chapel, the well, the fence, the street, the orchard, the square, new houses and, wall by wall, a cathedral. '+faltaMelhoria()+' XP to go until the next step: ', 'La finca crece con el XP de las misiones del equipo: cada 25 XP es una etapa más de las obras: la entrada y la huerta, luego la capillita, el pozo, la cerca, la calle, el huerto, la plaza, casas nuevas y, pared por pared, una catedral. Faltan '+faltaMelhoria()+' XP para la próxima etapa: ', 'Villa crescit XP missionum: singulis XXV XP novus gradus aedificandi. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
     var ch = n+'|'+santosPresentes().map(function(x){ return x.id; }).join(',');
     if (cidadeN.grande!==ch || !document.querySelector('#cg-arte svg')){ cidadeN.grande = ch; montarMundo(document.getElementById('cg-arte'), n, 14, 'grande'); }
     var l = state.equipe.map(function(p){
@@ -4221,7 +4295,7 @@ textarea.campo{min-height:72px;resize:vertical}
     veuZoom.hidden = false;
     zoomMundo = montarMundo(document.getElementById('z-arte'), n, 20, 'zoom', {zoom:true});
     var b = '<button class="btn btn-claro btn-p" type="button" data-z="luzes">Acender as luzes</button><button class="btn btn-claro btn-p" type="button" data-z="chamar">Chamar os moradores</button><button class="btn btn-claro btn-p" type="button" data-z="aves">Dar comida aos pássaros</button>';
-    if (grandes(n)>=14) b += '<button class="btn btn-claro btn-p" type="button" data-z="sino">Tocar o sino</button>';
+    if (temSino(n)) b += '<button class="btn btn-claro btn-p" type="button" data-z="sino">Tocar o sino</button>';
     b += '<button class="btn btn-claro btn-p" type="button" data-z="conversa">Puxar conversa</button>';
     document.getElementById('z-acoes').innerHTML = b;
     document.getElementById('z-fechar').focus();
