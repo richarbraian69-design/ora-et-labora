@@ -478,7 +478,7 @@ button.circ.feita[data-reabrir]:hover{background:transparent;color:var(--tx3);bo
   .linha{grid-template-columns:22px minmax(0,1fr) auto;grid-template-areas:"chk cnt act" "chk info info" ". sub sub";padding:14px 8px 14px 14px}
   .linha > .circ,.reuniao .marca-r{align-self:start;margin-top:2px}
   .r-info{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;grid-area:info;margin-top:6px}
-  .r-acoes{flex-wrap:wrap;max-width:62px;justify-content:flex-end}
+  .r-acoes{flex-wrap:wrap;max-width:94px;justify-content:flex-end}
 }
 
 /* Formulários */
@@ -1140,6 +1140,7 @@ textarea.campo{min-height:72px;resize:vertical}
   <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
   <label class="massa-campo" id="massa-tipo-l"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
   <button class="massa-b" type="button" id="massa-pessoal"></button>
+  <button class="massa-b" type="button" id="massa-duplicar"></button>
   <button class="massa-b perigo" type="button" id="massa-excluir"></button>
   <button class="massa-x" type="button" id="massa-fechar" aria-label="Fechar">×</button>
 </div>
@@ -2288,6 +2289,7 @@ textarea.campo{min-height:72px;resize:vertical}
   var I_ESCUDO = svgIcone(ICONES.aprovar,1.6), I_CADEADO = svgIcone(ICONES.pessoal,1.6);
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
   var ALCA = '<svg viewBox="0 0 8 14" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.2"/><circle cx="6" cy="2" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="6" cy="7" r="1.2"/><circle cx="2" cy="12" r="1.2"/><circle cx="6" cy="12" r="1.2"/></g></svg>';
+  var I_DUP = svgIcone('<rect x="6.5" y="6.5" width="10" height="10" rx="2"/><path d="M13.5 6.5V5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5v7A1.5 1.5 0 0 0 5 13.5h1.5"/>',1.6);
   var I_SUB = svgIcone('<path d="M3 5h10M3 10h6M3 15h6M14.5 10v6M11.5 13h6"/>',1.6), I_MOVER = svgIcone('<path d="M5 3.5v6.5a3 3 0 0 0 3 3h8M13 10l3 3-3 3"/>',1.6);
   var I_LIXO = svgIcone('<path d="M4.5 6h11M8 6V4h4v2M6 6l.8 10h6.4L14 6"/>',1.6), I_TAG = svgIcone('<path d="M3.5 10.2V4.5a1 1 0 0 1 1-1h5.7l6.3 6.3a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0z"/><circle cx="7" cy="7" r="1.1"/>',1.6);
   var I_CLIPE = svgIcone('<path d="M15 9.2l-5.3 5.3a3.2 3.2 0 0 1-4.5-4.5l6-6a2.1 2.1 0 0 1 3 3l-6 6a1.1 1.1 0 0 1-1.5-1.5l5.3-5.3"/>',1.6), I_BAIXAR = svgIcone('<path d="M10 3.5v9M6 9l4 4 4-4M4 16.5h12"/>',1.6);
@@ -2302,7 +2304,29 @@ textarea.campo{min-height:72px;resize:vertical}
     });
   }
 
+  /* ---------- Duplicar: cópia logo abaixo da original, ainda por fazer ---------- */
+  function copiaDe(m){
+    var c = JSON.parse(JSON.stringify(m));
+    c.id = uid(); c.feita = false; c.feitaEm = null; c.oferecida = false; c.aprov = null; c.criadaPor = eu; c.criadaEm = new Date().toISOString();
+    ['aprovadaPor','cidadeXp','origem','ajustes','exemplo','clickup'].forEach(function(k){ delete c[k]; });
+    c.subs = (c.subs||[]).map(function(sb){ sb.id = uid(); sb.feita = false; sb.feitaEm = null; delete sb.oferecida; delete sb.cidadeXp; return sb; });
+    return c;
+  }
+  function duplicar(ids){
+    var antes = JSON.stringify(state.missoes), novas = [];
+    ids.forEach(function(id){
+      var m = achar(id); if (!m || (m.privada && m.dono!==eu)) return;
+      var c = copiaDe(m), i = state.missoes.indexOf(m);
+      state.missoes.splice(i+1, 0, c); novas.push(c);
+      if (c.resp===eu || c.privada) marcarVistas(eu, [c.id]);
+    });
+    if (!novas.length) return;
+    ultimaNova = novas[0].id; selecao = {}; salvar(); render();
+    avisar(novas.length===1 ? L('Missão duplicada: “{t}”.','Mission duplicated: “{t}”.','Misión duplicada: “{t}”.','Missio duplicata: “{t}”.').replace('{t}', novas[0].titulo) : L(novas.length+' missões duplicadas.', novas.length+' missions duplicated.', novas.length+' misiones duplicadas.', novas.length+' missiones duplicatae.'), antes);
+  }
   document.addEventListener('click', function(e){
+    var dp = e.target.closest('[data-duplicar]');
+    if (dp && !selecionando){ e.preventDefault(); duplicar([dp.getAttribute('data-duplicar')]); return; }
     var b = e.target.closest('[data-editar-m]');
     if (b && !selecionando){ e.preventDefault(); editandoMissao = b.getAttribute('data-editar-m'); render();
       var f = document.querySelector('[data-m-form="'+editandoMissao+'"] textarea'); if (f){ f.focus(); f.setSelectionRange(f.value.length, f.value.length); f.closest('form').scrollIntoView({block:'nearest'}); } return; }
@@ -3039,6 +3063,7 @@ textarea.campo{min-height:72px;resize:vertical}
       '<div class="r-acoes">'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-taguear="'+m.id+'" aria-label="Cliente de '+esc(m.titulo)+'" title="Cliente (tag)">'+I_TAG+'</button>')+
         '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="Editar título, descrição, data…">'+I_EDITAR+'</button>'+
+        '<button class="icone-btn" type="button" data-duplicar="'+m.id+'" aria-label="'+L('Duplicar','Duplicate','Duplicar','Duplicare')+': '+esc(m.titulo)+'" title="'+L('Duplicar missão','Duplicate mission','Duplicar misión','Missionem duplicare')+'">'+I_DUP+'</button>'+
         (m.privada ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para as missões da equipe','Move to team missions','Llevar a las misiones del equipo','Ad missiones sodalium transferre')+'" aria-label="'+L('Levar para a equipe','Move to team','Llevar al equipo','Ad sodales')+'">'+svgIcone(ICONES.todas)+'</button>'
           : (m.resp===eu ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para a Minha área (só você vê)','Move to My space (only you see it)','Llevar a Mi área (solo tú la ves)','In Aream meam transferre')+'" aria-label="'+L('Levar para a Minha área','Move to My space','Llevar a Mi área','In Aream meam')+'">'+I_CADEADO+'</button>' : ''))+
         '<button class="icone-btn" type="button" data-anexar="m:'+m.id+'" aria-label="Anexar arquivo em '+esc(m.titulo)+'" title="Anexar arquivo">'+I_CLIPE+'</button>'+
@@ -3931,6 +3956,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('massa-l-tipo').textContent = L('Tipo','Type','Tipo','Genus');
     document.getElementById('massa-tipo').innerHTML = opcoesTipo('', true);
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
+    document.getElementById('massa-duplicar').textContent = L('Duplicar','Duplicate','Duplicar','Duplicare');
     document.getElementById('massa-pessoal').textContent = L('Para Minha área','To My space','A Mi área','In Aream meam');
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
     document.getElementById('massa-peso').disabled = !nTot;
@@ -4003,6 +4029,7 @@ textarea.campo{min-height:72px;resize:vertical}
     emMassa(function(m){ if (m.privada) return false; if (m.resp!==eu){ outras++; return false; } paraPessoal(m); }, L('{n} missões foram para a Minha área.','{n} missions moved to My space.','{n} misiones pasaron a Mi área.','{n} missionibus in Aream meam translatis.'));
     if (outras) setTimeout(function(){ avisar(L(outras+' não foram porque têm outro responsável.', outras+' were skipped because someone else owns them.', outras+' no se movieron porque tienen otro responsable.', outras+' omissae sunt: alius curator.')); }, 2600);
   });
+  document.getElementById('massa-duplicar').addEventListener('click', function(){ var ids = idsSel(); if (!ids.length){ avisar(L('Selecione missões para duplicar.','Select missions to duplicate.','Selecciona misiones para duplicar.','Missiones elige.')); return; } duplicar(ids); });
   document.getElementById('massa-excluir').addEventListener('click', function(){
     var ids = idsSel(), ss = subsSel(), tot = ids.length + ss.length; if (!tot) return;
     var antes = JSON.stringify(state.missoes), set = {}; ids.forEach(function(id){ set[id] = 1; });
@@ -4781,7 +4808,7 @@ textarea.campo{min-height:72px;resize:vertical}
   }
   function renderContador(){
     var el = document.getElementById('contador'); if (!el) return;
-    if (!logado || app.hidden){ el.hidden = true; return; }
+    if (!logado || app.hidden || selecionando){ el.hidden = true; return; }
     var o = proximaOracao(), r = proximaReuniao(), h = '';
     if (o) h += '<button type="button" data-cont-oracao title="'+esc(L('Próxima oração','Next prayer','Próxima oración','Proxima oratio')+': '+o.nome+' · '+pad(o.t.getHours())+':00')+'">'+I_CRUZ+'<span><b>'+esc(o.nome)+'</b> '+esc(faltam(o.t - Date.now()))+'</span></button>';
     if (r){ var ms = r.t - Date.now(); h += '<button type="button" data-cont-reuniao class="'+(ms < 15*60000 ? 'perto' : '')+'" title="'+esc(r.r.titulo+' · '+r.r.inicio)+'">'+I_REUN+'<span><b>'+esc(r.r.titulo)+'</b> '+esc(faltam(ms))+'</span></button>'; }
