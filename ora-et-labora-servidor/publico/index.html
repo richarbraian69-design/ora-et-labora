@@ -490,7 +490,8 @@ button.circ.feita[data-reabrir]:hover{background:transparent;color:var(--tx3);bo
 @media (max-width:620px){.campos{grid-template-columns:minmax(0,1fr)}}
 label,.rotulo{display:grid;gap:5px;font-size:.8rem;font-weight:500;color:var(--tx2)}
 .campo{background:var(--painel);border:1px solid var(--linha);border-radius:9px;padding:8px 10px;font-size:.95rem;font-weight:400;color:var(--tx);width:100%;min-width:0}
-textarea.campo{min-height:72px;resize:vertical}
+textarea.campo{min-height:72px;resize:vertical;overflow-y:hidden;max-height:70vh}
+textarea.campo.rolando{overflow-y:auto}
 .campo:focus{outline:none;border-color:var(--tx2)}
 .acoes{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .arquivos-sel{font-size:.82rem;color:var(--tx2)}
@@ -604,11 +605,17 @@ textarea.campo{min-height:72px;resize:vertical}
 .chegada .acoes{justify-content:center;animation:aparecer .4s ease both;animation-delay:var(--fim,1s)}
 
 .zoom{width:100%;max-width:960px;background:var(--painel);border:1px solid var(--linha);border-radius:20px;box-shadow:var(--sombra);padding:18px 18px 16px;display:grid;gap:12px}
-.zoom-topo{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px}
+.zoom-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.zoom-topo > div{min-width:0;flex:1}
+.zoom-topo > .icone-btn{flex:none}
 .zoom-topo h3{margin:0;font-family:var(--f-serif);font-weight:400;font-size:1.7rem;line-height:1.05}
 .zoom-topo h3 em{font-style:italic}
 .zoom-topo p{margin:4px 0 0;color:var(--tx2);font-size:.88rem}
-.zoom-arte{background:var(--bg);border-radius:14px;overflow:hidden}
+.zoom-arte{background:var(--bg);border-radius:14px;overflow:hidden;touch-action:none;cursor:grab}
+.zoom-arte.arrastando{cursor:grabbing}
+.zoom-palco{position:relative}
+.zoom-ctl{position:absolute;right:10px;top:10px;display:grid;gap:4px}
+.zoom-ctl button{width:34px;height:34px;border-radius:10px;border:1px solid var(--linha);background:var(--painel);color:var(--tx);font-size:1.15rem;line-height:1;cursor:pointer;box-shadow:var(--sombra)}
 .zoom-acoes{display:flex;flex-wrap:wrap;gap:8px}
 
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:45;width:max-content;max-width:calc(100% - 32px);display:flex;align-items:center;gap:14px;
@@ -763,6 +770,16 @@ textarea.campo{min-height:72px;resize:vertical}
 .rit-oracao{font-family:var(--f-serif);font-size:1.08rem;line-height:1.45;padding:4px 0 4px 14px;border-left:2px solid var(--ouro,#d8b04a)}
 .rit-oracao p{margin:0}
 .rit-passo.feito .rit-oracao{display:none}
+.rit-santidade{margin-top:6px;padding:14px 16px;border-radius:12px;background:var(--sup);border-left:3px solid var(--ouro,#d8b04a);display:grid;gap:4px}
+.rit-santidade .rit-tit{margin:0}
+.ent-links{display:grid;gap:8px}
+.ent-linha{display:flex;gap:6px;align-items:center}
+.ent-linha .campo{flex:1}
+.ent-ver{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.82rem;margin-top:6px;color:var(--tx2)}
+.ent-ver a{color:var(--tx);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+.icone-btn.prio-btn.on{color:#d39b12}
+.icone-btn.prio-btn.on svg{fill:#f2c94c}
+.linha.prioridade{box-shadow:inset 3px 0 0 #e2b93b}
 .nota-limpa{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;background:var(--sup);font-size:.9rem;margin-bottom:4px}
 .versiculos{padding:4px 18px 10px;display:grid;gap:8px}
 .versiculos blockquote{margin:0;font-family:var(--f-serif);font-style:italic;font-size:1.02rem;line-height:1.35}
@@ -1140,6 +1157,7 @@ textarea.campo{min-height:72px;resize:vertical}
   <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
   <label class="massa-campo" id="massa-tipo-l"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
   <button class="massa-b" type="button" id="massa-pessoal"></button>
+  <button class="massa-b" type="button" id="massa-prio"></button>
   <button class="massa-b" type="button" id="massa-duplicar"></button>
   <button class="massa-b perigo" type="button" id="massa-excluir"></button>
   <button class="massa-x" type="button" id="massa-fechar" aria-label="Fechar">×</button>
@@ -1180,10 +1198,11 @@ textarea.campo{min-height:72px;resize:vertical}
 <div class="veu" id="veu-zoom" hidden>
   <div class="zoom" role="dialog" aria-modal="true" aria-labelledby="z-tit">
     <div class="zoom-topo">
-      <div><h3 id="z-tit"></h3><p>Toque nos moradores para conversar, na casa para acender as luzes e nas árvores para balançá-las.</p></div>
+      <div><h3 id="z-tit"></h3><p>Arraste para passear, use a rodinha do mouse (ou dois dedos) para o zoom. Toque nos moradores para conversar, nas casas para acender as luzes e nas árvores para balançá-las.</p></div>
       <button class="icone-btn" id="z-fechar" type="button" aria-label="Fechar">×</button>
     </div>
-    <div class="zoom-arte clicavel" id="z-arte"></div>
+    <div class="zoom-palco"><div class="zoom-arte clicavel" id="z-arte"></div>
+      <div class="zoom-ctl" aria-label="Zoom"><button type="button" data-zz="mais" aria-label="Aproximar" title="Aproximar">+</button><button type="button" data-zz="menos" aria-label="Afastar" title="Afastar">−</button><button type="button" data-zz="centro" aria-label="Voltar ao centro" title="Voltar ao centro">⟲</button></div></div>
     <div class="zoom-acoes" id="z-acoes"></div>
   </div>
 </div>
@@ -1196,6 +1215,18 @@ textarea.campo{min-height:72px;resize:vertical}
     <div id="rec-dias-bloco"><p class="rot" style="margin:6px 0">Nos dias</p><div class="rec-dias" id="rec-dias"></div></div>
     <p class="rec-resumo" id="rec-resumo"></p>
     <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Salvar repetição</button><button class="btn btn-claro btn-grande" type="button" id="rec-cancelar">Cancelar</button></div>
+  </form>
+</div>
+
+<div class="veu" id="veu-entrega" hidden>
+  <form class="cartao" role="dialog" aria-modal="true" aria-labelledby="ent-tit" id="ent-form" autocomplete="off" novalidate>
+    <p class="rot">Enviar para aprovação</p>
+    <h2 id="ent-tit">Onde está o trabalho <em>finalizado</em>?</h2>
+    <p class="ofe-missao" id="ent-missao"></p>
+    <p class="nota" style="margin:0">Cole o link da entrega (Drive, Figma, vídeo…) para <b id="ent-para"></b> aprovar. Pode colocar mais de um.</p>
+    <div class="ent-links" id="ent-links"></div>
+    <button class="link" type="button" id="ent-mais" style="justify-self:start">+ Adicionar outro link</button>
+    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Enviar para aprovação</button><button class="btn btn-claro btn-grande" type="button" id="ent-cancelar">Cancelar</button></div>
   </form>
 </div>
 
@@ -1824,7 +1855,7 @@ textarea.campo{min-height:72px;resize:vertical}
     for (var i=0;i<12;i++){ var t=Math.PI*2*i/12; pts.push([cx+.55*Math.cos(t), y+2.2, cz+.55*Math.sin(t)]); }
     return f.concat([{c:'f-top', p:pts}]).concat(piramide(x-.1,y-.1,5,2.4,2.4,1.6)); }
   /* ---------- Plano de obras do sítio ----------
-     Cada melhoria (25 XP) é uma etapa de uma obra planejada: a entrada da casa, a horta, a capelinha, o poço, a cerca,
+     Cada melhoria (50 XP) é uma etapa de uma obra planejada: a entrada da casa, a horta, a capelinha, o poço, a cerca,
      a rua, o pomar, a praça, casas novas e uma catedral inteira, que sobe parede por parede. Depois disso, novos lotes
      (casa + jardim) vão ocupando as ruas. O número de melhorias é o mesmo de antes: só o desenho mudou. */
   var CASA_PRINCIPAL = {nome:'a sua casa', fp:[10,10,3.6,3], tipo:'casa', ocl:true, f:function(){ return casa(10,10,3.6,3,2.4,1.5); }};
@@ -2039,15 +2070,21 @@ textarea.campo{min-height:72px;resize:vertical}
   var SVGNS = 'http://www.w3.org/2000/svg', CAMISAS = ['#e2742c','#2f7fe6','#2b9a5a','#d6336c','#7a5af5','#c99a06','#0f9fb5','#d64545'];
   var mundos = [], raf = null, ultimoTs = 0, felicidadeAtual = 60;
   function el(tag, at){ var e=document.createElementNS(SVGNS, tag); for (var k in at) e.setAttribute(k, at[k]); return e; }
-  /* ---------- A cidade cresce por XP: cada 25 XP de missões da equipe = 1 melhoria ---------- */
-  var XP_MELHORIA = 25;
+  /* ---------- A cidade cresce por XP: cada 50 XP de missões da equipe = 1 melhoria ---------- */
+  /* desde out/2026 cada melhoria custa 50 XP; o que já estava construído fica (base) */
+  var XP_MELHORIA = 50, XP_ANTIGO = 25;
+  function baseCidade(){
+    if (typeof state.xpCidade!=='number') state.xpCidade = (state.obras||0)*XP_ANTIGO;
+    if (!state.cidadeBase || typeof state.cidadeBase.xp!=='number') state.cidadeBase = {xp:state.xpCidade, obras:state.obras||0};
+    return state.cidadeBase;
+  }
   function somarCidade(xp){
-    var antes = state.obras||0;
-    state.xpCidade = Math.max(0, (typeof state.xpCidade==='number' ? state.xpCidade : antes*XP_MELHORIA) + xp);
-    state.obras = Math.floor(state.xpCidade / XP_MELHORIA);
+    var antes = state.obras||0, b = baseCidade();
+    state.xpCidade = Math.max(0, state.xpCidade + xp);
+    state.obras = Math.max(0, b.obras + Math.floor((state.xpCidade - b.xp) / XP_MELHORIA));
     return state.obras - antes;
   }
-  function faltaMelhoria(){ var x = typeof state.xpCidade==='number' ? state.xpCidade : (state.obras||0)*XP_MELHORIA; return XP_MELHORIA - (x % XP_MELHORIA); }
+  function faltaMelhoria(){ var b = baseCidade(), r = ((state.xpCidade - b.xp) % XP_MELHORIA + XP_MELHORIA) % XP_MELHORIA; return XP_MELHORIA - r; }
   function felicidade(){
     var agora = Date.now(), f = 35;
     state.missoes.forEach(function(m){ if (!m.privada && m.feita && m.feitaEm){ var d=(agora-new Date(m.feitaEm).getTime())/864e5; if (d<7) f += 14*Math.min(3, (PESOS[m.peso] ? PESOS[m.peso].xp : 25)/25)*(1-d/7); } });
@@ -2078,6 +2115,7 @@ textarea.campo{min-height:72px;resize:vertical}
     cont.innerHTML = cidadeSVG(n, s, {vida:true, rotulo:seuEstagio(n)+L(' com ',' with ',' con ',' cum ')+(n+1)+L(' construções',' buildings',' construcciones',' aedificiis')});
     var svg = cont.querySelector('svg'), vida = svg.querySelector('.vida'), vb = svg.viewBox.baseVal;
     var box = {x:vb.x, y:vb.y, w:vb.width, h:vb.height};
+    var cheio = {x:box.x, y:box.y, w:box.w, h:box.h};
     if (opt.zoom){
       var c = pr([11.8,12,1.4], s), ww = Math.min(box.w, 30*s), hh = Math.min(box.h, 17*s);
       box = {x:c[0]-ww/2, y:c[1]-hh*.55, w:ww, h:hh};
@@ -2086,7 +2124,7 @@ textarea.campo{min-height:72px;resize:vertical}
     mundos = mundos.filter(function(w){ return w.chave!==chave && w.svg.isConnected; });
     var nb = grandes(n);
     var blocos = Array.prototype.map.call(svg.querySelectorAll('g.peca[data-fp]'), function(g){ var f = g.getAttribute('data-fp').split(',').map(Number); return {g:g, x0:f[0], y0:f[1], x1:f[0]+f[2], y1:f[1]+f[3], sx0:(f[0]-f[1]-f[3])*C30, sx1:(f[0]+f[2]-f[1])*C30}; });
-    var w = {chave:chave, svg:svg, vida:vida, s:s, vb:box, blocos:blocos, pessoas:[], fumo:[], aves:[], extras:[], visivel:true, zoom:!!opt.zoom, falaT:5};
+    var w = {chave:chave, svg:svg, vida:vida, s:s, vb:box, cheio:cheio, inicial:{x:box.x, y:box.y, w:box.w, h:box.h}, blocos:blocos, pessoas:[], fumo:[], aves:[], extras:[], visivel:true, zoom:!!opt.zoom, falaT:5};
     var lanes = lanesDe(n), np = Math.min(2+Math.floor(n/12)+Math.floor(n/45), 14);
     for (var i=0;i<np;i++){
       var fg = figura(s, CAMISAS[i%CAMISAS.length]); fg.g.setAttribute('data-pessoa', i); var wr = el('g',{'class':'vida'}); wr.appendChild(fg.g); vida.appendChild(wr); fg.wr = wr;
@@ -2154,7 +2192,9 @@ textarea.campo{min-height:72px;resize:vertical}
     else {
       var dx = p.alvo[0]-p.x, dy = p.alvo[1]-p.y, d = Math.hypot(dx,dy), passo = dt*p.vel;
       if (d <= passo || d<.001){ p.x = p.alvo[0]; p.y = p.alvo[1]; p.pausa = 1+Math.random()*3.5;
-        if (p.voltar){ p.alvo = pontoLane(p.lane, Math.random()); p.voltar = false; p.pausa = 3+Math.random()*2; }
+        if (p.rota && p.rota.length){ p.alvo = p.rota.shift(); p.pausa = .05; }
+        else if (p.fimPausa!=null){ p.pausa = p.fimPausa; p.fimPausa = null; p.rota = null; p.voltar = false; p.alvo = pontoLane(p.lane, Math.random()); }
+        else if (p.voltar){ p.alvo = pontoLane(p.lane, Math.random()); p.voltar = false; p.pausa = 3+Math.random()*2; }
         else p.alvo = pontoLane(p.lane, Math.random()); }
       else if (dt>0){ p.x += dx/d*passo; p.y += dy/d*passo; andando = true; }
     }
@@ -2289,6 +2329,7 @@ textarea.campo{min-height:72px;resize:vertical}
   var I_ESCUDO = svgIcone(ICONES.aprovar,1.6), I_CADEADO = svgIcone(ICONES.pessoal,1.6);
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
   var ALCA = '<svg viewBox="0 0 8 14" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.2"/><circle cx="6" cy="2" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="6" cy="7" r="1.2"/><circle cx="2" cy="12" r="1.2"/><circle cx="6" cy="12" r="1.2"/></g></svg>';
+  var I_ESTRELA = svgIcone('<path d="M10 2.8l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 8.1l5-.7z"/>',1.5);
   var I_DUP = svgIcone('<rect x="6.5" y="6.5" width="10" height="10" rx="2"/><path d="M13.5 6.5V5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 5v7A1.5 1.5 0 0 0 5 13.5h1.5"/>',1.6);
   var I_SUB = svgIcone('<path d="M3 5h10M3 10h6M3 15h6M14.5 10v6M11.5 13h6"/>',1.6), I_MOVER = svgIcone('<path d="M5 3.5v6.5a3 3 0 0 0 3 3h8M13 10l3 3-3 3"/>',1.6);
   var I_LIXO = svgIcone('<path d="M4.5 6h11M8 6V4h4v2M6 6l.8 10h6.4L14 6"/>',1.6), I_TAG = svgIcone('<path d="M3.5 10.2V4.5a1 1 0 0 1 1-1h5.7l6.3 6.3a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0z"/><circle cx="7" cy="7" r="1.1"/>',1.6);
@@ -2325,6 +2366,8 @@ textarea.campo{min-height:72px;resize:vertical}
     avisar(novas.length===1 ? L('Missão duplicada: “{t}”.','Mission duplicated: “{t}”.','Misión duplicada: “{t}”.','Missio duplicata: “{t}”.').replace('{t}', novas[0].titulo) : L(novas.length+' missões duplicadas.', novas.length+' missions duplicated.', novas.length+' misiones duplicadas.', novas.length+' missiones duplicatae.'), antes);
   }
   document.addEventListener('click', function(e){
+    var pb = e.target.closest('[data-prioridade]');
+    if (pb && !selecionando){ e.preventDefault(); alternarPrioridade([pb.getAttribute('data-prioridade')]); return; }
     var dp = e.target.closest('[data-duplicar]');
     if (dp && !selecionando){ e.preventDefault(); duplicar([dp.getAttribute('data-duplicar')]); return; }
     var b = e.target.closest('[data-editar-m]');
@@ -2423,7 +2466,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (!state.prefs || typeof state.prefs!=='object') state.prefs = {};
     if (typeof state.obras!=='number') state.obras = state.missoes.filter(function(m){ return m.feita && !m.privada; }).length;
     if (!state.v3){ if (temExemplos) state.obras = Math.max(state.obras, 42); state.semVisita = state.semVisita||0; state.v3 = true; }
-    if (typeof state.xpCidade!=='number') state.xpCidade = (state.obras||0)*XP_MELHORIA;
+    baseCidade();
     if (!state.v4){ if (temExemplos) exemplosV4(); state.v4 = true; }
   }
   /* Exemplos das funções novas: recorrência, aprovação, criativos, área pessoal e hábitos. */
@@ -2638,6 +2681,15 @@ textarea.campo{min-height:72px;resize:vertical}
   var porTipo = lsGet('ora-por-tipo')!=='0', agrupandoTipo = false;
   /* os tipos são só do administrador (Richar); a equipe não vê */
   function usaTipos(){ return !SERVIDOR || !!pessoa(eu).admin; }
+  /* prioridades: só o administrador marca e vê; ficam guardadas nas preferências dele */
+  function prioridades(){ var p = prefsEu().prioridades; return Array.isArray(p) ? p : []; }
+  function ehPrioridade(m){ return usaTipos() && !m.feita && prioridades().indexOf(m.id)>=0; }
+  function alternarPrioridade(ids, forcar){
+    var p = prioridades().filter(function(id){ var m = achar(id); return m && !m.feita; }), liga = forcar!=null ? forcar : ids.some(function(id){ return p.indexOf(id)<0; });
+    ids.forEach(function(id){ var i = p.indexOf(id); if (liga && i<0) p.push(id); if (!liga && i>=0) p.splice(i,1); });
+    prefsEu().prioridades = p; salvar(); render();
+    avisar(liga ? (ids.length>1 ? L(ids.length+' missões marcadas como prioridade.', ids.length+' missions marked as priority.', ids.length+' misiones marcadas como prioridad.', ids.length+' missiones praecipuae.') : L('Marcada como prioridade de hoje.','Marked as today’s priority.','Marcada como prioridad de hoy.','Praecipua hodie.')) : L('Prioridade retirada.','Priority removed.','Prioridad quitada.','Remota.'));
+  }
   /* Hoje por tipo: atrasadas + de hoje, separadas em Rápidas, Mensagens, Tráfego… (as atrasadas vêm primeiro em cada grupo) */
   function gruposPorTipo(atras, deHoje){
     var todas = atras.concat(deHoje), g = [];
@@ -3046,15 +3098,16 @@ textarea.campo{min-height:72px;resize:vertical}
     if (m.criativo && m.criativo.cidade) ind += '<span class="st" title="Criativo">'+esc(m.criativo.cidade)+' · '+esc(m.criativo.formato||'criativo')+'</span>';
     var aprova = precisaAprovacao(m) && !m.feita, est = aprova && m.aprov ? m.aprov.estado : '', status = '';
     if (est==='aguardando'){
-      status = '<span class="st espera">'+I_ESCUDO+'Aguardando aprovação de '+esc(pessoa(m.aprovador).nome)+'</span>';
+      status = '<span class="st espera">'+I_ESCUDO+'Aguardando aprovação de '+esc(pessoa(m.aprovador).nome)+'</span>'+htmlLinks(m.aprov.links, L('Entrega:','Delivery:','Entrega:','Opus:'));
       if (m.aprovador===eu) status += '<div class="aprov-acoes"><button class="btn btn-escuro btn-p" type="button" data-aprovar="'+m.id+'">Aprovar</button><button class="btn btn-claro btn-p" type="button" data-pedir-ajuste="'+m.id+'">Pedir ajustes</button></div>'+
         (pedindoAjuste===m.id ? '<form class="aprov-form" data-ajuste-form="'+m.id+'"><label>O que precisa ser ajustado?<textarea class="campo" name="nota" id="aj-nota-'+m.id+'" maxlength="400" required></textarea></label><div class="acoes"><button class="btn btn-escuro btn-p" type="submit">Enviar para '+esc(p.nome)+'</button><button class="btn btn-claro btn-p" type="button" data-pedir-ajuste="'+m.id+'">Cancelar</button></div></form>' : '');
     } else if (est==='ajustes'){
       status = '<span class="st ajuste">'+I_ESCUDO+'Ajustes pedidos por '+esc(pessoa(m.aprov.por).nome)+'</span>'+(m.aprov.nota ? '<p class="nota-ajuste">'+esc(m.aprov.nota)+'</p>' : '');
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
+    if (m.entrega && m.entrega.length && !est) status += htmlLinks(m.entrega, L('Entrega:','Delivery:','Entrega:','Opus:'));
     var circ = m.feita ? (podeReabrir(m) ? '<button class="circ feita" type="button" data-reabrir="'+m.id+'" aria-label="'+esc(L('Voltar a fazer','Mark as not done','Volver a hacer','Iterum facere'))+': '+esc(m.titulo)+'" title="'+esc(L('Cumprida · clique para voltar a fazer','Done · click to mark as not done','Cumplida · haz clic para volver a hacer','Perfecta · preme ut iterum facias'))+'"'+'>'+CHECK+'</button>' : '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>') :
       '<button class="circ'+(est==='aguardando'?' espera':'')+'" type="button" data-cumprir="'+m.id+'" aria-label="'+(est==='aguardando' ? (m.aprovador===eu ? 'Aprovar' : 'Aguardando aprovação')+': ' : aprova && m.aprovador!==eu ? 'Enviar para aprovação: ' : 'Cumprir missão: ')+esc(m.titulo)+'" title="'+(aprova && m.aprovador!==eu ? 'Concluir e enviar para aprovação' : 'Cumprir missão')+'">'+CHECK+'</button>';
-    return '<article class="linha'+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'"'+(selecionando && selecao[m.id] ? ' draggable="true"' : '')+'>'+
+    return '<article class="linha'+(ehPrioridade(m)?' prioridade':'')+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'"'+(selecionando && selecao[m.id] ? ' draggable="true"' : '')+'>'+
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
@@ -3063,6 +3116,7 @@ textarea.campo{min-height:72px;resize:vertical}
       '<div class="r-acoes">'+
         (m.privada ? '' : '<button class="icone-btn" type="button" data-taguear="'+m.id+'" aria-label="Cliente de '+esc(m.titulo)+'" title="Cliente (tag)">'+I_TAG+'</button>')+
         '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="Editar título, descrição, data…">'+I_EDITAR+'</button>'+
+        (usaTipos() && !m.feita ? '<button class="icone-btn prio-btn'+(ehPrioridade(m)?' on':'')+'" type="button" data-prioridade="'+m.id+'" aria-pressed="'+ehPrioridade(m)+'" aria-label="'+L('Prioridade','Priority','Prioridad','Praecipua')+': '+esc(m.titulo)+'" title="'+(ehPrioridade(m) ? L('Tirar das prioridades','Remove from priorities','Quitar de las prioridades','Removere') : L('Marcar como prioridade de hoje','Mark as today’s priority','Marcar como prioridad de hoy','Praecipuam facere'))+'">'+I_ESTRELA+'</button>' : '')+
         '<button class="icone-btn" type="button" data-duplicar="'+m.id+'" aria-label="'+L('Duplicar','Duplicate','Duplicar','Duplicare')+': '+esc(m.titulo)+'" title="'+L('Duplicar missão','Duplicate mission','Duplicar misión','Missionem duplicare')+'">'+I_DUP+'</button>'+
         (m.privada ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para as missões da equipe','Move to team missions','Llevar a las misiones del equipo','Ad missiones sodalium transferre')+'" aria-label="'+L('Levar para a equipe','Move to team','Llevar al equipo','Ad sodales')+'">'+svgIcone(ICONES.todas)+'</button>'
           : (m.resp===eu ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para a Minha área (só você vê)','Move to My space (only you see it)','Llevar a Mi área (solo tú la ves)','In Aream meam transferre')+'" aria-label="'+L('Levar para a Minha área','Move to My space','Llevar a Mi área','In Aream meam')+'">'+I_CADEADO+'</button>' : ''))+
@@ -3124,9 +3178,12 @@ textarea.campo{min-height:72px;resize:vertical}
       '<h3>'+L('Três passos para liberar o seu dia','Three steps to unlock your day','Tres pasos para liberar tu día','Tres gradus ut dies aperiatur')+'</h3>'+
       '<ol class="rit-lista">'+
       passo('cel', 1, L('Deixei o celular com a minha esposa.','I left my phone with my wife.','Dejé el celular con mi esposa.','Telephonum uxori reliqui.'), '', L('Confirmo','Confirm','Confirmo','Confirmo'))+
-      passo('limpa', 2, L('Vou fazer uma limpa real nas demandas e definir as prioridades de hoje.','I will do a real clean-up of the tasks and set today’s priorities.','Haré una limpieza real de las tareas y definiré las prioridades de hoy.','Negotia vere purgabo et hodierna praecipua statuam.'), '<p class="rit-dica">'+L('Logo depois de liberar, revise a lista: o que não é para hoje, remarque ou exclua.','Right after unlocking, review the list: reschedule or delete what is not for today.','Justo después de liberar, revisa la lista: reprograma o elimina lo que no es para hoy.','Statim post, indicem recense.')+'</p>', L('Confirmo','Confirm','Confirmo','Confirmo'))+
+      passo('limpa', 2, L('Vou fazer uma limpa real nas demandas e definir as prioridades de hoje.','I will do a real clean-up of the tasks and set today’s priorities.','Haré una limpieza real de las tareas y definiré las prioridades de hoy.','Negotia vere purgabo et hodierna praecipua statuam.'), '<p class="rit-dica">'+L('Logo depois de liberar, revise a lista: o que não é para hoje, remarque ou exclua. Marque com a estrela ★ as prioridades.','Right after unlocking, review the list: reschedule or delete what is not for today.','Justo después de liberar, revisa la lista: reprograma o elimina lo que no es para hoy.','Statim post, indicem recense.')+'</p>', L('Confirmo','Confirm','Confirmo','Confirmo'))+
       passo('paz', 3, L('Oração de São Francisco de Assis','Prayer of Saint Francis','Oración de San Francisco de Asís','Oratio Sancti Francisci'), '<div class="rit-oracao">'+ORACAO_PAZ.map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('')+'</div>', L('Amém, rezei','Amen, I prayed','Amén, recé','Amen, oravi'))+
-      '</ol></div>';
+      '</ol>'+
+      '<div class="rit-santidade"><p class="rit-tit">'+L('Peça a santidade a Deus','Ask God for holiness','Pide a Dios la santidad','A Deo sanctitatem pete')+'</p>'+
+      '<p class="rit-dica">'+L('Reze com as suas palavras, pedindo a Deus a graça de ser santo hoje, no trabalho, em casa e em cada missão.','Pray in your own words, asking God for the grace to be holy today, at work, at home and in every mission.','Reza con tus palabras, pidiendo a Dios la gracia de ser santo hoy, en el trabajo, en casa y en cada misión.','Verbis tuis ora, a Deo gratiam sanctitatis hodie petens.')+'</p></div>'+
+      '</div>';
   }
   function htmlNotaLimpa(){
     if (!ritualAtivo() || prefsEu().ritualFeito!==hoje || prefsEu().limpaFeita===hoje || vista!=='hoje') return '';
@@ -3142,6 +3199,11 @@ textarea.campo{min-height:72px;resize:vertical}
     }
     if (e.target.closest('[data-limpa-ok]')){ prefsEu().limpaFeita = hoje; salvar(); renderLista(); }
   });
+  /* caixas de texto crescem conforme se digita */
+  function crescer(t){ if (!t || t.tagName!=='TEXTAREA' || !t.classList.contains('campo')) return; t.style.height = 'auto'; var max = innerHeight*.7, h = t.scrollHeight+2; t.style.height = Math.min(h, max)+'px'; t.classList.toggle('rolando', h>max); }
+  function crescerTodas(raiz){ Array.prototype.forEach.call((raiz||document).querySelectorAll('textarea.campo'), function(t){ if (t.offsetParent) crescer(t); }); }
+  document.addEventListener('input', function(e){ crescer(e.target); });
+  document.addEventListener('focusin', function(e){ crescer(e.target); });
   function renderLista(){
     if (ritualBloqueado()){ gruposNaTela = []; document.getElementById('lista').innerHTML = htmlRitual(); renderGruposTg(); return; }
     var q = busca.trim().toLowerCase();
@@ -3159,12 +3221,15 @@ textarea.campo{min-height:72px;resize:vertical}
     else if (vista==='hoje'){
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
       agrupandoTipo = porTipo && !q && usaTipos();
+      var prios = usaTipos() && !q ? doFiltro().filter(ehPrioridade).sort(function(a,b){ return prioridades().indexOf(a.id)-prioridades().indexOf(b.id); }) : [];
+      var foraP = function(l){ return l.filter(function(m){ return prios.indexOf(m)<0; }); };
+      s.atras = foraP(s.atras); s.hoje = foraP(s.hoje);
       var pesHoje = (filtro==='todos' || filtro===eu) && !filtroTag ? minhasPessoais().filter(function(m){
         if (m.feita || !m.data || m.data>hoje) return false;
         if (!q) return true;
         return (m.titulo+' '+(m.descricao||'')+' '+(m.area||'')).toLowerCase().indexOf(q)>=0;
       }).sort(porData) : [];
-      g = [['Aguardando sua aprovação',am]].concat(agrupandoTipo ? gruposPorTipo(fora(s.atras), fora(s.hoje)) : [['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]])
+      g = [['Aguardando sua aprovação',am], [L('★ Prioridades de hoje','★ Today’s priorities','★ Prioridades de hoy','★ Praecipua hodie'), prios, 0, 'prioridades']].concat(agrupandoTipo ? gruposPorTipo(fora(s.atras), fora(s.hoje)) : [['Atrasadas',fora(s.atras),1],['Hoje',fora(s.hoje)]])
         .concat([[L('Minhas missões pessoais','My personal missions','Mis misiones personales','Missiones meae privatae')+' <span class="so-voce">· '+L('só você vê','only you see','solo tú ves','tu solus vides')+'</span>', pesHoje, pesHoje.some(function(m){ return m.data<hoje; }) ? 1 : 0, 'pessoais-hoje']])
         .concat(verFeitas ? [['Cumpridas hoje',s.feitasHoje]] : []);
     }
@@ -3379,7 +3444,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('cg-sub').textContent = plural(n+1,'melhoria','melhorias')+' · '+plural(state.missoes.filter(function(m){ return m.feita && !m.privada; }).length,'missão cumprida','missões cumpridas')+(pe ? ' · '+L('faltam '+(pe[0]-n)+' para virar '+pe[1], (pe[0]-n)+' to become '+umEstagio(pe[1]), 'faltan '+(pe[0]-n)+' para ser '+umEstagio(pe[1]), 'desunt '+(pe[0]-n)+' ut '+umEstagio(pe[1])+' fiat') : '');
     document.getElementById('cg-alegria').innerHTML = htmlAlegria(f);
     document.getElementById('cg-visita').innerHTML = htmlVisita();
-    document.getElementById('cg-prox').innerHTML = L('O sítio cresce com o XP das missões da equipe: cada 25 XP é mais uma etapa das obras. Primeiro a entrada e a horta, depois a capelinha, o poço, a cerca, a rua, o pomar, a praça, casas novas e, parede por parede, uma catedral. Faltam '+faltaMelhoria()+' XP para a próxima etapa: ', 'The farm grows with the team\'s mission XP: every 25 XP is one more construction step: the entrance and the garden, then the chapel, the well, the fence, the street, the orchard, the square, new houses and, wall by wall, a cathedral. '+faltaMelhoria()+' XP to go until the next step: ', 'La finca crece con el XP de las misiones del equipo: cada 25 XP es una etapa más de las obras: la entrada y la huerta, luego la capillita, el pozo, la cerca, la calle, el huerto, la plaza, casas nuevas y, pared por pared, una catedral. Faltan '+faltaMelhoria()+' XP para la próxima etapa: ', 'Villa crescit XP missionum: singulis XXV XP novus gradus aedificandi. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
+    document.getElementById('cg-prox').innerHTML = L('O sítio cresce com o XP das missões da equipe: cada 50 XP é mais uma etapa das obras. Primeiro a entrada e a horta, depois a capelinha, o poço, a cerca, a rua, o pomar, a praça, casas novas e, parede por parede, uma catedral. Faltam '+faltaMelhoria()+' XP para a próxima etapa: ', 'The farm grows with the team\'s mission XP: every 50 XP is one more construction step: the entrance and the garden, then the chapel, the well, the fence, the street, the orchard, the square, new houses and, wall by wall, a cathedral. '+faltaMelhoria()+' XP to go until the next step: ', 'La finca crece con el XP de las misiones del equipo: cada 50 XP es una etapa más de las obras: la entrada y la huerta, luego la capillita, el pozo, la cerca, la calle, el huerto, la plaza, casas nuevas y, pared por pared, una catedral. Faltan '+faltaMelhoria()+' XP para la próxima etapa: ', 'Villa crescit XP missionum: singulis L XP novus gradus aedificandi. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
     var ch = n+'|'+santosPresentes().map(function(x){ return x.id; }).join(',');
     if (cidadeN.grande!==ch || !document.querySelector('#cg-arte svg')){ cidadeN.grande = ch; montarMundo(document.getElementById('cg-arte'), n, 14, 'grande'); }
     var l = state.equipe.map(function(p){
@@ -3540,7 +3605,7 @@ textarea.campo{min-height:72px;resize:vertical}
       (rh ? ' · '+plural(rh,'reunião','reuniões') : '')+(s.atras.length ? ' · <span class="alerta">'+plural(s.atras.length,'atrasada','atrasadas')+'</span>' : '')+'</span>';
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
-  function render(){ if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function render(){ if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -3957,6 +4022,7 @@ textarea.campo{min-height:72px;resize:vertical}
     document.getElementById('massa-tipo').innerHTML = opcoesTipo('', true);
     document.getElementById('massa-excluir').textContent = L('Excluir','Delete','Eliminar','Delere');
     document.getElementById('massa-duplicar').textContent = L('Duplicar','Duplicate','Duplicar','Duplicare');
+    document.getElementById('massa-prio').textContent = '★ '+L('Prioridade','Priority','Prioridad','Praecipua'); document.getElementById('massa-prio').hidden = !usaTipos();
     document.getElementById('massa-pessoal').textContent = L('Para Minha área','To My space','A Mi área','In Aream meam');
     Array.prototype.forEach.call(bar.querySelectorAll('select,button:not(#massa-fechar):not(#massa-todas)'), function(el){ el.disabled = !nTot; });
     document.getElementById('massa-peso').disabled = !nTot;
@@ -4029,6 +4095,7 @@ textarea.campo{min-height:72px;resize:vertical}
     emMassa(function(m){ if (m.privada) return false; if (m.resp!==eu){ outras++; return false; } paraPessoal(m); }, L('{n} missões foram para a Minha área.','{n} missions moved to My space.','{n} misiones pasaron a Mi área.','{n} missionibus in Aream meam translatis.'));
     if (outras) setTimeout(function(){ avisar(L(outras+' não foram porque têm outro responsável.', outras+' were skipped because someone else owns them.', outras+' no se movieron porque tienen otro responsable.', outras+' omissae sunt: alius curator.')); }, 2600);
   });
+  document.getElementById('massa-prio').addEventListener('click', function(){ var ids = idsSel(); if (!ids.length) return; selecao = {}; alternarPrioridade(ids); });
   document.getElementById('massa-duplicar').addEventListener('click', function(){ var ids = idsSel(); if (!ids.length){ avisar(L('Selecione missões para duplicar.','Select missions to duplicate.','Selecciona misiones para duplicar.','Missiones elige.')); return; } duplicar(ids); });
   document.getElementById('massa-excluir').addEventListener('click', function(){
     var ids = idsSel(), ss = subsSel(), tot = ids.length + ss.length; if (!tot) return;
@@ -4132,7 +4199,7 @@ textarea.campo{min-height:72px;resize:vertical}
     m.feita = false; m.feitaEm = null; m.oferecida = false;
     if (m.aprovadaPor) delete m.aprovadaPor;
     if (m.aprov && m.aprov.estado!=='ajustes') m.aprov = null;
-    if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_MELHORIA)); delete m.cidadeXp; }
+    if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_ANTIGO)); delete m.cidadeXp; }
     /* a repetição criada quando ela foi cumprida some (senão a próxima ficaria duplicada) */
     if (m.recorrencia){
       var raiz = m.origem || m.id, filhas = state.missoes.filter(function(x){ return x!==m && !x.feita && (x.origem===raiz) && (!quando || (x.criadaEm||'') >= quando); })
@@ -4157,9 +4224,34 @@ textarea.campo{min-height:72px;resize:vertical}
     }
     if (!m.oferecida) abrirOferta(m, function(){ concluir(m); }); else concluir(m);
   }
-  function enviarAprovacao(m){
-    m.aprov = {estado:'aguardando', em:new Date().toISOString(), por:eu}; salvar(); render();
+  function enviarAprovacao(m){ abrirEntrega(m); }
+  function confirmarAprovacao(m, links){
+    m.aprov = {estado:'aguardando', em:new Date().toISOString(), por:eu, links:links}; salvar(); render();
     avisar('Enviada para a aprovação de '+pessoa(m.aprovador).nome+'. A missão é cumprida quando for aprovada.');
+  }
+  /* links do trabalho entregue (um ou vários) */
+  var veuEnt = document.getElementById('veu-entrega'), entMissao = null;
+  function linhaLink(v){ return '<div class="ent-linha"><input class="campo" type="url" inputmode="url" placeholder="https://…" value="'+esc(v||'')+'"><button class="icone-btn" type="button" data-ent-tirar aria-label="Tirar este link">×</button></div>'; }
+  function abrirEntrega(m){
+    entMissao = m;
+    var ant = (m.aprov && m.aprov.links) || m.entrega || [];
+    document.getElementById('ent-missao').textContent = m.titulo;
+    document.getElementById('ent-para').textContent = pessoa(m.aprovador).nome;
+    document.getElementById('ent-links').innerHTML = (ant.length ? ant : ['']).map(linhaLink).join('');
+    veuEnt.hidden = false; var i = document.querySelector('#ent-links input'); if (i) i.focus();
+  }
+  function fecharEntrega(){ veuEnt.hidden = true; entMissao = null; }
+  document.getElementById('ent-mais').addEventListener('click', function(){ document.getElementById('ent-links').insertAdjacentHTML('beforeend', linhaLink('')); var l = document.querySelectorAll('#ent-links input'); l[l.length-1].focus(); });
+  document.getElementById('ent-links').addEventListener('click', function(e){ var b = e.target.closest('[data-ent-tirar]'); if (!b) return; var lin = b.closest('.ent-linha'); if (document.querySelectorAll('#ent-links .ent-linha').length>1) lin.remove(); else lin.querySelector('input').value = ''; });
+  document.getElementById('ent-cancelar').addEventListener('click', fecharEntrega);
+  document.getElementById('ent-form').addEventListener('submit', function(e){
+    e.preventDefault(); var m = entMissao; if (!m) return;
+    var links = Array.prototype.map.call(document.querySelectorAll('#ent-links input'), function(i){ var v = i.value.trim(); if (v && !/^[a-z]+:\/\//i.test(v)) v = 'https://'+v; return v; }).filter(Boolean);
+    fecharEntrega(); confirmarAprovacao(m, links);
+  });
+  function htmlLinks(links, rot){
+    if (!links || !links.length) return '';
+    return '<div class="ent-ver"><span>'+rot+'</span>'+links.map(function(u, i){ var t = u.replace(/^https?:\/\/(www\.)?/,''); if (t.length>42) t = t.slice(0,40)+'…'; return '<a href="'+esc(u)+'" target="_blank" rel="noopener" title="'+esc(u)+'">'+esc(t)+'</a>'; }).join('')+'</div>';
   }
 
   /* Oferecer a missão antes de cumpri-la */
@@ -4248,7 +4340,7 @@ textarea.campo{min-height:72px;resize:vertical}
     pendenteSubs = (m.subs||[]).map(function(s){ return s.feita; });
     (m.subs||[]).forEach(function(s){ s.feita = true; });
     m.feita = true; m.feitaEm = new Date().toISOString();
-    if (aprovou){ m.aprovadaPor = eu; m.aprov = null; }
+    if (aprovou){ if (m.aprov && m.aprov.links && m.aprov.links.length) m.entrega = m.aprov.links.slice(); m.aprovadaPor = eu; m.aprov = null; }
     pendenteVisita = {visita:state.visita||null, semVisita:state.semVisita||0};
     var novoSanto = null;
     var ganhoObras = 0;
@@ -4302,7 +4394,7 @@ textarea.campo{min-height:72px;resize:vertical}
   document.getElementById('g-desfazer').addEventListener('click', function(){
     var m = pendente;
     if (m){
-      m.feita = false; m.feitaEm = null; if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_MELHORIA)); delete m.cidadeXp; }
+      m.feita = false; m.feitaEm = null; if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_ANTIGO)); delete m.cidadeXp; }
       (m.subs||[]).forEach(function(s,i){ if (pendenteSubs && i<pendenteSubs.length) s.feita = pendenteSubs[i]; });
       if (pendenteVisita){ state.visita = pendenteVisita.visita; state.semVisita = pendenteVisita.semVisita; }
       if (pendenteAprov){ m.aprov = pendenteAprov.aprov; if (pendenteAprov.aprovadaPor) m.aprovadaPor = pendenteAprov.aprovadaPor; else delete m.aprovadaPor; }
@@ -4322,11 +4414,48 @@ textarea.campo{min-height:72px;resize:vertical}
     veuZoom.hidden = false;
     zoomMundo = montarMundo(document.getElementById('z-arte'), n, 20, 'zoom', {zoom:true});
     var b = '<button class="btn btn-claro btn-p" type="button" data-z="luzes">Acender as luzes</button><button class="btn btn-claro btn-p" type="button" data-z="chamar">Chamar os moradores</button><button class="btn btn-claro btn-p" type="button" data-z="aves">Dar comida aos pássaros</button>';
-    if (temSino(n)) b += '<button class="btn btn-claro btn-p" type="button" data-z="sino">Tocar o sino</button>';
+    if (temSino(n)) b += '<button class="btn btn-claro btn-p" type="button" data-z="sino">Tocar o sino</button><button class="btn btn-claro btn-p" type="button" data-z="missa">Chamar para a Missa</button>';
+    b += '<button class="btn btn-claro btn-p" type="button" data-z="procissao">Fazer uma procissão</button><button class="btn btn-claro btn-p" type="button" data-z="terco">Rezar o terço juntos</button>';
     b += '<button class="btn btn-claro btn-p" type="button" data-z="conversa">Puxar conversa</button>';
     document.getElementById('z-acoes').innerHTML = b;
     document.getElementById('z-fechar').focus();
   }
+  function etapaFeita(nome){ for (var k=0;k<state.obras;k++){ var e = elementoN(k); if (e && e.nome===nome) return true; } return false; }
+  function todosMoradores(w){ return (w.santos||[]).concat(w.pessoas); }
+  function irPor(p, pts, espera, fim){ p.alvo = pts[0]; p.rota = pts.slice(1); p.pausa = espera||0; p.fimPausa = fim; p.voltar = false; }
+  /* zoom e arrasto na casa de perto */
+  function aplicarVB(w, b){
+    var c = w.cheio, maxW = Math.max(c.w*1.15, w.inicial.w), minW = w.s*6, asp = w.inicial.h/w.inicial.w;
+    var nw = Math.max(minW, Math.min(maxW, b.w)), nh = nw*asp, cx = b.x + b.w/2, cy = b.y + b.h/2;
+    cx = Math.max(c.x, Math.min(c.x+c.w, cx)); cy = Math.max(c.y, Math.min(c.y+c.h, cy));
+    w.vb = {x:cx-nw/2, y:cy-nh/2, w:nw, h:nh};
+    w.svg.setAttribute('viewBox', w.vb.x.toFixed(1)+' '+w.vb.y.toFixed(1)+' '+w.vb.w.toFixed(1)+' '+w.vb.h.toFixed(1));
+  }
+  function zoomEm(w, fator, px, py){
+    var r = w.svg.getBoundingClientRect(), b = w.vb, fx = px==null ? .5 : (px - r.left)/r.width, fy = py==null ? .5 : (py - r.top)/r.height;
+    var nw = b.w*fator, nh = b.h*fator;
+    aplicarVB(w, {x:b.x + (b.w-nw)*fx, y:b.y + (b.h-nh)*fy, w:nw, h:nh});
+  }
+  (function(){
+    var za = document.getElementById('z-arte'), pts = {}, ini = null, arrastou = false;
+    za.addEventListener('wheel', function(e){ var w = zoomMundo; if (!w) return; e.preventDefault(); zoomEm(w, e.deltaY>0 ? 1.15 : 1/1.15, e.clientX, e.clientY); }, {passive:false});
+    za.addEventListener('pointerdown', function(e){ var w = zoomMundo; if (!w) return; pts[e.pointerId] = [e.clientX, e.clientY]; ini = {b:{x:w.vb.x, y:w.vb.y, w:w.vb.w, h:w.vb.h}, p:[e.clientX, e.clientY], d:null}; arrastou = false;
+      var k = Object.keys(pts); if (k.length===2){ var a = pts[k[0]], c = pts[k[1]]; ini.d = Math.hypot(a[0]-c[0], a[1]-c[1]); ini.m = [(a[0]+c[0])/2, (a[1]+c[1])/2]; } });
+    za.addEventListener('pointermove', function(e){
+      var w = zoomMundo; if (!w || !ini || !pts[e.pointerId]) return; pts[e.pointerId] = [e.clientX, e.clientY];
+      var k = Object.keys(pts), r = w.svg.getBoundingClientRect();
+      if (k.length>=2 && ini.d){ var a = pts[k[0]], c = pts[k[1]], d = Math.hypot(a[0]-c[0], a[1]-c[1]); if (d>10){ w.vb = {x:ini.b.x, y:ini.b.y, w:ini.b.w, h:ini.b.h}; zoomEm(w, ini.d/d, ini.m[0], ini.m[1]); arrastou = true; } return; }
+      var dx = e.clientX-ini.p[0], dy = e.clientY-ini.p[1];
+      if (!arrastou && Math.hypot(dx,dy) < 5) return;
+      if (!arrastou){ arrastou = true; za.classList.add('arrastando'); try { za.setPointerCapture(e.pointerId); } catch(err) {} }
+      aplicarVB(w, {x:ini.b.x - dx*ini.b.w/r.width, y:ini.b.y - dy*ini.b.h/r.height, w:ini.b.w, h:ini.b.h});
+    });
+    function soltar(e){ delete pts[e.pointerId]; if (!Object.keys(pts).length){ ini = null; za.classList.remove('arrastando'); } else if (zoomMundo){ var w = zoomMundo, k = Object.keys(pts); ini = {b:{x:w.vb.x, y:w.vb.y, w:w.vb.w, h:w.vb.h}, p:pts[k[0]], d:null}; } }
+    za.addEventListener('pointerup', soltar); za.addEventListener('pointercancel', soltar);
+    za.addEventListener('click', function(e){ if (arrastou){ e.stopImmediatePropagation(); e.preventDefault(); arrastou = false; } }, true);
+    document.querySelector('.zoom-ctl').addEventListener('click', function(e){ var b = e.target.closest('[data-zz]'), w = zoomMundo; if (!b || !w) return; var a = b.getAttribute('data-zz');
+      if (a==='mais') zoomEm(w, 1/1.3); else if (a==='menos') zoomEm(w, 1.3); else aplicarVB(w, w.inicial); });
+  })();
   function fecharZoom(){ veuZoom.hidden = true; document.getElementById('z-arte').innerHTML = ''; zoomMundo = null; }
   ['cid-arte','cg-arte'].forEach(function(id){
     var c = document.getElementById(id);
@@ -4350,6 +4479,29 @@ textarea.campo{min-height:72px;resize:vertical}
     else if (acao==='chamar'){ w.pessoas.forEach(function(p, i){ p.alvo = [PORTA[0]-1.6+(i%5)*.8, PORTA[1]+.3+Math.floor(i/5)*.7]; p.pausa = 0; p.voltar = true; p.vel = 1.4; setTimeout(function(){ p.vel = .8+Math.random()*.5; }, 6000); }); if (w.pessoas[0]) falar(w, w.pessoas[0], 'Já vamos!', 2.5); }
     else if (acao==='aves'){ var base = w.pessoas[0] ? [w.pessoas[0].x, w.pessoas[0].y] : PORTA; for (var i=0;i<3;i++) novaAve(w, true, [base[0]+.6+i*.5, base[1]+.4+(i%2)*.4]); }
     else if (acao==='sino'){ tocarSino(w); }
+    else if (acao==='missa'){
+      var cat = etapaFeita('os sinos da catedral'), alvoM = cat ? [3.5, 10.6] : [20.2, 13.0];
+      tocarSino(w);
+      todosMoradores(w).forEach(function(p, i){ var fila = Math.floor(i/5), col = i%5, pts = [[11.75,15.9], [alvoM[0]-1.6+col*.8, alvoM[1]+.5+fila*.7]]; if (cat) pts.splice(1,0,[7.0,15.9],[7.0,11.0]); p.vel = 1.4; irPor(p, pts, i*.3, 12); });
+      if (w.pessoas[0]) falar(w, w.pessoas[0], 'A Missa já vai começar!', 3);
+      if (w.santos && w.santos[0]) setTimeout(function(){ falar(w, w.santos[0], 'Vamos, irmãos!', 3); }, 1400);
+    }
+    else if (acao==='procissao'){
+      var rota = [[11.75,13.6],[11.75,15.9],[19.4,15.9]];
+      if (etapaFeita('a cruz da capelinha')) rota.push([20.2,13.0]);
+      rota.push([19.4,15.9],[8.6,15.9],[11.75,15.9],[11.75,13.6]);
+      todosMoradores(w).forEach(function(p, i){ p.x = 11.75; p.y = 13.6 - .01*i; p.vel = .7; irPor(p, rota.map(function(q){ return [q[0], q[1]]; }), i*.9, 3); });
+      var cabeca = (w.santos && w.santos[0]) || w.pessoas[0];
+      if (cabeca) falar(w, cabeca, '♪ Queremos Deus, que é nosso Rei…', 4);
+      setTimeout(function(){ if (w.pessoas[1]) falar(w, w.pessoas[1], '♪ Queremos Deus, que é nosso Pai!', 4); }, 4500);
+    }
+    else if (acao==='terco'){
+      var cf = etapaFeita('a base da fonte') ? [12, 19.2, 1.9] : [11.8, 14.6, 1.5];
+      var ps = todosMoradores(w);
+      ps.forEach(function(p, i){ var a = Math.PI*2*i/ps.length; p.vel = 1.3; irPor(p, [[cf[0]+Math.cos(a)*cf[2], cf[1]+Math.sin(a)*cf[2]*.8]], 0, 22); });
+      var ave = ['Ave Maria, cheia de graça…','Santa Maria, Mãe de Deus…','Pai Nosso que estais no céu…','Glória ao Pai…','Rogai por nós!'];
+      for (var r=0;r<6;r++) (function(r){ setTimeout(function(){ var q = ps[r % ps.length]; if (q && zoomMundo===w) falar(w, q, ave[r % ave.length], 3); }, 2500 + r*3200); })(r);
+    }
     else if (acao==='conversa'){ var p = w.pessoas[Math.floor(Math.random()*w.pessoas.length)]; if (p) falar(w, p, fraseMorador(), 3); (w.santos||[]).forEach(function(sa, k){ setTimeout(function(){ falar(w, sa, sa.def.falas[Math.floor(Math.random()*sa.def.falas.length)], 3); }, 900+k*1300); }); }
   });
 
@@ -4357,6 +4509,7 @@ textarea.campo{min-height:72px;resize:vertical}
     if (e.key==='Escape'){
       if (!lightbox.hidden) lightbox.hidden = true;
       else if (!veuOferta.hidden) fecharOferta();
+      else if (!veuEnt.hidden) fecharEntrega();
       else if (!veuAng.hidden) veuAng.hidden = true;
       else if (!veuRev.hidden) document.getElementById('rv-fechar').click();
       else if (!veuExame.hidden) document.getElementById('ex-depois').click();
@@ -4834,7 +4987,7 @@ textarea.campo{min-height:72px;resize:vertical}
   function itensLocais(){
     var r = {};
     COLS.forEach(function(c){ (state[c]||[]).forEach(function(x){ if (x && x.id) r[c+'|'+x.id] = {col:c, id:x.id, privado:privadoDe(c,x), dados:x}; }); });
-    r['meta|cidade'] = {col:'meta', id:'cidade', privado:false, dados:{obras:state.obras, xpCidade:state.xpCidade, ultimoSanto:state.ultimoSanto||null, visita:state.visita||null, semVisita:state.semVisita||0}};
+    r['meta|cidade'] = {col:'meta', id:'cidade', privado:false, dados:{obras:state.obras, xpCidade:state.xpCidade, cidadeBase:state.cidadeBase||null, ultimoSanto:state.ultimoSanto||null, visita:state.visita||null, semVisita:state.semVisita||0}};
     r['prefs|'+eu] = {col:'prefs', id:eu, privado:true, dados:prefsEu()};
     return r;
   }
@@ -4861,7 +5014,7 @@ textarea.campo{min-height:72px;resize:vertical}
       if (!it.apagado && SYNC.ultimo[k]===j) return;
       if (it.apagado && !(k in SYNC.ultimo)) return;
       mudou = true;
-      if (it.col==='meta'){ if (!it.apagado && it.id==='cidade'){ state.obras = it.dados.obras||0; state.ultimoSanto = it.dados.ultimoSanto||null; state.xpCidade = typeof it.dados.xpCidade==='number' ? it.dados.xpCidade : state.obras*XP_MELHORIA; state.visita = it.dados.visita||null; state.semVisita = it.dados.semVisita||0; } }
+      if (it.col==='meta'){ if (!it.apagado && it.id==='cidade'){ state.obras = it.dados.obras||0; state.ultimoSanto = it.dados.ultimoSanto||null; state.xpCidade = typeof it.dados.xpCidade==='number' ? it.dados.xpCidade : state.obras*XP_ANTIGO; state.cidadeBase = it.dados.cidadeBase || null; baseCidade(); state.visita = it.dados.visita||null; state.semVisita = it.dados.semVisita||0; } }
       else if (it.col==='prefs'){ if (!it.apagado) state.prefs[it.id] = it.dados; }
       else if (state[it.col]){
         var arr = state[it.col], i = -1; for (var x=0;x<arr.length;x++) if (arr[x].id===it.id){ i = x; break; }
