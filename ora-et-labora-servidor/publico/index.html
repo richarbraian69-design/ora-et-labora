@@ -773,6 +773,8 @@ textarea.campo.rolando{overflow-y:auto}
 .rit-santidade{margin-top:6px;padding:14px 16px;border-radius:12px;background:var(--sup);border-left:3px solid var(--ouro,#d8b04a);display:grid;gap:4px}
 .rit-santidade .rit-tit{margin:0}
 .ent-links{display:grid;gap:8px}
+.of-entrega{display:grid;gap:8px;padding-top:10px;border-top:1px solid var(--linha)}
+.of-entrega[hidden]{display:none}
 .ent-linha{display:flex;gap:6px;align-items:center}
 .ent-linha .campo{flex:1}
 .ent-ver{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.82rem;margin-top:6px;color:var(--tx2)}
@@ -1223,7 +1225,7 @@ textarea.campo.rolando{overflow-y:auto}
     <p class="rot">Enviar para aprovação</p>
     <h2 id="ent-tit">Onde está o trabalho <em>finalizado</em>?</h2>
     <p class="ofe-missao" id="ent-missao"></p>
-    <p class="nota" style="margin:0">Cole o link da entrega (Drive, Figma, vídeo…) para <b id="ent-para"></b> aprovar. Pode colocar mais de um.</p>
+    <p class="nota" style="margin:0" id="ent-para"></p>
     <div class="ent-links" id="ent-links"></div>
     <button class="link" type="button" id="ent-mais" style="justify-self:start">+ Adicionar outro link</button>
     <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Enviar para aprovação</button><button class="btn btn-claro btn-grande" type="button" id="ent-cancelar">Cancelar</button></div>
@@ -1238,6 +1240,12 @@ textarea.campo.rolando{overflow-y:auto}
     <div class="ofe-chips" id="of-chips"></div>
     <label>Intenção<input class="campo" id="of-texto" maxlength="140" placeholder="Ex.: pela saúde da minha mãe" required></label>
     <p class="nota" style="margin:0">Só você vê suas intenções.</p>
+    <div class="of-entrega" id="of-entrega" hidden>
+      <p class="rot" style="margin:6px 0 0">Link da entrega</p>
+      <p class="nota" style="margin:0" id="of-ent-para"></p>
+      <div class="ent-links" id="of-ent-links"></div>
+      <button class="link" type="button" id="of-ent-mais" style="justify-self:start">+ Adicionar outro link</button>
+    </div>
     <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit" id="of-ok" disabled>Oferecer e cumprir</button><button class="btn btn-claro btn-grande" type="button" id="of-cancelar">Cancelar</button></div>
   </form>
 </div>
@@ -4219,7 +4227,7 @@ textarea.campo.rolando{overflow-y:auto}
     pendenteOferta = null;
     if (precisaAprovacao(m) && eu!==m.aprovador){
       if (m.aprov && m.aprov.estado==='aguardando'){ avisar('Já está aguardando a aprovação de '+pessoa(m.aprovador).nome+'.'); return; }
-      if (!m.oferecida) abrirOferta(m, function(){ enviarAprovacao(m); }); else enviarAprovacao(m);
+      if (!m.oferecida) abrirOferta(m, function(links){ confirmarAprovacao(m, links || []); }); else enviarAprovacao(m);
       return;
     }
     if (!m.oferecida) abrirOferta(m, function(){ concluir(m); }); else concluir(m);
@@ -4231,12 +4239,12 @@ textarea.campo.rolando{overflow-y:auto}
   }
   /* links do trabalho entregue (um ou vários) */
   var veuEnt = document.getElementById('veu-entrega'), entMissao = null;
-  function linhaLink(v){ return '<div class="ent-linha"><input class="campo" type="url" inputmode="url" placeholder="https://…" value="'+esc(v||'')+'"><button class="icone-btn" type="button" data-ent-tirar aria-label="Tirar este link">×</button></div>'; }
+  function linhaLink(v){ return '<div class="ent-linha"><input class="campo" type="text" inputmode="url" autocomplete="off" placeholder="https://…" value="'+esc(v||'')+'"><button class="icone-btn" type="button" data-ent-tirar aria-label="Tirar este link">×</button></div>'; }
   function abrirEntrega(m){
     entMissao = m;
     var ant = (m.aprov && m.aprov.links) || m.entrega || [];
     document.getElementById('ent-missao').textContent = m.titulo;
-    document.getElementById('ent-para').textContent = pessoa(m.aprovador).nome;
+    document.getElementById('ent-para').textContent = 'Cole o link da entrega (Drive, Figma, vídeo…) para '+pessoa(m.aprovador).nome+' aprovar. Pode colocar mais de um.';
     document.getElementById('ent-links').innerHTML = (ant.length ? ant : ['']).map(linhaLink).join('');
     veuEnt.hidden = false; var i = document.querySelector('#ent-links input'); if (i) i.focus();
   }
@@ -4246,7 +4254,7 @@ textarea.campo.rolando{overflow-y:auto}
   document.getElementById('ent-cancelar').addEventListener('click', fecharEntrega);
   document.getElementById('ent-form').addEventListener('submit', function(e){
     e.preventDefault(); var m = entMissao; if (!m) return;
-    var links = Array.prototype.map.call(document.querySelectorAll('#ent-links input'), function(i){ var v = i.value.trim(); if (v && !/^[a-z]+:\/\//i.test(v)) v = 'https://'+v; return v; }).filter(Boolean);
+    var links = linksDe('#ent-links');
     fecharEntrega(); confirmarAprovacao(m, links);
   });
   function htmlLinks(links, rot){
@@ -4320,8 +4328,18 @@ textarea.campo.rolando{overflow-y:auto}
     document.getElementById('of-chips').innerHTML = sugestoesOferta().map(function(t){ return '<button class="ofe-chip" type="button" data-of="'+esc(t)+'">'+esc(t)+'</button>'; }).join('');
     ofTexto.value = ''; document.getElementById('of-ok').disabled = true;
     document.getElementById('of-ok').textContent = precisaAprovacao(m) && eu!==m.aprovador ? 'Oferecer e enviar para aprovação' : 'Oferecer e cumprir';
+    var vaiAprov = !m.sub && precisaAprovacao(m) && eu!==m.aprovador, mm = vaiAprov ? achar(m.id) : null;
+    document.getElementById('of-entrega').hidden = !vaiAprov;
+    if (vaiAprov){
+      document.getElementById('of-ent-para').textContent = 'Onde está o trabalho finalizado? Cole o link (Drive, Figma, vídeo…) para '+pessoa(m.aprovador).nome+' aprovar. Pode colocar mais de um.';
+      var ant = (mm && ((mm.aprov && mm.aprov.links) || mm.entrega)) || [];
+      document.getElementById('of-ent-links').innerHTML = (ant.length ? ant : ['']).map(linhaLink).join('');
+    }
     veuOferta.hidden = false; ofTexto.focus();
   }
+  function linksDe(sel){ return Array.prototype.map.call(document.querySelectorAll(sel+' input'), function(i){ var v = i.value.trim(); if (v && !/^[a-z]+:\/\//i.test(v)) v = 'https://'+v; return v; }).filter(Boolean); }
+  document.getElementById('of-ent-mais').addEventListener('click', function(){ document.getElementById('of-ent-links').insertAdjacentHTML('beforeend', linhaLink('')); var l = document.querySelectorAll('#of-ent-links input'); l[l.length-1].focus(); });
+  document.getElementById('of-ent-links').addEventListener('click', function(e){ var b = e.target.closest('[data-ent-tirar]'); if (!b) return; var lin = b.closest('.ent-linha'); if (document.querySelectorAll('#of-ent-links .ent-linha').length>1) lin.remove(); else lin.querySelector('input').value = ''; });
   function fecharOferta(){ veuOferta.hidden = true; ofMissao = null; ofDepois = null; }
   ofTexto.addEventListener('input', function(){ document.getElementById('of-ok').disabled = !ofTexto.value.trim(); });
   document.getElementById('of-chips').addEventListener('click', function(e){ var b = e.target.closest('[data-of]'); if (!b) return; ofTexto.value = b.textContent; document.getElementById('of-ok').disabled = false; ofTexto.focus(); });
@@ -4330,7 +4348,8 @@ textarea.campo.rolando{overflow-y:auto}
     e.preventDefault(); var t = ofTexto.value.trim(), m = ofMissao, depois = ofDepois; if (!t || !m) return;
     var o = {id:uid(), dono:eu, tipo:'missao', missao:m.id, titulo:m.titulo, texto:t, em:new Date().toISOString(), data:hoje}; if (m.sub) o.sub = true;
     state.oferecimentos.push(o); m.oferecida = true; pendenteOferta = o.id;
-    fecharOferta(); depois();
+    var links = document.getElementById('of-entrega').hidden ? null : linksDe('#of-ent-links');
+    fecharOferta(); depois(links);
   });
 
   function concluir(m){
