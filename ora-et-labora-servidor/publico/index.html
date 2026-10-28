@@ -3641,7 +3641,7 @@ span.circ.espera{cursor:default}
       rr.ata = Object.assign({}, rr.ata||{}, {transcricao:res.transcricao, em:new Date().toISOString(), por:eu, duracao:g.duracao, resumo:res.ata ? res.ata.resumo : '', decisoes:res.ata ? res.ata.decisoes : [], sugestoes:res.ata ? res.ata.demandas : [], demandas:(rr.ata && rr.ata.demandas)||[]});
       if (!rr.feita){ rr.feita = true; rr.feitaEm = new Date().toISOString(); rr.feitaPor = eu; }
       salvar(); render();
-      if (res.erroAta) avisar(L('A transcrição foi guardada, mas a leitura das demandas falhou: ','The transcript was saved, but reading the tasks failed: ','La transcripción se guardó, pero falló la lectura: ','Servatum, sed: ')+res.erroAta);
+      if (res.erroAta){ rr.ata.erro = res.erroAta; salvar(); avisar(L('A transcrição foi guardada, mas a leitura das demandas falhou. Em Reuniões, use “Ler as demandas de novo”. ','The transcript was saved, but reading the tasks failed. In Meetings, use “Read the tasks again”. ','La transcripción se guardó, pero falló la lectura. En Reuniones, usa “Leer de nuevo”. ','Servatum, sed: ')+res.erroAta); }
       else abrirAta(rr.id);
     }).catch(function(err){
       grav = null; pintarGrav(); render();
@@ -3717,6 +3717,14 @@ span.circ.espera{cursor:default}
       salvar(); document.getElementById('veu-colar').hidden = true; colarRid = null; render(); abrirAta(r.id);
     }).catch(function(err){ avisar(err.message); }).then(function(){ b.disabled = false; b.textContent = L('Ler as demandas','Find the tasks','Leer las tareas','Legere'); });
   });
+  function relerAta(rid, btn){
+    var r = acharReuniao(rid); if (!r || !r.ata || !r.ata.transcricao) return;
+    if (btn){ btn.disabled = true; btn.textContent = L('Lendo…','Reading…','Leyendo…','Legitur…'); }
+    api('POST','/api/ia/reler',{anexo:r.ata.transcricao.id, contexto:ctxReuniao(r)}).then(function(res){
+      r.ata.resumo = res.ata.resumo; r.ata.decisoes = res.ata.decisoes; r.ata.sugestoes = res.ata.demandas; delete r.ata.erro;
+      salvar(); render(); abrirAta(r.id);
+    }).catch(function(err){ avisar(err.message); if (btn){ btn.disabled = false; btn.textContent = L('Ler as demandas de novo','Read the tasks again','Leer de nuevo','Iterum legere'); } });
+  }
   /* Gravar uma reunião que não estava na agenda */
   function gravarAgora(){
     var ag = new Date(), ini = pad(ag.getHours())+':'+pad(ag.getMinutes());
@@ -3727,6 +3735,7 @@ span.circ.espera{cursor:default}
     var b;
     if ((b = e.target.closest('[data-gravar]'))){ e.preventDefault(); e.stopPropagation(); iniciarGravacao(b.getAttribute('data-gravar')); return; }
     if ((b = e.target.closest('[data-colar]'))){ e.preventDefault(); e.stopPropagation(); abrirColar(b.getAttribute('data-colar')); return; }
+    if ((b = e.target.closest('[data-reler]'))){ e.preventDefault(); e.stopPropagation(); relerAta(b.getAttribute('data-reler'), b); return; }
     if ((b = e.target.closest('[data-ata]'))){ e.preventDefault(); e.stopPropagation(); abrirAta(b.getAttribute('data-ata')); return; }
     if ((b = e.target.closest('[data-ver-reuniao]'))){ e.preventDefault(); e.stopPropagation(); rhAberta = b.getAttribute('data-ver-reuniao'); vista = 'reunioes'; render(); var it = document.querySelector('[data-rh-it="'+rhAberta+'"]'); if (it) it.scrollIntoView({block:'center'}); }
   }, true);
@@ -3749,7 +3758,7 @@ span.circ.espera{cursor:default}
   function textoReuniao(r){ var a = r.ata || {}; return [r.titulo, r.descricao, a.resumo].concat(a.decisoes||[]).concat((a.demandas||[]).map(function(id){ var m = achar(id); return m ? m.titulo : ''; })).concat((r.tags||[]).map(function(t){ var x = tagPorId(t); return x ? x.nome : ''; })).join(' '); }
   function itemHistorico(r){
     var a = r.ata, aberta = rhAberta===r.id, dm = a ? (a.demandas||[]).map(achar).filter(Boolean) : [], sg = a ? (a.sugestoes||[]) : [];
-    var badges = (a ? '<span class="st ata-ok">'+CHECK+L('Ata','Minutes','Acta','Acta')+'</span>' : '')+(dm.length ? '<span class="st">'+dm.length+' '+L(dm.length===1?'demanda':'demandas','task'+(dm.length===1?'':'s'),dm.length===1?'tarea':'tareas','negotia')+'</span>' : '')+(sg.length ? '<span class="st espera">'+sg.length+' '+L('a revisar','to review','por revisar','recensenda')+'</span>' : '');
+    var badges = (a && a.erro ? '<span class="st ajuste">'+L('Leitura falhou','Reading failed','Lectura falló','Defecit')+'</span>' : '')+(a ? '<span class="st ata-ok">'+CHECK+L('Ata','Minutes','Acta','Acta')+'</span>' : '')+(dm.length ? '<span class="st">'+dm.length+' '+L(dm.length===1?'demanda':'demandas','task'+(dm.length===1?'':'s'),dm.length===1?'tarea':'tareas','negotia')+'</span>' : '')+(sg.length ? '<span class="st espera">'+sg.length+' '+L('a revisar','to review','por revisar','recensenda')+'</span>' : '');
     var h = '<div class="rh-it" data-rh-it="'+r.id+'"><button class="rh-cab" type="button" data-rh-abrir="'+r.id+'" aria-expanded="'+aberta+'"><span class="rh-quando">'+esc(fmt(paraData(r.data), {weekday:'short', day:'numeric', month:'short'}))+'<small>'+esc(r.inicio||'')+(r.fim ? '–'+esc(r.fim) : '')+'</small></span>'+
       '<span class="rh-t"><b>'+esc(r.titulo)+'</b>'+pilulas(r.tags)+'<span class="avs">'+(r.pessoas||[]).map(av).join('')+'</span></span><span class="rh-badges">'+badges+'</span></button>';
     if (aberta){
@@ -3759,7 +3768,8 @@ span.circ.espera{cursor:default}
         if ((a.decisoes||[]).length) h += '<div><p class="det-tit">'+L('Decisões','Decisions','Decisiones','Decreta')+'</p><ul>'+a.decisoes.map(function(d){ return '<li>'+esc(d)+'</li>'; }).join('')+'</ul></div>';
         if (dm.length) h += '<div><p class="det-tit">'+L('Demandas lançadas','Launched tasks','Tareas lanzadas','Negotia missa')+'</p><ul>'+dm.map(function(m){ return '<li class="'+(m.feita?'feita':'')+'">'+esc(m.titulo)+' · '+esc(pessoa(m.resp).nome)+(m.data ? ' · '+esc(prazoTxt(m.data).t) : '')+'</li>'; }).join('')+'</ul></div>';
       } else if (r.descricao) h += '<p>'+esc(r.descricao)+'</p>';
-      h += '<div class="rh-acoes">'+(sg.length ? '<button class="btn btn-escuro btn-p" type="button" data-ata="'+r.id+'">'+L('Revisar demandas','Review tasks','Revisar tareas','Recensere')+' ('+sg.length+')</button>' : '')+
+      if (a && a.erro) h += '<p class="nota-ajuste">'+L('A leitura das demandas falhou: ','Reading the tasks failed: ','Falló la lectura: ','Lectio defecit: ')+esc(a.erro)+'</p>';
+      h += '<div class="rh-acoes">'+(a && a.transcricao && SERVIDOR && (a.erro || (!a.resumo && !sg.length && !dm.length)) ? '<button class="btn btn-escuro btn-p" type="button" data-reler="'+r.id+'">'+L('Ler as demandas de novo','Read the tasks again','Leer de nuevo','Iterum legere')+'</button>' : '')+(sg.length ? '<button class="btn btn-escuro btn-p" type="button" data-ata="'+r.id+'">'+L('Revisar demandas','Review tasks','Revisar tareas','Recensere')+' ('+sg.length+')</button>' : '')+
         (a && a.transcricao ? '<a class="btn btn-claro btn-p" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+L('Transcrição','Transcript','Transcripción','Transcriptio')+'</a>' : '')+
         (SERVIDOR ? '<button class="btn btn-claro btn-p" type="button" data-colar="'+r.id+'">'+(a ? L('Colar outra transcrição','Paste another transcript','Pegar otra transcripción','Aliam ponere') : L('Colar transcrição','Paste transcript','Pegar transcripción','Transcriptionem ponere'))+'</button>' : '')+
         '<button class="link" type="button" data-editar-reuniao="'+r.id+'">'+L('Editar reunião','Edit meeting','Editar reunión','Emendare')+'</button></div></div>';

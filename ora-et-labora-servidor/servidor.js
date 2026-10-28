@@ -453,13 +453,19 @@ async function extrairAta(texto, ctx) {
   const r = await fetch(process.env.ORA_ANTHROPIC_URL || 'https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: process.env.ANTHROPIC_MODELO || 'claude-sonnet-5-5', max_tokens: 6000, system: sistema, tools: [FERRAMENTA_ATA], tool_choice: { type: 'tool', name: 'registrar_reuniao' }, messages: [{ role: 'user', content: usuario }] })
+    /* tool_choice "auto": alguns modelos novos não aceitam forçar a ferramenta; se vier texto, lemos o JSON dele */
+    body: JSON.stringify({ model: process.env.ANTHROPIC_MODELO || 'claude-sonnet-5-5', max_tokens: 8000, system: sistema + ' Responda sempre chamando a ferramenta registrar_reuniao, uma única vez, sem texto antes ou depois.', tools: [FERRAMENTA_ATA], tool_choice: { type: 'auto' }, messages: [{ role: 'user', content: usuario }] })
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Erro('O Claude recusou a leitura (' + r.status + '): ' + String((j.error && j.error.message) || '').slice(0, 200));
   const bloco = (j.content || []).find(c => c.type === 'tool_use');
-  if (!bloco || !bloco.input) throw new Erro('O Claude não devolveu a ata. Tente de novo.');
-  const a = bloco.input;
+  let a = bloco && bloco.input;
+  if (!a) {
+    const txt = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+    const ini = txt.indexOf('{'), fim = txt.lastIndexOf('}');
+    try { a = JSON.parse(txt.slice(ini, fim + 1)); } catch (e) { a = null; }
+  }
+  if (!a || typeof a !== 'object') throw new Erro('O Claude não devolveu a ata. Tente de novo.');
   return { resumo: String(a.resumo || ''), decisoes: (a.decisoes || []).map(String).slice(0, 40), demandas: (a.demandas || []).slice(0, 60).map(d => ({ titulo: String(d.titulo || '').slice(0, 200), descricao: String(d.descricao || '').slice(0, 2000), responsavel: String(d.responsavel || ''), data: /^\d{4}-\d{2}-\d{2}$/.test(d.data || '') ? d.data : '', cliente: String(d.cliente || ''), peso: d.peso || 'media', tipo: d.tipo || '', trecho: String(d.trecho || '').slice(0, 300) })) };
 }
 function guardarTranscricao(texto, nome, u) {
@@ -484,6 +490,14 @@ app.post('/api/gravacao/:gid/finalizar', exigir, rota(async (req, res) => {
   try { fs.unlinkSync(arqGravacao(gid)); } catch (e) {}
   gravacoes.delete(gid);
   res.json({ transcricao: anexo, caracteres: texto.length, ata, erroAta, partesComFalha: falhas.length });
+}));
+/* ler de novo uma transcrição já guardada (quando a leitura das demandas falhou) */
+app.post('/api/ia/reler', exigir, rota(async (req, res) => {
+  const aid = String(req.body.anexo || ''), a = /^a[\w-]+$/.test(aid) && db.anexos[aid];
+  if (!a) throw new Erro('Transcrição não encontrada.', 404);
+  const texto = fs.readFileSync(path.join(ANEXOS, aid), 'utf8');
+  const ata = await extrairAta(texto, Object.assign({}, req.body.contexto || {}, { quem: req.u.nome }));
+  res.json({ ata });
 }));
 app.post('/api/ia/extrair', exigir, rota(async (req, res) => {
   const texto = String(req.body.texto || '').trim();
