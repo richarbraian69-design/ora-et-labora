@@ -233,26 +233,35 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 @media (max-width:860px){#menu-recolher{display:none!important}}
 
 .principal{min-width:0;margin:10px 10px 10px 0;background:var(--painel);border:1px solid var(--linha);border-radius:18px;padding:34px clamp(18px,3.5vw,48px) 72px}
-.conteudo{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 284px;grid-template-areas:"topo topo" "banner lado" "lista lado";gap:22px 24px;align-items:start}
-@media (max-width:1180px){.conteudo{grid-template-columns:minmax(0,1fr);grid-template-areas:"topo" "banner" "lado" "lista"}}
+.conteudo{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 284px;grid-template-rows:auto auto 1fr;grid-template-areas:"topo topo" "banner lado" "lista lado";gap:22px 24px;align-items:start}
+.conteudo.sem-banner{grid-template-rows:auto 1fr;grid-template-areas:"topo topo" "lista lado"}
+.conteudo.sem-lado{grid-template-columns:minmax(0,1fr);grid-template-areas:"topo" "banner" "lista"}
+.conteudo.sem-lado.sem-banner{grid-template-rows:auto 1fr;grid-template-areas:"topo" "lista"}
+@media (max-width:1180px){
+  .conteudo,.conteudo.sem-banner,.conteudo.sem-lado,.conteudo.sem-lado.sem-banner{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"topo" "banner" "lista" "lado"}
+  .conteudo.sem-banner{grid-template-areas:"topo" "lista" "lado"}
+  .conteudo.sem-lado{grid-template-areas:"topo" "banner" "lista"}
+  .conteudo.sem-lado.sem-banner{grid-template-areas:"topo" "lista"}
+}
 .topo{grid-area:topo;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .saudacao{margin:0;font-size:1.65rem;font-weight:500;letter-spacing:-.02em}
 .saudacao em{font-family:var(--f-serif);font-style:italic;font-weight:400;font-size:1.12em}
 
-.banner{grid-area:banner;position:relative;overflow:hidden;border-radius:16px;background:var(--banner);color:var(--banner-tx);min-height:196px;padding:28px clamp(22px,3vw,34px);display:grid;align-content:center;border:1px solid var(--linha)}
-.banner-texto{position:relative;z-index:1;max-width:min(31rem,62%);display:grid;gap:8px;justify-items:start}
-.cit{display:grid;gap:8px;transition:opacity .6s ease,transform .6s ease}
+.banner{grid-area:banner;position:relative;overflow:hidden;border-radius:16px;background:var(--banner);color:var(--banner-tx);min-height:110px;padding:16px clamp(20px,3vw,30px);display:grid;align-content:center;border:1px solid var(--linha)}
+.banner-texto{position:relative;z-index:1;max-width:min(34rem,70%);display:grid;gap:6px;justify-items:start}
+.cit{display:grid;gap:4px;transition:opacity .45s ease,transform .45s ease}
 .cit.some{opacity:0;transform:translateY(6px)}
-.banner blockquote{margin:0;font-family:var(--f-serif);font-size:clamp(1.3rem,2.2vw,1.7rem);line-height:1.2;text-wrap:pretty}
-.banner .autor{margin:0;color:var(--banner-tx2);font-size:.9rem}
-.banner .btn{margin-top:6px;background:var(--banner-tx);color:var(--banner)}
-.banner .btn:hover{background:var(--banner-btn-hover,#ffffff)}
-.banner-arte{position:absolute;right:-10px;bottom:-14px;width:min(46%,340px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 35%);mask-image:linear-gradient(90deg,transparent,#000 35%)}
+.banner blockquote{margin:0;font-family:var(--f-serif);font-size:clamp(1.08rem,1.6vw,1.32rem);line-height:1.22;text-wrap:pretty}
+.banner .autor{margin:0;color:var(--banner-tx2);font-size:.82rem}
+.cit-outra{position:absolute;right:8px;top:8px;z-index:2;width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--banner-tx2);display:grid;place-items:center;cursor:pointer}
+.cit-outra:hover{background:rgba(127,127,127,.22);color:var(--banner-tx)}
+.cit-outra svg{width:16px;height:16px}
+.banner-arte{position:absolute;right:30px;bottom:-30px;width:min(30%,210px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 35%);mask-image:linear-gradient(90deg,transparent,#000 35%)}
 .banner-prog{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--banner-prog-bg,rgba(255,255,255,.08))}
 .banner-prog i{display:block;height:100%;width:100%;background:var(--banner-prog,rgba(255,255,255,.4));transform-origin:left;animation:progresso 15s linear forwards}
 .banner:hover .banner-prog i,.banner:focus-within .banner-prog i{animation-play-state:paused}
 @keyframes progresso{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-@media (max-width:640px){.banner-arte{opacity:.35;width:70%}.banner-texto{max-width:100%}}
+@media (max-width:640px){.banner{min-height:90px;padding:14px 44px 14px 16px}.banner-arte{display:none}.banner-texto{max-width:100%}.banner blockquote{font-size:1rem}}
 /* Modo escuro: banner e igreja claros (no modo claro, ficam escuros) */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]) .banner{--banner:#f4f3ef; --banner-tx:#151513; --banner-tx2:#6d6c67; --banner-btn-hover:#000000; --banner-prog-bg:rgba(0,0,0,.08); --banner-prog:rgba(0,0,0,.35)}
@@ -365,7 +374,7 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .ver-feitas:hover{background:var(--sup);color:var(--tx)}
 .ver-feitas .n{color:var(--tx3);margin-left:4px}
 .painel{background:var(--painel);border:1px solid var(--linha);border-radius:14px;overflow:hidden}
-.linha{position:relative;display:grid;grid-template-columns:22px 112px minmax(0,1fr) auto auto;grid-template-areas:"chk prz cnt rsp act" ". . sub sub sub";gap:0 16px;align-items:center;padding:14px 12px 14px 22px;border-top:1px solid var(--linha);transition:background .15s}
+.linha{position:relative;display:grid;grid-template-columns:22px 100px minmax(0,1fr) auto auto;grid-template-areas:"chk prz cnt rsp act" ". . sub sub sub";gap:0 14px;align-items:center;padding:14px 12px 14px 22px;border-top:1px solid var(--linha);transition:background .15s}
 .linha:first-child{border-top:0}
 .linha:hover{background:var(--sup)}
 .linha.chegou{animation:chegar 1.4s ease-out}
@@ -390,28 +399,31 @@ button.circ.feita[data-reabrir]:hover{background:transparent;color:var(--tx3);bo
 .r-desc{margin:0;color:var(--tx2);font-size:.9rem;overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.45}
 .r-desc a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .r-cnt{position:relative}
-.linha [data-desc-toggle].r-titulo{cursor:pointer}
+.linha .r-titulo[data-editar-m]{cursor:pointer}
+.linha .r-titulo[data-editar-m]:hover{text-decoration:underline;text-decoration-color:var(--tx3);text-underline-offset:3px}
 .desc-ind{opacity:.7}
 .linha.desc-aberta .desc-ind{opacity:1;color:var(--tx)}
 .desc-editar{display:none;justify-self:start;font-size:.8rem}
 .linha.desc-aberta .desc-editar{display:inline}
-.m-editor{margin-top:10px}
-.m-editor textarea{min-height:120px;resize:vertical}
-/* Descrição escondida: aparece num balão ao passar o mouse, ou fica aberta com um clique */
-.linha:not(.desc-aberta) .r-desc{display:none}
+.m-painel{display:grid;gap:16px;margin-top:10px;padding:16px 18px;border:1px solid var(--linha);border-radius:12px;background:var(--bg)}
+.m-editor{display:grid;gap:12px}
+.m-editor textarea{min-height:96px;resize:vertical}
+.m-painel .campos{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.m-painel .tag-picker{background:var(--painel)}
+.m-acoes{border-top:1px solid var(--linha);padding-top:14px}
+/* Descrição: a primeira linha aparece no cartão; um clique abre o texto todo */
+.r-desc[data-desc-toggle]{cursor:pointer}
+.linha:not(.desc-aberta) .r-desc{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;font-size:.86rem;color:var(--tx3)}
+.linha.editando .r-desc{display:none}
 .desc-flut{position:fixed;z-index:25;width:min(520px,calc(100vw - 24px));max-height:300px;overflow:auto;padding:12px 14px;background:var(--painel);color:var(--tx);border:1px solid var(--linha);border-radius:10px;box-shadow:var(--sombra);font-size:.9rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;animation:aparecer .15s ease}
 .desc-flut a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .linha.desc-aberta .r-desc{margin-top:4px;padding:10px 12px;border-left:2px solid var(--linha);background:var(--sup);border-radius:0 8px 8px 0}
 .r-local{font-size:.86rem;color:var(--tx2);overflow-wrap:anywhere}
 .r-resp{grid-area:rsp;display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:.86rem;color:var(--tx2)}
 .r-resp .xp{font-size:.78rem;color:var(--tx3);font-variant-numeric:tabular-nums}
-.r-acoes{grid-area:act;justify-self:end;display:flex;gap:0;opacity:0;transition:opacity .15s}
-.linha:hover .r-acoes,.linha:focus-within .r-acoes,.r-acoes.fixo{opacity:1}
+.r-acoes{grid-area:act;justify-self:end;align-self:start;display:flex;gap:0;opacity:.0;transition:opacity .15s;margin:-4px -4px 0 0}
+.linha:hover .r-acoes,.linha:focus-within .r-acoes,.r-acoes.fixo,.r-acoes.aberto{opacity:1}
 @media (hover:none){.r-acoes{opacity:1}}
-@media (hover:hover) and (min-width:761px){
-  .linha{grid-template-columns:22px 112px minmax(0,1fr) auto;grid-template-areas:"chk prz cnt rsp" ". . sub sub"}
-  .r-acoes{position:absolute;right:10px;top:8px;z-index:3;background:var(--painel);border:1px solid var(--linha);border-radius:10px;padding:2px;box-shadow:var(--sombra)}
-}
 .excluir-ok{padding:0 10px;width:auto;color:var(--alerta);font-size:.82rem;font-weight:600}
 .reuniao .hora{grid-area:prz;font-size:.86rem;font-weight:500;font-variant-numeric:tabular-nums}
 .reuniao .hora small{display:block;font-weight:400;color:var(--tx3)}
@@ -475,10 +487,10 @@ button.circ.feita[data-reabrir]:hover{background:transparent;color:var(--tx3);bo
 .sub-pronto{margin:0;padding-left:14px;font-size:.88rem;color:var(--ok);display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
 
 @media (max-width:760px){
-  .linha{grid-template-columns:22px minmax(0,1fr) auto;grid-template-areas:"chk cnt act" "chk info info" ". sub sub";padding:14px 8px 14px 14px}
+  .linha{grid-template-columns:22px minmax(0,1fr) auto;grid-template-areas:"chk cnt act" "chk info info" ". sub sub";padding:14px 8px 14px 14px;gap:0 10px}
   .linha > .circ,.reuniao .marca-r{align-self:start;margin-top:2px}
   .r-info{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;grid-area:info;margin-top:6px}
-  .r-acoes{flex-wrap:wrap;max-width:94px;justify-content:flex-end}
+  .r-acoes{max-width:none;justify-content:flex-end;opacity:1}
 }
 
 /* Formulários */
@@ -648,7 +660,7 @@ textarea.campo.rolando{overflow-y:auto}
 .det-extra summary{cursor:pointer;padding:10px 14px;font-size:.86rem;font-weight:500;color:var(--tx2);list-style:none;display:flex;align-items:center;gap:8px}
 .det-extra summary::-webkit-details-marker{display:none}
 .det-extra summary::before{content:'+';width:16px;text-align:center;color:var(--tx3)}
-.det-extra[open] summary::before{content:'–'}
+.det-extra[open] > summary::before{content:'–'}
 .det-extra .campos{padding:2px 14px 14px}
 .aviso-cri{display:grid;gap:4px;padding:10px 12px;border-radius:10px;font-size:.86rem;background:var(--sup)}
 .aviso-cri.repetido{background:var(--ajuste-bg);color:var(--ajuste-tx)}
@@ -793,15 +805,14 @@ textarea.campo.rolando{overflow-y:auto}
 .sync{font-size:.76rem;color:var(--tx3);padding:2px 10px}
 .pilha-oracao{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:36;width:min(340px,calc(100% - 32px));display:grid;gap:10px}
 .pilha-oracao .angelus{position:static;width:auto}
-.contador{justify-self:end;display:grid;gap:2px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--painel) 88%,transparent);border:1px solid var(--linha);box-shadow:0 2px 8px rgba(0,0,0,.06);font-size:.72rem;line-height:1.35;color:var(--tx2);font-variant-numeric:tabular-nums;backdrop-filter:blur(6px)}
-.contador button{all:unset;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;max-width:260px}
+.contador{display:grid;gap:4px;padding:14px 22px;border-bottom:1px solid var(--linha);font-size:.8rem;line-height:1.35;color:var(--tx2);font-variant-numeric:tabular-nums}
+.contador button{all:unset;display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;min-width:0}
 .contador button:hover{color:var(--tx)}
 .contador button span{overflow:hidden;text-overflow:ellipsis}
 .contador b{font-weight:600;color:var(--tx)}
-.contador svg{width:12px;height:12px;flex:none;opacity:.8}
+.contador svg{width:13px;height:13px;flex:none;opacity:.8}
 .contador .perto b{color:var(--alerta)}
 .massa:not([hidden]) ~ .pilha-oracao{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
-@media (max-width:860px){.contador{display:none!important}}
 .dica-hora{margin:0;font-size:.78rem;color:var(--tx3);font-family:var(--f-ui)}
 .horas{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
 .hora-it{display:grid;gap:2px;padding:14px 16px;border-left:1px solid var(--linha);text-decoration:none;color:var(--tx)}
@@ -850,6 +861,156 @@ textarea.campo.rolando{overflow-y:auto}
   .lateral-pe{margin-top:0;display:flex}
   .principal{margin:0 8px 8px;padding-top:24px}
 }
+/* ---------- Revisão de UX (out/2026) ---------- */
+/* Tipos sem missões: só aparecem como linha fina enquanto se arrasta */
+.grupo-fino{display:none}
+.lista.arrastando-algo .grupo-fino{display:block}
+.grupo-fino .grupo-rot{margin:0;padding:8px 12px;border:1.5px dashed var(--linha);border-radius:10px;font-size:.7rem}
+.grupo-fino.alvo-tipo .grupo-rot{border-color:var(--tx);color:var(--tx);outline:0}
+/* Menu "…" do cartão */
+.card-menu{position:fixed;z-index:28;min-width:230px;display:grid;gap:1px;padding:6px;background:var(--painel);border:1px solid var(--linha);border-radius:12px;box-shadow:var(--sombra);animation:aparecer .12s ease}
+.card-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:var(--tx);font:inherit;font-size:.9rem;text-align:left;cursor:pointer;white-space:nowrap}
+.card-menu button:hover{background:var(--sup)}
+.card-menu button svg{width:16px;height:16px;flex:none;color:var(--tx2)}
+.card-menu .perigo{color:var(--alerta)}
+.card-menu .perigo svg{color:var(--alerta)}
+.card-menu .excluir-ok{background:var(--ajuste-bg);font-weight:600}
+.card-menu-sep{height:1px;background:var(--linha);margin:4px 6px}
+.icone-btn[aria-expanded="true"]{background:var(--sup-2);color:var(--tx)}
+/* Seletor Por tipo / Por data */
+.seg{display:inline-flex;padding:2px;border:1px solid var(--linha);border-radius:9px;background:var(--sup)}
+.seg button{border:0;background:transparent;color:var(--tx2);font:inherit;font-size:.82rem;padding:4px 10px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--painel);color:var(--tx);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.barra-dir{flex-wrap:wrap;justify-content:flex-end}
+/* Filtro (celular) e pastilha de filtro ativo */
+.so-movel{display:none!important}
+.filtro-w{position:relative}
+.filtro-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:15;width:min(280px,calc(100vw - 32px));max-height:60vh;overflow:auto;padding:8px;background:var(--painel);border:1px solid var(--linha);border-radius:12px;box-shadow:var(--sombra);display:grid;gap:2px}
+.filtro-pop p{margin:6px 8px 2px;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+.filtro-pop button{display:flex;align-items:center;gap:10px;border:0;background:transparent;border-radius:8px;padding:7px 8px;font:inherit;font-size:.9rem;color:var(--tx);text-align:left;cursor:pointer}
+.filtro-pop button[aria-current="true"]{background:var(--sup-2);font-weight:500}
+.filtro-pill{display:inline-flex;align-items:center;gap:6px;padding:2px 4px 2px 10px;border-radius:999px;background:var(--sup-2);color:var(--tx);font-size:.8rem;font-weight:500;letter-spacing:0;text-transform:none}
+.filtro-pill .av{width:18px;height:18px;font-size:.62rem}
+.filtro-pill button{border:0;background:transparent;color:var(--tx2);cursor:pointer;font-size:1rem;line-height:1;padding:0 6px;border-radius:999px}
+.filtro-pill button:hover{background:var(--linha);color:var(--tx)}
+/* Avisos no topo da lista */
+.nota-chegou,.nota-ajustes,.dia-liberado{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding:12px 16px;border-radius:12px;font-size:.9rem}
+.nota-chegou{background:var(--espera-bg);color:var(--espera-tx)}
+.nota-chegou b,.nota-ajustes b{font-weight:600}
+.nota-ajustes{background:var(--ajuste-bg);color:var(--ajuste-tx)}
+.nota-chegou .acoes,.nota-ajustes .acoes{gap:10px}
+.nota-chegou .link,.nota-ajustes .link{color:inherit;text-decoration-color:currentColor}
+.dia-liberado{padding:0 4px;font-size:.84rem;color:var(--tx2);justify-content:flex-start}
+.dia-liberado svg{width:14px;height:14px;color:var(--ok)}
+.linha.nova-chegada{box-shadow:inset 3px 0 0 var(--espera-tx);background:color-mix(in srgb,var(--espera-bg) 45%,transparent)}
+.linha.nova-chegada.prioridade{box-shadow:inset 3px 0 0 #e2b93b}
+/* Formulário de nova missão: o essencial à vista, o resto em "Mais opções" */
+.f-mais{background:var(--painel)}
+.f-mais > .campos{padding:6px 14px 14px}
+.f-mais summary{color:var(--tx2)}
+/* Anexar ▾ */
+.anexar-menu summary{list-style:none;display:inline-flex}
+.anexar-menu summary::-webkit-details-marker{display:none}
+.anexar-op{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.anexar-op button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--linha);border-radius:8px;background:var(--painel);color:var(--tx);font:inherit;font-size:.85rem;padding:6px 10px;cursor:pointer}
+.anexar-op button:hover{background:var(--sup)}
+.anexar-op svg{width:15px;height:15px}
+.det-tit .info{font-weight:400;text-transform:none;letter-spacing:0;cursor:help;margin-left:4px}
+/* Seções recolhíveis (Minha área e Ajustes) */
+.det-sec > summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:14px 18px;font-size:.74rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--tx2)}
+.det-sec > summary::-webkit-details-marker{display:none}
+.det-sec > summary::before{content:'▸';font-size:.7rem;color:var(--tx3);transition:transform .15s}
+.det-sec[open] > summary::before{transform:rotate(90deg)}
+.det-sec > summary .nota{text-transform:none;letter-spacing:0;font-weight:400}
+.det-sec[open] > summary{border-bottom:1px solid var(--linha)}
+.det-sec-acoes{display:flex;justify-content:flex-end;padding:12px 18px 0}
+/* Linha de orações da Minha área */
+.ora-status{display:flex;flex-wrap:wrap;gap:8px}
+.os-it{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--linha);border-radius:999px;background:var(--painel);color:var(--tx);font:inherit;font-size:.86rem;cursor:pointer}
+.os-it:hover{background:var(--sup)}
+.os-it svg{width:12px;height:12px}
+.os-it .ck{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--tx3);display:grid;place-items:center;color:transparent;flex:none}
+.os-it.ok .ck{background:var(--ok);border-color:var(--ok);color:#fff}
+.os-it i{font-style:normal;font-size:.76rem;padding:1px 6px;border-radius:999px;background:var(--sup-2);color:var(--tx3)}
+.os-it i.ok{background:var(--btn);color:var(--btn-tx)}
+.os-it b{font-weight:600}
+/* Ajustes em blocos */
+.aj-bloco{display:grid;gap:10px}
+.aj-bloco + .aj-bloco{margin-top:10px}
+.aj-tit{margin:0;font-family:var(--f-serif);font-weight:400;font-size:1.35rem}
+/* Tela de início */
+.od-extra{display:grid;gap:8px;padding:12px 14px;border-radius:12px;background:var(--sup);font-size:.9rem}
+.od-extra p{margin:0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.od-extra em{font-family:var(--f-serif);font-size:1.12em}
+.od-extra .link{font-size:.9rem}
+/* Casa de perto: dicas em ícones */
+.z-dicas{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.z-dicas span{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;color:var(--tx2)}
+.z-dicas svg{width:15px;height:15px}
+/* Abertura com login: casa menor para o formulário caber */
+.abertura.com-login .ab-arte{width:min(180px,46vw)}
+.abertura.com-login .ab-centro{gap:12px}
+.abertura.com-login .ab-marca{font-size:clamp(2.2rem,6vw,3rem)}
+.abertura.com-login{padding:24px 16px}
+/* Data: ícone de calendário ao passar o mouse */
+.prazo-btn{display:inline-flex;align-items:center;gap:5px}
+.prazo-btn .cal-ic{width:13px;height:13px;opacity:0;transition:opacity .15s;flex:none}
+.prazo-btn:hover .cal-ic,.prazo-btn:focus-visible .cal-ic{opacity:.65}
+@media (hover:none){.prazo-btn .cal-ic{display:none}}
+/* Agenda: o santo do dia é a faixa colorida com dica; missões em até 2 linhas */
+.cal-lit.fes{height:5px}
+.cal-dia .ev{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Menu lateral: separador antes da Minha área */
+.nav-sep{height:1px;background:var(--linha);margin:6px 10px}
+/* Seleção: sem círculo de cumprir; aprovação só pelo botão */
+.app.selecionando .linha > .circ{visibility:hidden}
+span.circ.espera{cursor:default}
+/* Painel da direita */
+.lado-resumo{display:grid;align-content:start}
+.lado-resumo .contador[hidden]{display:none!important}
+/* Barra de baixo e menu do celular */
+.barra-inf,.inf-pop{display:none}
+@media (max-width:860px){
+  .so-movel{display:block!important}
+  #app .lateral #nav-vistas,#app .lateral #nav-pessoas,#app .lateral #nav-tags,#app .lateral > .nav-rot-tg{display:none!important}
+  .lateral{flex-direction:row;align-items:center;justify-content:space-between;padding:10px 12px 2px}
+  .lateral .lateral-pe{margin:0;flex:none}
+  #config-btn span{display:none}
+  #config-btn{padding:8px;border-radius:10px}
+  #abrir-novo{display:none}
+  .app{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+  .barra-inf{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:26;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--painel) 94%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--linha)}
+  .app.selecionando .barra-inf{display:none}
+  .barra-inf button{display:grid;justify-items:center;gap:2px;border:0;background:transparent;color:var(--tx2);font:inherit;font-size:.7rem;padding:5px 2px;border-radius:10px;cursor:pointer;min-width:0}
+  .barra-inf button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .barra-inf button svg{width:21px;height:21px}
+  .barra-inf button[aria-current="true"]{color:var(--tx);font-weight:600}
+  .barra-inf .inf-novo svg{background:var(--btn);color:var(--btn-tx);border-radius:8px;padding:2px;width:24px;height:24px}
+  .inf-pop:not([hidden]){display:grid;position:fixed;left:8px;right:8px;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:27;gap:2px;padding:8px;background:var(--painel);border:1px solid var(--linha);border-radius:14px;box-shadow:var(--sombra);animation:aparecer .15s ease}
+  .inf-pop button{display:flex;align-items:center;gap:12px;border:0;background:transparent;border-radius:9px;padding:10px;font:inherit;color:var(--tx);text-align:left;cursor:pointer}
+  .inf-pop button[aria-current="true"]{background:var(--sup-2);font-weight:500}
+  .inf-pop button svg{width:18px;height:18px}
+  .inf-pop .qtd{margin-left:auto;color:var(--tx3);font-size:.82rem}
+  .inf-pop .qtd.alerta{color:var(--alerta);font-weight:600}
+  .menu-lista.rodape{position:fixed;right:10px;left:auto;top:auto;bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .pilha-oracao{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .lit .lit-sep{display:none}
+  .lit{gap:2px 10px}
+  .principal{padding-top:18px}
+}
+.od-extra svg{width:16px;height:16px;flex:none;align-self:center;color:var(--tx2)}
+.massa-mais .massa-campo{justify-content:space-between}
+.massa-mais .massa-campo select{background:var(--sup);color:var(--tx)}
+.massa-mais .massa-campo span{opacity:.75}
+.linha.editando .r-extra{grid-column:2 / -1}
+.r-acoes .icone-btn{width:28px;height:28px}
+.od-extra p{flex-wrap:nowrap}
+.od-extra p > span{flex:1;min-width:0}
+.od-extra p > a{flex:none}
+.menu-lista button > span{grid-row:span 2;display:grid;place-items:center}
+.filtro-pop{position:fixed}
+@media (max-width:860px){#grupos-tg{display:none!important}.massa-campo span{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.ab-marca,.ab-info,.ab-acoes{opacity:1}}
 </style>
 
@@ -894,8 +1055,8 @@ textarea.campo.rolando{overflow-y:auto}
     <div class="lateral-pe nav"><span class="sync" id="sync" hidden></span>
       <button type="button" id="config-btn" aria-haspopup="true" aria-expanded="false" data-sem-tr></button>
       <div class="config-pop" id="config-pop" role="menu" hidden>
-        <button type="button" data-cfg-vista="cidade" id="cfg-cidade"></button>
         <button type="button" data-cfg-vista="ajustes" id="cfg-ajustes"></button>
+        <button type="button" id="cfg-finalizar" hidden></button>
         <span class="config-sep"></span>
         <label class="idioma-sel" data-sem-tr><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2 2.2 3 4.5 3 7s-1 4.8-3 7c-2-2.2-3-4.5-3-7s1-4.8 3-7z"/></svg><select id="idioma" aria-label="Idioma / Language"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option><option value="la">Latina</option></select></label>
         <button type="button" id="tema"></button>
@@ -932,13 +1093,13 @@ textarea.campo.rolando{overflow-y:auto}
             <blockquote id="cit-texto"></blockquote>
             <p class="autor" id="cit-autor"></p>
           </div>
-          <button class="btn" id="outra-cit" type="button">Outra citação</button>
         </div>
+        <button class="cit-outra" id="outra-cit" type="button" aria-label="Outra citação" title="Outra citação"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3"/><path d="M16 3.5v3.4h-3.4"/></svg></button>
         <div class="banner-prog" aria-hidden="true"><i id="banner-prog"></i></div>
       </section>
 
       <aside class="lado" aria-label="Resumo">
-        <div class="numeros" id="numeros"></div>
+        <div class="lado-resumo"><div class="contador" id="contador" data-sem-tr hidden></div><div class="numeros" id="numeros"></div></div>
         <div class="cidade-card">
           <div class="cid-topo"><p class="cid-tit" id="cid-tit"></p><span class="cid-n" id="cid-n"></span></div>
           <div class="cid-arte abre" id="cid-arte" role="button" tabindex="0" aria-label="Ver a casa de perto"></div>
@@ -951,19 +1112,23 @@ textarea.campo.rolando{overflow-y:auto}
       <div class="vista">
         <form class="forma" id="form-nova" hidden autocomplete="off">
           <h3 id="f-tit">Nova <em>missão</em></h3>
-          <label class="check"><input type="checkbox" id="f-pessoal"> Missão pessoal — só eu vejo, fica na minha área privada</label>
           <div class="campos">
             <label class="largo">Missão<input class="campo" id="f-titulo" name="titulo" required maxlength="120" placeholder="Ex.: Escrever roteiro do anúncio de novembro"></label>
             <label class="largo">Descrição<textarea class="campo" id="f-desc" name="descricao" placeholder="O que precisa ser feito, onde estão os arquivos, como entregar."></textarea></label>
-            <label class="largo">Sub-missões<textarea class="campo" id="f-subs" name="subs" placeholder="Uma por linha (opcional)"></textarea></label>
             <label class="so-trab">Responsável<select class="campo" id="f-resp" name="resp"></select></label>
             <label class="so-pes" hidden>Área da vida<select class="campo" id="f-area"></select></label>
             <label>Data<input class="campo" id="f-data" name="data" type="date"></label>
-            <label>Peso<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
+            <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
+          </div>
+          <details class="det-extra f-mais" id="f-mais">
+            <summary id="f-mais-sum">Mais opções · XP, repetição, aprovação, sub-missões e anexos</summary>
+            <div class="campos">
+            <label class="check largo"><input type="checkbox" id="f-pessoal"> Missão pessoal — só eu vejo, fica na minha área privada</label>
+            <label class="largo">Sub-missões<textarea class="campo" id="f-subs" name="subs" placeholder="Uma por linha (opcional)"></textarea></label>
+            <label>XP<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
             <label id="f-tipo-l">Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
             <label>Repetir<select class="campo" id="f-rec"></select></label>
             <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
-            <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
             <details class="largo det-extra so-trab" id="f-cri-det">
               <summary>Criativo de anúncio · histórico por cidade</summary>
               <div class="campos">
@@ -977,8 +1142,9 @@ textarea.campo.rolando{overflow-y:auto}
               <div class="acoes"><label class="btn btn-claro btn-p" for="f-anexos" style="display:inline-flex;color:var(--tx)">Escolher arquivos</label><span class="arquivos-sel" id="f-anexos-sel">Nenhum arquivo · do Google Drive você anexa depois de criar</span></div>
               <input id="f-anexos" type="file" multiple hidden>
             </div>
-          </div>
-          <div class="acoes"><button class="btn btn-escuro" type="submit">Lançar missão</button><button class="btn btn-claro" type="button" id="cancelar-nova">Cancelar</button></div>
+            </div>
+          </details>
+          <div class="acoes"><button class="btn btn-escuro" type="submit">Salvar</button><button class="btn btn-claro" type="button" id="cancelar-nova">Cancelar</button></div>
         </form>
 
         <form class="forma" id="form-reuniao" hidden autocomplete="off">
@@ -991,11 +1157,11 @@ textarea.campo.rolando{overflow-y:auto}
             <label>Repetir<select class="campo" id="r-rec"></select></label>
             <div class="largo rotulo">Participantes<div class="chips-pessoas" id="r-pessoas"></div></div>
             <label class="largo">Local ou link<input class="campo" id="r-local" maxlength="300" placeholder="Ex.: https://meet.google.com/... ou escritório"></label>
-            <label class="largo">Pauta<textarea class="campo" id="r-desc" placeholder="O que será decidido nesta reunião."></textarea></label>
+            <label class="largo">Descrição<textarea class="campo" id="r-desc" placeholder="O que será decidido nesta reunião."></textarea></label>
             <div class="largo rotulo">Cliente<div id="r-tags"></div></div>
           </div>
           <div class="acoes">
-            <button class="btn btn-escuro" type="submit">Salvar reunião</button>
+            <button class="btn btn-escuro" type="submit">Salvar</button>
             <button class="btn btn-claro" type="button" id="cancelar-reuniao">Cancelar</button>
             <button class="link" type="button" id="excluir-reuniao" hidden>Excluir reunião</button>
           </div>
@@ -1004,7 +1170,7 @@ textarea.campo.rolando{overflow-y:auto}
         <section id="vista-missoes" style="display:grid;gap:14px">
           <div class="barra-lista">
             <h3 class="rotulo-vista" id="rotulo-vista"></h3>
-            <div class="barra-dir"><button class="btn btn-claro btn-p" type="button" id="tipo-tg" data-sem-tr hidden></button><button class="btn btn-claro btn-p" type="button" id="grupos-tg" data-sem-tr></button><button class="btn btn-claro btn-p" type="button" id="sel-modo" data-sem-tr></button>
+            <div class="barra-dir"><div class="seg" id="tipo-seg" role="group" data-sem-tr hidden><button type="button" data-seg="tipo"></button><button type="button" data-seg="data"></button></div><div class="filtro-w so-movel"><button class="btn btn-claro btn-p" type="button" id="filtro-btn" data-sem-tr aria-haspopup="true" aria-expanded="false"></button><div class="filtro-pop" id="filtro-pop" data-sem-tr hidden></div></div><button class="btn btn-claro btn-p" type="button" id="grupos-tg" data-sem-tr></button><button class="btn btn-claro btn-p" type="button" id="sel-modo" data-sem-tr></button>
             <div class="busca" id="busca-caixa">
               <input id="busca" type="search" placeholder="Buscar missão" aria-label="Buscar missão">
               <button class="icone-btn" id="busca-btn" type="button" aria-label="Buscar"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/></svg></button>
@@ -1040,7 +1206,7 @@ textarea.campo.rolando{overflow-y:auto}
               <label class="largo">Gancho ou ideia<input class="campo" id="cm-gan" maxlength="140"></label>
               <label>Cliente<select class="campo" id="cm-tag"></select></label>
               <div class="largo" id="cm-aviso"></div>
-              <div class="acoes largo"><button class="btn btn-escuro btn-p" type="submit">Registrar</button></div>
+              <div class="acoes largo"><button class="btn btn-escuro btn-p" type="submit">Salvar</button></div>
             </form>
           </details>
           <div id="cri-lista" style="display:grid;gap:22px"></div>
@@ -1051,9 +1217,10 @@ textarea.campo.rolando{overflow-y:auto}
             <p class="priv-aviso" id="priv-aviso"></p>
             <button class="btn btn-escuro btn-p" type="button" data-novo-pessoal>Nova missão pessoal</button>
           </div>
-          <div class="painel dia-oracao" id="pes-oracao"></div>
-          <div class="barra-lista"><h3 class="rotulo-vista">Liturgia das Horas</h3><span class="nota">Laudes, Tércia, Sexta, Noa, Vésperas e Completas.</span></div>
-          <div class="painel" id="pes-horas"></div>
+          <div class="ora-status" id="pes-status" data-sem-tr></div>
+          <details class="painel det-sec" id="pes-horas-det" data-lembrar><summary><span class="det-sec-tit">Liturgia das Horas</span><span class="nota">Laudes, Tércia, Sexta, Noa, Vésperas e Completas</span></summary><div id="pes-horas"></div></details>
+          <div class="barra-lista"><h3 class="rotulo-vista">Missões pessoais</h3><div class="area-chips" id="pes-areas"></div></div>
+          <div class="lista" id="lista-pessoal"></div>
           <div class="barra-lista"><h3 class="rotulo-vista">Hábitos</h3><span class="nota">Fazer o mínimo também conta.</span></div>
           <div class="painel"><div class="habitos" id="pes-habitos"></div>
             <form class="form-linha" id="hb-form" autocomplete="off">
@@ -1063,12 +1230,8 @@ textarea.campo.rolando{overflow-y:auto}
               <button class="btn btn-claro btn-p" type="submit">Criar hábito</button>
             </form>
           </div>
-          <div class="barra-lista"><h3 class="rotulo-vista">Missões pessoais</h3><div class="area-chips" id="pes-areas"></div></div>
-          <div class="lista" id="lista-pessoal"></div>
-          <div class="barra-lista"><h3 class="rotulo-vista">Revisão semanal</h3><button class="btn btn-claro btn-p" type="button" data-abrir-revisao id="rev-btn"></button></div>
-          <div class="painel"><div class="rev-hist" id="pes-revisoes"></div></div>
-          <div class="barra-lista"><h3 class="rotulo-vista">Suas virtudes</h3><span class="nota" id="vt-total"></span></div>
-          <div class="painel"><ul class="virtudes" id="pes-virtudes"></ul></div>
+          <details class="painel det-sec" id="pes-rev-det" data-lembrar><summary><span class="det-sec-tit">Revisão semanal</span></summary><div class="det-sec-acoes"><button class="btn btn-claro btn-p" type="button" data-abrir-revisao id="rev-btn"></button></div><div class="rev-hist" id="pes-revisoes"></div></details>
+          <details class="painel det-sec" id="pes-vt-det" data-lembrar><summary><span class="det-sec-tit">Suas virtudes</span><span class="nota" id="vt-total"></span></summary><ul class="virtudes" id="pes-virtudes"></ul></details>
           <div id="zap-bloco" hidden>
           <div class="barra-lista"><h3 class="rotulo-vista">Resumo diário no WhatsApp</h3></div>
           <div class="painel">
@@ -1081,14 +1244,10 @@ textarea.campo.rolando{overflow-y:auto}
             </form>
           </div>
           </div>
-          <div class="barra-lista"><h3 class="rotulo-vista">Áreas da vida</h3></div>
-          <div class="painel ajustes-painel">
-            <label>Separe por vírgulas<input class="campo" id="areas-in" maxlength="300"></label>
-          </div>
         </section>
 
         <section id="vista-cidade" style="display:grid;gap:14px" hidden>
-          <div class="barra-lista"><h3 class="rotulo-vista">Sua cidade</h3></div>
+          <div class="barra-lista"><h3 class="rotulo-vista" id="cid-rotulo">Sítio</h3></div>
           <div class="painel">
             <div class="cid-grande">
               <div class="cid-grande-topo">
@@ -1098,6 +1257,7 @@ textarea.campo.rolando{overflow-y:auto}
               <div id="cg-visita"></div>
               <div class="cid-arte abre" id="cg-arte" role="button" tabindex="0" aria-label="Ver a casa de perto"></div>
               <p class="cid-prox" id="cg-prox" style="padding:0"></p>
+              <details class="det-extra" id="cg-como"><summary id="cg-como-sum">Como o sítio cresce</summary><p class="nota" id="cg-como-txt" style="padding:0 14px 12px;display:block"></p></details>
             </div>
           </div>
           <div class="barra-lista"><h3 class="rotulo-vista">Construtores</h3></div>
@@ -1106,41 +1266,48 @@ textarea.campo.rolando{overflow-y:auto}
 
         <section id="vista-ajustes" style="display:grid;gap:14px" hidden>
           <div class="barra-lista"><h3 class="rotulo-vista">Ajustes</h3></div>
-          <div class="painel ajustes-painel" id="aj-eu-painel">
-            <p class="det-tit">Quem usa este navegador</p>
-            <label style="max-width:260px">Você é<select class="campo" id="aj-eu"></select></label>
+          <div class="aj-bloco">
+            <h4 class="aj-tit">Equipe</h4>
+            <div class="painel ajustes-painel" id="aj-eu-painel">
+              <p class="det-tit">Quem usa este navegador</p>
+              <label style="max-width:260px">Você é<select class="campo" id="aj-eu"></select></label>
+            </div>
+            <div class="painel ajustes-painel">
+              <p class="det-tit">Pessoas</p>
+              <div class="campos-eq" id="campos-eq"></div>
+            </div>
+            <div class="painel ajustes-painel" id="aj-conta" hidden></div>
           </div>
-          <div class="painel ajustes-painel">
-            <p class="det-tit">Equipe</p>
-            <div class="campos-eq" id="campos-eq"></div>
+          <div class="aj-bloco">
+            <h4 class="aj-tit">Clientes</h4>
+            <div class="painel ajustes-painel">
+              <div class="lista-tags" id="lista-tags"></div>
+              <div class="tp-nova"><input id="nova-tag-aj" type="text" maxlength="30" placeholder="Novo cliente" aria-label="Novo cliente"><button class="btn btn-claro btn-p" id="criar-tag-aj" type="button">Criar</button></div>
+            </div>
           </div>
-          <div class="painel ajustes-painel" id="aj-conta" hidden></div>
-          <div class="painel ajustes-painel" id="aj-ritual" hidden data-sem-tr></div>
-          <div class="painel ajustes-painel">
-            <p class="det-tit">Idioma</p>
-            <label style="max-width:260px" data-sem-tr><select class="campo" id="aj-idioma" aria-label="Idioma / Language"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option><option value="la">Latina</option></select></label>
-            <p class="nota">A interface muda para todo o aplicativo neste aparelho. Missões e nomes continuam como foram escritos.</p>
-          </div>
-          <div class="painel ajustes-painel">
-            <p class="det-tit">Ângelus</p>
-            <p class="nota">Às 6h, 12h e 18h um anjo atravessa o painel e os moradores param para rezar.</p>
-            <div class="acoes"><button class="btn btn-claro btn-p" type="button" id="ver-angelus">Ver o Ângelus agora</button></div>
-          </div>
-          <div class="painel ajustes-painel">
-            <p class="det-tit">Clientes</p>
-            <div class="lista-tags" id="lista-tags"></div>
-            <div class="tp-nova"><input id="nova-tag-aj" type="text" maxlength="30" placeholder="Novo cliente" aria-label="Novo cliente"><button class="btn btn-claro btn-p" id="criar-tag-aj" type="button">Criar</button></div>
-          </div>
-          <div class="painel ajustes-painel" id="aj-importar" data-sem-tr>
-            <p class="det-tit" id="imp-tit"></p>
-            <p class="nota" id="imp-nota"></p>
-            <div class="acoes"><label class="btn btn-claro btn-p" style="cursor:pointer"><span id="imp-escolher"></span><input type="file" id="imp-arq" accept=".json,application/json" hidden></label></div>
-            <div id="imp-previa" hidden></div>
+          <div class="aj-bloco">
+            <h4 class="aj-tit">Preferências</h4>
+            <div class="painel ajustes-painel" id="aj-ritual" hidden data-sem-tr></div>
+            <div class="painel ajustes-painel">
+              <p class="det-tit">Áreas da vida</p>
+              <label>Separe por vírgulas<input class="campo" id="areas-in" maxlength="300"></label>
+              <p class="nota">Organizam a Minha área: missões pessoais, hábitos e revisão semanal.</p>
+            </div>
+            <details class="painel det-sec" id="aj-importar" data-sem-tr>
+              <summary><span class="det-sec-tit" id="imp-tit"></span></summary>
+              <div class="ajustes-painel" style="padding-top:0">
+                <p class="nota" id="imp-nota"></p>
+                <div class="acoes"><label class="btn btn-claro btn-p" style="cursor:pointer"><span id="imp-escolher"></span><input type="file" id="imp-arq" accept=".json,application/json" hidden></label></div>
+                <div id="imp-previa" hidden></div>
+              </div>
+            </details>
           </div>
         </section>
       </div>
     </div>
   </main>
+  <nav class="barra-inf" id="barra-inf" aria-label="Navegação" data-sem-tr></nav>
+  <div class="inf-pop" id="inf-pop" data-sem-tr hidden></div>
 </div>
 
 <input id="arquivo-in" type="file" multiple hidden>
@@ -1148,19 +1315,22 @@ textarea.campo.rolando{overflow-y:auto}
   <span class="massa-n" id="massa-n"></span>
   <button class="massa-b" type="button" id="massa-todas"></button>
   <span class="massa-sep"></span>
-  <label class="massa-campo"><span id="massa-l-resp"></span><select id="massa-resp"></select></label>
   <div class="massa-pop-w"><button class="massa-b" type="button" id="massa-data-b"></button>
     <div class="massa-pop" id="massa-data-pop" hidden>
       <input class="campo" type="date" id="massa-data">
       <div class="massa-rap"><button type="button" data-massa-data="0"></button><button type="button" data-massa-data="1"></button><button type="button" data-massa-data="7"></button><button type="button" data-massa-data="sem"></button></div>
     </div></div>
+  <label class="massa-campo"><span id="massa-l-resp"></span><select id="massa-resp"></select></label>
   <div class="massa-pop-w"><button class="massa-b" type="button" id="massa-tags-b"></button>
     <div class="massa-pop" id="massa-tags-pop" hidden></div></div>
-  <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
-  <label class="massa-campo" id="massa-tipo-l"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
-  <button class="massa-b" type="button" id="massa-pessoal"></button>
-  <button class="massa-b" type="button" id="massa-prio"></button>
-  <button class="massa-b" type="button" id="massa-duplicar"></button>
+  <div class="massa-pop-w"><button class="massa-b" type="button" id="massa-mais-b"></button>
+    <div class="massa-pop massa-mais" id="massa-mais-pop" hidden>
+      <label class="massa-campo"><span id="massa-l-peso"></span><select id="massa-peso"></select></label>
+      <label class="massa-campo" id="massa-tipo-l"><span id="massa-l-tipo"></span><select id="massa-tipo"></select></label>
+      <button class="massa-b" type="button" id="massa-prio"></button>
+      <button class="massa-b" type="button" id="massa-duplicar"></button>
+      <button class="massa-b" type="button" id="massa-pessoal"></button>
+    </div></div>
   <button class="massa-b perigo" type="button" id="massa-excluir"></button>
   <button class="massa-x" type="button" id="massa-fechar" aria-label="Fechar">×</button>
 </div>
@@ -1200,7 +1370,7 @@ textarea.campo.rolando{overflow-y:auto}
 <div class="veu" id="veu-zoom" hidden>
   <div class="zoom" role="dialog" aria-modal="true" aria-labelledby="z-tit">
     <div class="zoom-topo">
-      <div><h3 id="z-tit"></h3><p>Arraste para passear, use a rodinha do mouse (ou dois dedos) para o zoom. Toque nos moradores para conversar, nas casas para acender as luzes e nas árvores para balançá-las.</p></div>
+      <div><h3 id="z-tit"></h3><p class="z-dicas" id="z-dicas" data-sem-tr></p></div>
       <button class="icone-btn" id="z-fechar" type="button" aria-label="Fechar">×</button>
     </div>
     <div class="zoom-palco"><div class="zoom-arte clicavel" id="z-arte"></div>
@@ -1216,7 +1386,7 @@ textarea.campo.rolando{overflow-y:auto}
     <div class="rec-linha"><span>A cada</span><input class="campo" type="number" id="rec-n" min="1" max="99" value="1"><select class="campo" id="rec-u"><option value="dia">dia(s)</option><option value="semana">semana(s)</option><option value="mes">mês(es)</option><option value="ano">ano(s)</option></select></div>
     <div id="rec-dias-bloco"><p class="rot" style="margin:6px 0">Nos dias</p><div class="rec-dias" id="rec-dias"></div></div>
     <p class="rec-resumo" id="rec-resumo"></p>
-    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Salvar repetição</button><button class="btn btn-claro btn-grande" type="button" id="rec-cancelar">Cancelar</button></div>
+    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Salvar</button><button class="btn btn-claro btn-grande" type="button" id="rec-cancelar">Cancelar</button></div>
   </form>
 </div>
 
@@ -1259,7 +1429,8 @@ textarea.campo.rolando{overflow-y:auto}
     <p class="od-fonte" id="od-fonte" data-sem-tr></p>
     <label>Hoje ofereço meu trabalho por<input class="campo" id="od-texto" maxlength="140" placeholder="Ex.: minha família, um cliente, as almas"></label>
     <div class="ofe-chips" id="od-chips"></div>
-    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Amém</button><button class="btn btn-claro btn-grande" type="button" id="od-pular">Hoje não</button></div>
+    <div class="od-extra" id="od-extra" data-sem-tr hidden></div>
+    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit" id="od-ok">Amém</button><button class="btn btn-claro btn-grande" type="button" id="od-pular">Hoje não</button></div>
   </form>
 </div>
 
@@ -1296,7 +1467,7 @@ textarea.campo.rolando{overflow-y:auto}
   <p id="an-verso"></p>
   <div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="an-rezar">Rezar</button><button class="btn btn-claro btn-p" type="button" id="an-fechar">Agora não</button></div>
 </div>
-<div class="contador" id="contador" data-sem-tr hidden></div></div>
+</div>
 <div class="veu" id="veu-angelus" hidden>
   <div class="cartao largo" role="dialog" aria-modal="true" aria-labelledby="ang-tit">
     <p class="rot" id="ang-rot"></p>
@@ -2332,7 +2503,7 @@ textarea.campo.rolando{overflow-y:auto}
   };
   var VISTAS = [ ['hoje','Hoje','Missões de hoje'], ['todas','Todas as missões','Todas as missões'], ['atrasadas','Atrasadas','Atrasadas'],
     ['proximas','Próximos dias','Próximos dias'], ['cumpridas','Cumpridas','Cumpridas'], ['aprovar','Para aprovar','Aprovações'], ['agenda','Agenda','Agenda'],
-    ['criativos','Criativos','Criativos por cidade'], ['cidade','Sua cidade','Sua cidade'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
+    ['criativos','Criativos','Criativos por cidade'], ['cidade','Sítio','Sítio'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
   var I_REPETE = svgIcone('<path d="M4 8.5A6 6 0 0 1 15 6.2M16 11.5A6 6 0 0 1 5 13.8"/><path d="M15.5 3v3.4h-3.4M4.5 17v-3.4h3.4"/>',1.6);
   var I_ESCUDO = svgIcone(ICONES.aprovar,1.6), I_CADEADO = svgIcone(ICONES.pessoal,1.6);
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
@@ -2379,37 +2550,35 @@ textarea.campo.rolando{overflow-y:auto}
     var dp = e.target.closest('[data-duplicar]');
     if (dp && !selecionando){ e.preventDefault(); duplicar([dp.getAttribute('data-duplicar')]); return; }
     var b = e.target.closest('[data-editar-m]');
-    if (b && !selecionando){ e.preventDefault(); editandoMissao = b.getAttribute('data-editar-m'); render();
-      var f = document.querySelector('[data-m-form="'+editandoMissao+'"] textarea'); if (f){ f.focus(); f.setSelectionRange(f.value.length, f.value.length); f.closest('form').scrollIntoView({block:'nearest'}); } return; }
-    if (e.target.closest('[data-m-cancelar]')){ editandoMissao = null; render(); }
+    if (b && !selecionando){
+      e.preventDefault(); var idE = b.getAttribute('data-editar-m'), foco = b.getAttribute('data-foco');
+      /* clicar no título de novo fecha o painel */
+      if (editandoMissao===idE && !foco && b.classList.contains('r-titulo')){ editandoMissao = null; rascunho = null; render(); return; }
+      if (editandoMissao!==idE) rascunho = null;
+      editandoMissao = idE; menuM = null; render();
+      var pn = document.querySelector('[data-m-form="'+idE+'"]'); if (!pn) return;
+      var painel = pn.closest('.m-painel');
+      if (foco==='cliente'){ var tp = painel.querySelector('.tag-picker'); if (tp) tp.scrollIntoView({block:'center', behavior:'smooth'}); return; }
+      var ti = pn.elements.titulo; if (ti){ ti.focus({preventScroll:true}); }
+      painel.scrollIntoView({block:'nearest', behavior:'smooth'});
+      return;
+    }
+    if (e.target.closest('[data-m-cancelar]')){ editandoMissao = null; rascunho = null; render(); return; }
+    var of = e.target.closest('[data-oferecer]');
+    if (of && !selecionando){ e.preventDefault(); var mo = achar(of.getAttribute('data-oferecer')); if (mo) abrirOferta(mo); }
   });
-  document.addEventListener('keydown', function(e){ if (e.key==='Escape' && editandoMissao && e.target.closest && e.target.closest('[data-m-form]')){ editandoMissao = null; render(); } });
+  document.addEventListener('keydown', function(e){
+    if (e.key==='Escape' && editandoMissao && e.target.closest && e.target.closest('.m-painel') && !e.target.closest('.sub-editor')){ editandoMissao = null; rascunho = null; render(); return; }
+    if ((e.key==='Enter' || e.key===' ') && e.target.matches && e.target.matches('.r-titulo[data-editar-m]')){ e.preventDefault(); e.target.click(); }
+  });
   var flut = null, flutTimer = null, flutDe = null;
   function fecharFlut(){ clearTimeout(flutTimer); flutTimer = null; flutDe = null; if (flut){ flut.remove(); flut = null; } }
-  if (window.matchMedia && matchMedia('(hover: hover)').matches){
-    document.addEventListener('mouseover', function(e){
-      if (flut && (e.target===flut || flut.contains(e.target))){ clearTimeout(flutTimer); return; }
-      var c = !selecionando && e.target.closest('.linha:not(.desc-aberta) .r-cnt');
-      var d = c && c.querySelector(':scope > .r-desc');
-      if (!d){ if (flutDe){ clearTimeout(flutTimer); flutTimer = setTimeout(fecharFlut, 200); } return; }
-      if (flutDe===c){ clearTimeout(flutTimer); return; }
-      fecharFlut(); flutDe = c;
-      flutTimer = setTimeout(function(){
-        if (flutDe!==c) return;
-        var r = c.getBoundingClientRect(); flut = document.createElement('div'); flut.className = 'desc-flut'; flut.setAttribute('data-sem-tr',''); flut.innerHTML = d.innerHTML;
-        document.body.appendChild(flut);
-        var h = flut.offsetHeight, top = r.bottom + 6; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 6);
-        flut.style.top = top+'px'; flut.style.left = Math.max(12, Math.min(r.left, innerWidth - flut.offsetWidth - 12))+'px';
-      }, 350);
-    });
-    window.addEventListener('scroll', fecharFlut, true);
-  }
   document.addEventListener('click', function(e){
-    var b = e.target.closest('[data-desc-toggle]'); if (!b || selecionando) return;
+    var b = e.target.closest('[data-desc-toggle]'); if (!b || selecionando || e.target.closest('a')) return;
     fecharFlut();
     var id = b.getAttribute('data-desc-toggle'), row = b.closest('.linha'); if (!row) return;
     descAbertas[id] = !descAbertas[id]; row.classList.toggle('desc-aberta', !!descAbertas[id]);
-    Array.prototype.forEach.call(row.querySelectorAll('.desc-ind'), function(x){ x.setAttribute('aria-expanded', String(!!descAbertas[id])); });
+    b.title = descAbertas[id] ? L('Clique para recolher','Click to collapse','Haz clic para contraer','Preme ut contrahas') : L('Clique para ler tudo','Click to read it all','Haz clic para leer todo','Preme ut totum legas');
   });
   var I_RAMO = svgIcone('<path d="M5 3.5v6.5a3 3 0 0 0 3 3h7"/><circle cx="15.5" cy="13" r="1.4"/>',1.6), I_EDITAR = svgIcone('<path d="M4 16l1-3.5L13.5 4a1.4 1.4 0 0 1 2 2L7 14.5z"/>',1.6);
   var I_DRIVE = svgIcone('<path d="M7.2 3.5h5.6l4.7 8.2-2.8 4.8H5.3L2.5 11.7z M7.2 3.5l5.5 9.6M12.8 3.5L7.3 13.1M2.5 11.7h15"/>',1.4);
@@ -2538,10 +2707,11 @@ textarea.campo.rolando{overflow-y:auto}
     var b = document.getElementById('config-btn'); if (!b) return;
     var t = L('Configurações','Settings','Configuración','Optiones');
     b.innerHTML = I_ENGRENAGEM+'<span>'+t+'</span>'; b.title = t;
-    document.getElementById('cfg-cidade').innerHTML = svgIcone(ICONES.cidade)+'<span>'+tr('Sua cidade')+'</span>';
     document.getElementById('cfg-ajustes').innerHTML = svgIcone(ICONES.ajustes)+'<span>'+tr('Ajustes')+'</span>';
-    document.getElementById('cfg-cidade').setAttribute('aria-current', String(vista==='cidade'));
     document.getElementById('cfg-ajustes').setAttribute('aria-current', String(vista==='ajustes'));
+    var cf = document.getElementById('cfg-finalizar'), fdia = document.getElementById('finalizar-dia');
+    cf.hidden = !fdia || !fdia.hidden;
+    cf.innerHTML = svgIcone('<path d="M3 14.5h14M5.5 14.5a4.5 4.5 0 0 1 9 0M10 4.5v3M4.3 8.3l1.6 1.2M15.7 8.3l-1.6 1.2M5 17.5h10"/>')+'<span>'+L('Finalizar o dia','Close the day','Cerrar el día','Diem claudere')+'</span>';
   }
   function fecharConfig(){ var p = document.getElementById('config-pop'); if (p && !p.hidden){ p.hidden = true; document.getElementById('config-btn').setAttribute('aria-expanded','false'); } }
   document.getElementById('config-btn').addEventListener('click', function(e){
@@ -2549,11 +2719,14 @@ textarea.campo.rolando{overflow-y:auto}
     if (!p.hidden){ fecharConfig(); return; }
     renderConfig(); p.hidden = false; this.setAttribute('aria-expanded','true');
     var r = this.getBoundingClientRect(), w = Math.max(220, p.offsetWidth);
-    p.style.left = Math.min(r.left, innerWidth - w - 8)+'px'; p.style.bottom = (innerHeight - r.top + 6)+'px'; p.style.top = 'auto';
+    p.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8))+'px';
+    if (r.top < innerHeight/2){ p.style.top = (r.bottom + 6)+'px'; p.style.bottom = 'auto'; }
+    else { p.style.bottom = (innerHeight - r.top + 6)+'px'; p.style.top = 'auto'; }
   });
   document.getElementById('config-pop').addEventListener('click', function(e){
     var v = e.target.closest('[data-cfg-vista]');
     if (v){ vista = v.getAttribute('data-cfg-vista'); fecharConfig(); render(); window.scrollTo(0,0); return; }
+    if (e.target.closest('#cfg-finalizar')){ fecharConfig(); exameDispensado = false; abrirExame(false); return; }
     if (e.target.closest('#tema') || e.target.closest('#sair')) setTimeout(fecharConfig, 0);
   });
   document.addEventListener('click', function(e){ if (!e.target.closest('#config-pop') && !e.target.closest('#config-btn')) fecharConfig(); });
@@ -2589,12 +2762,38 @@ textarea.campo.rolando{overflow-y:auto}
     var b = document.getElementById('grupos-tg'); if (!b) return;
     var todos = gruposNaTela.length && gruposNaTela.every(function(k){ return gruposFechados[k]; });
     b.hidden = gruposNaTela.length < 2;
-    var tt = document.getElementById('tipo-tg');
-    if (tt){ tt.hidden = vista!=='hoje' || !usaTipos(); tt.textContent = porTipo ? L('Organizar por data','Organize by date','Organizar por fecha','Per diem ordinare') : L('Organizar por tipo','Organize by type','Organizar por tipo','Per genus ordinare'); tt.title = porTipo ? L('Hoje está separado por tipo de demanda','Today is split by task type','Hoy está separado por tipo','Hodie per genus divisum') : ''; }
+    var tt = document.getElementById('tipo-seg');
+    if (tt){
+      tt.hidden = vista!=='hoje' || !usaTipos() || ritualBloqueado();
+      var bt = tt.querySelectorAll('button');
+      bt[0].textContent = L('Por tipo','By type','Por tipo','Per genus'); bt[0].setAttribute('aria-pressed', String(!!porTipo));
+      bt[1].textContent = L('Por data','By date','Por fecha','Per diem'); bt[1].setAttribute('aria-pressed', String(!porTipo));
+    }
+    var fb = document.getElementById('filtro-btn');
+    if (fb){ var nf = (filtro!=='todos'?1:0) + (filtroTag?1:0); fb.textContent = L('Filtrar','Filter','Filtrar','Eligere')+(nf ? ' ('+nf+')' : '')+' ▾'; }
     b.textContent = todos ? L('Expandir tudo','Expand all','Expandir todo','Omnia explicare') : L('Recolher tudo','Collapse all','Contraer todo','Omnia contrahere');
   }
   function salvarGrupos(){ lsSet('ora-grupos', JSON.stringify(gruposFechados)); }
-  document.getElementById('tipo-tg').addEventListener('click', function(){ porTipo = !porTipo; lsSet('ora-por-tipo', porTipo ? '1' : '0'); render(); });
+  document.getElementById('tipo-seg').addEventListener('click', function(e){ var b = e.target.closest('[data-seg]'); if (!b) return; var v = b.getAttribute('data-seg')==='tipo'; if (v===porTipo) return; porTipo = v; lsSet('ora-por-tipo', porTipo ? '1' : '0'); render(); });
+  /* Filtrar (celular): equipe e clientes num só lugar */
+  var filtroPop = document.getElementById('filtro-pop'), filtroBtn = document.getElementById('filtro-btn');
+  function fecharFiltroPop(){ if (!filtroPop.hidden){ filtroPop.hidden = true; filtroBtn.setAttribute('aria-expanded','false'); } }
+  function renderFiltroPop(){
+    var h = '<p>'+L('Equipe','Team','Equipo','Sodales')+'</p><button type="button" data-fp-pessoa="todos" aria-current="'+(filtro==='todos')+'"><span class="av" style="--c:var(--sup-2)">✝</span>'+L('Todos','Everyone','Todos','Omnes')+'</button>'+
+      state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return '<button type="button" data-fp-pessoa="'+esc(p.id)+'" aria-current="'+(filtro===p.id)+'">'+av(p.id)+esc(p.nome)+'</button>'; }).join('');
+    if (state.tags.length) h += '<p>'+L('Clientes','Clients','Clientes','Clientes')+'</p>'+state.tags.map(function(t){ var c = corTag(t.cor); return '<button type="button" data-fp-tag="'+esc(t.id)+'" aria-current="'+(filtroTag===t.id)+'"><span class="ponto'+(c?'':' cinza')+'"'+(c?' style="--t:'+c+'"':'')+'></span>'+esc(t.nome)+'</button>'; }).join('');
+    filtroPop.innerHTML = h;
+  }
+  filtroBtn.addEventListener('click', function(e){ e.stopPropagation(); if (!filtroPop.hidden){ fecharFiltroPop(); return; } renderFiltroPop(); filtroPop.hidden = false; filtroBtn.setAttribute('aria-expanded','true'); var r = filtroBtn.getBoundingClientRect(), w = filtroPop.offsetWidth; filtroPop.style.top = (r.bottom+6)+'px'; filtroPop.style.left = Math.max(12, Math.min(r.right - w, innerWidth - w - 12))+'px'; });
+  filtroPop.addEventListener('click', function(e){
+    var p = e.target.closest('[data-fp-pessoa]'), t = e.target.closest('[data-fp-tag]');
+    if (p) filtro = p.getAttribute('data-fp-pessoa');
+    else if (t){ var id = t.getAttribute('data-fp-tag'); filtroTag = filtroTag===id ? null : id; }
+    else return;
+    fecharFiltroPop(); render();
+  });
+  document.addEventListener('click', function(e){ if (!e.target.closest('.filtro-w')) fecharFiltroPop(); });
+  window.addEventListener('scroll', fecharFiltroPop, true);
   document.addEventListener('click', function(e){
     var g = e.target.closest('[data-grupo]');
     if (g && !selecionando){ var k = g.getAttribute('data-grupo'); gruposFechados[k] = !gruposFechados[k]; if (!gruposFechados[k]) delete gruposFechados[k]; salvarGrupos();
@@ -2818,8 +3017,9 @@ textarea.campo.rolando{overflow-y:auto}
         '<button class="icone-btn" type="button" data-anexo-del="'+chave+'|'+a.id+'" aria-label="Remover '+esc(a.nome)+'" title="Remover">×</button></div>';
     }).join('');
     if (comBotao){
-      h += '<div class="anexos-acoes"><button class="btn btn-claro btn-p" type="button" data-anexar="'+chave+'">'+I_CLIPE+'Anexar arquivo</button>'+
-        '<button class="btn btn-claro btn-p" type="button" data-drive="'+chave+'">'+I_DRIVE+'Do Google Drive</button><span class="anexos-dica">ou arraste arquivos para a missão</span></div>';
+      h += '<details class="anexar-menu"'+(drivePara===chave?' open':'')+'><summary class="btn btn-claro btn-p" title="'+esc(L('Também dá para arrastar arquivos até a missão','You can also drag files onto the mission','También puedes arrastrar archivos a la misión','Etiam documenta in missionem trahere potes'))+'">'+I_CLIPE+L('Anexar','Attach','Adjuntar','Adiungere')+' ▾</summary><div class="anexar-op">'+
+        '<button type="button" data-anexar="'+chave+'">'+I_BAIXAR.replace('M10 3.5v9M6 9l4 4 4-4','M10 13V4M6 8l4-4 4 4')+L('Do computador','From this computer','Desde el ordenador','Ex computatro')+'</button>'+
+        '<button type="button" data-drive="'+chave+'">'+I_DRIVE+L('Do Google Drive','From Google Drive','Desde Google Drive','Ex Google Drive')+'</button></div></details>';
       if (drivePara===chave) h += painelDrive(chave);
     }
     return '<div class="anexos">'+h+'</div>';
@@ -2939,10 +3139,19 @@ textarea.campo.rolando{overflow-y:auto}
     var t = {id:'t'+uid(), nome:nome, cor:cor}; state.tags.push(t); return t;
   }
   function listaTags(chave){ return chave==='form' ? formTags : chave==='reuniao' ? reuniaoTags : (alvoDe(chave)||{}).tags; }
-  function renderTagsForm(chave){ if (chave==='form') document.getElementById('f-tags').innerHTML = seletorTags('form', formTags); else if (chave==='reuniao') document.getElementById('r-tags').innerHTML = seletorTags('reuniao', reuniaoTags); else render(); }
+  function renderTagsForm(chave, btn){
+    if (chave==='form') document.getElementById('f-tags').innerHTML = seletorTags('form', formTags);
+    else if (chave==='reuniao') document.getElementById('r-tags').innerHTML = seletorTags('reuniao', reuniaoTags);
+    else {
+      /* no painel da missão (ou da sub-missão), troca só o seletor, sem redesenhar a lista */
+      var tp = btn && btn.closest('.tag-picker'), alvo = alvoDe(chave);
+      if (tp && alvo && tp.closest('.m-painel, .sub-editor')){ var tit = tp.querySelector('.tp-tit'); tp.outerHTML = seletorTags(chave, alvo.tags, tit ? tit.innerHTML : ''); renderNav(); }
+      else render();
+    }
+  }
   function tratarTags(e){
     var b = e.target.closest('[data-tag-toggle]');
-    if (b){ var ch = b.getAttribute('data-tag-toggle'), l = listaTags(ch), tid = b.getAttribute('data-tag'); if (l){ var i = l.indexOf(tid); if (i>=0) l.splice(i,1); else l.push(tid); if (ch!=='form' && ch!=='reuniao') salvar(); } renderTagsForm(ch); return true; }
+    if (b){ var ch = b.getAttribute('data-tag-toggle'), l = listaTags(ch), tid = b.getAttribute('data-tag'); if (l){ var i = l.indexOf(tid); if (i>=0) l.splice(i,1); else l.push(tid); if (ch!=='form' && ch!=='reuniao') salvar(); } renderTagsForm(ch, b); return true; }
     var c = e.target.closest('[data-tag-criar]');
     if (c){ novaTagDe(c.getAttribute('data-tag-criar'), c.parentNode.querySelector('input')); return true; }
     return false;
@@ -2950,7 +3159,7 @@ textarea.campo.rolando{overflow-y:auto}
   function novaTagDe(chave, inp){
     var t = criarTag(inp.value); if (!t) return;
     var l = listaTags(chave); if (l && l.indexOf(t.id)<0) l.push(t.id);
-    salvar(); renderNav(); renderTagsForm(chave);
+    salvar(); renderNav(); renderTagsForm(chave, inp);
     var n = document.querySelector('[data-tag-nova="'+chave+'"]'); if (n) n.focus();
   }
   document.addEventListener('keydown', function(e){
@@ -2964,30 +3173,68 @@ textarea.campo.rolando{overflow-y:auto}
   function renderNav(){
     var s = separar(doFiltro()), rh = reunioesDoDia(hoje).length;
     var ap = aprovacoes(), pes = minhasPessoais().filter(function(m){ return !m.feita && m.data && m.data<=hoje; }).length;
-    var qtd = { hoje:s.atras.length+s.hoje.length+rh+ap.minhas.length+((filtro==='todos' || filtro===eu) && !filtroTag ? pes : 0), todas:s.atras.length+s.hoje.length+s.prox.length+s.sem.length, atrasadas:s.atras.length, proximas:s.prox.length+s.sem.length, cumpridas:s.feitas.length,
+    /* Hoje conta só as missões por fazer de hoje e as atrasadas (como a lista) */
+    var qtd = { hoje:s.atras.length+s.hoje.length+((filtro==='todos' || filtro===eu) && !filtroTag ? pes : 0), todas:s.atras.length+s.hoje.length+s.prox.length+s.sem.length, atrasadas:s.atras.length, proximas:s.prox.length+s.sem.length, cumpridas:s.feitas.length,
       agenda:reunioesFiltradas().filter(function(r){ return r.data>=hoje; }).length, aprovar:ap.minhas.length+ap.ajustes.length, pessoal:pes||null };
     var GRUPO_MISSOES = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'];
     var itemNav = function(v){
-      var q = qtd[v[0]];
+      var q = qtd[v[0]], nome = nomeVista(v);
       if (v[0]==='aprovar' && !q && !ap.enviadas.length && vista!=='aprovar') return '';
-      return '<button type="button" data-vista="'+v[0]+'" aria-current="'+(vista===v[0])+'">'+svgIcone(ICONES[v[0]])+v[1]+(q!=null ? '<span class="qtd'+((v[0]==='atrasadas'||v[0]==='aprovar')&&q?' alerta':'')+'">'+q+'</span>' : '')+'</button>';
+      return (v[0]==='pessoal' ? '<div class="nav-sep" role="separator"></div>' : '')+'<button type="button" data-vista="'+v[0]+'" aria-current="'+(vista===v[0])+'" title="'+esc(tr(nome))+'">'+svgIcone(ICONES[v[0]])+nome+(q!=null ? '<span class="qtd'+((v[0]==='atrasadas'||v[0]==='aprovar')&&q?' alerta':'')+'">'+q+'</span>' : '')+'</button>';
     };
-    var vM = VISTAS.filter(function(v){ return GRUPO_MISSOES.indexOf(v[0])>=0; }), vO = VISTAS.filter(function(v){ return GRUPO_MISSOES.indexOf(v[0])<0 && v[0]!=='cidade' && v[0]!=='ajustes'; });
+    qtdNav = qtd;
+    var vM = VISTAS.filter(function(v){ return GRUPO_MISSOES.indexOf(v[0])>=0; }), vO = VISTAS.filter(function(v){ return GRUPO_MISSOES.indexOf(v[0])<0 && v[0]!=='ajustes'; });
     document.getElementById('nav-vistas').innerHTML =
       '<button class="nav-rotulo nav-rot-tg" type="button" data-nav-sec="missoes" aria-expanded="'+(lsGet('ora-nav-missoes')!=='fechado')+'" data-sem-tr><span>'+L('Missões','Missions','Misiones','Missiones')+'</span><span class="seta" aria-hidden="true">▾</span></button>'+
       '<div class="nav-grupo" id="nav-missoes">'+vM.map(itemNav).join('')+'</div>'+
       '<div class="nav-grupo nav-outros">'+vO.map(itemNav).join('')+'</div>';
-    var b = '<button type="button" data-filtro="todos" aria-current="'+(filtro==='todos')+'"><span class="av" style="--c:var(--sup-2)">✝</span>Todos</button>';
-    state.equipe.forEach(function(p){ b += '<button type="button" data-filtro="'+p.id+'" aria-current="'+(filtro===p.id)+'">'+av(p.id)+esc(p.nome)+(p.id===eu?'<span class="qtd">você</span>':'')+'</button>'; });
+    var b = '<button type="button" data-filtro="todos" aria-current="'+(filtro==='todos')+'" title="'+esc(tr('Todos'))+'"><span class="av" style="--c:var(--sup-2)">✝</span>Todos</button>';
+    state.equipe.forEach(function(p){ b += '<button type="button" data-filtro="'+p.id+'" aria-current="'+(filtro===p.id)+'" title="'+esc(p.nome)+'">'+av(p.id)+esc(p.nome)+(p.id===eu?'<span class="qtd">você</span>':'')+'</button>'; });
     document.getElementById('nav-pessoas').innerHTML = b;
     var base = state.missoes.filter(function(m){ return !m.privada && !m.feita && (filtro==='todos' || m.resp===filtro); });
     document.getElementById('nav-tags').innerHTML = state.tags.length ? state.tags.map(function(t){
       var c = corTag(t.cor), n = base.filter(function(m){ return temTag(m, t.id); }).length;
-      return '<button type="button" data-tagf="'+t.id+'" aria-current="'+(filtroTag===t.id)+'"><span class="ponto'+(c?'':' cinza')+'"'+(c?' style="--t:'+c+'"':'')+'></span><span class="nome-tag">'+esc(t.nome)+'</span><span class="qtd">'+n+'</span></button>';
+      return '<button type="button" data-tagf="'+t.id+'" aria-current="'+(filtroTag===t.id)+'" title="'+esc(t.nome)+'"><span class="ponto'+(c?'':' cinza')+'"'+(c?' style="--t:'+c+'"':'')+'></span><span class="nome-tag">'+esc(t.nome)+'</span><span class="qtd">'+n+'</span></button>';
     }).join('') : '<button type="button" data-vista="ajustes">'+svgIcone('<path d="M10 4v12M4 10h12"/>')+'Criar cliente</button>';
     var fr = document.getElementById('f-resp'), aberto = !document.getElementById('form-nova').hidden && fr.value;
     fr.innerHTML = opcoesPessoas(aberto ? fr.value : (filtro!=='todos'?filtro:eu));
+    renderBarraInf();
   }
+  var qtdNav = {};
+  function nomeVista(v){ return v[0]==='cidade' ? L('Sítio','Farm','Granja','Villa') : v[1]; }
+  /* ---------- Celular: barra de baixo (Hoje, Missões, Agenda, Minha área, Novo) ---------- */
+  var VISTAS_MENU_INF = ['todas','atrasadas','proximas','cumpridas','aprovar','criativos','cidade'];
+  function renderBarraInf(){
+    var bi = document.getElementById('barra-inf'); if (!bi) return;
+    var it = function(k, ic, nome, atual){ return '<button type="button" data-inf="'+k+'" aria-current="'+atual+'">'+ic+'<span>'+nome+'</span></button>'; };
+    var naMissoes = VISTAS_MENU_INF.indexOf(vista)>=0, q = (qtdNav.atrasadas||0) + (qtdNav.aprovar||0);
+    bi.innerHTML = it('hoje', svgIcone(ICONES.hoje), L('Hoje','Today','Hoy','Hodie'), vista==='hoje')+
+      it('missoes', svgIcone(ICONES.todas), L('Missões','Missions','Misiones','Missiones')+(q ? ' ·'+q : ''), naMissoes)+
+      it('agenda', svgIcone(ICONES.agenda), L('Agenda','Calendar','Agenda','Fasti'), vista==='agenda')+
+      it('pessoal', svgIcone(ICONES.pessoal), L('Minha área','My space','Mi área','Area mea'), vista==='pessoal')+
+      '<button type="button" data-inf="novo" class="inf-novo">'+svgIcone('<path d="M10 5v10M5 10h10"/>',1.8)+'<span>'+L('Novo','New','Nuevo','Novum')+'</span></button>';
+  }
+  function abrirInfPop(){
+    var pop = document.getElementById('inf-pop'), ap = aprovacoes();
+    pop.innerHTML = VISTAS.filter(function(v){ return VISTAS_MENU_INF.indexOf(v[0])>=0; }).map(function(v){
+      var q = qtdNav[v[0]];
+      if (v[0]==='aprovar' && !q && !ap.enviadas.length) return '';
+      return '<button type="button" data-vista-inf="'+v[0]+'" aria-current="'+(vista===v[0])+'">'+svgIcone(ICONES[v[0]])+esc(tr(nomeVista(v)))+(q ? '<span class="qtd'+((v[0]==='atrasadas'||v[0]==='aprovar')?' alerta':'')+'">'+q+'</span>' : '')+'</button>';
+    }).join('');
+    pop.hidden = false;
+  }
+  function fecharInfPop(){ var pop = document.getElementById('inf-pop'); if (pop) pop.hidden = true; }
+  document.getElementById('barra-inf').addEventListener('click', function(e){
+    var b = e.target.closest('[data-inf]'); if (!b) return;
+    e.stopPropagation();
+    var k = b.getAttribute('data-inf');
+    if (k==='missoes'){ var pop = document.getElementById('inf-pop'); if (pop.hidden){ fecharMenu(); abrirInfPop(); } else fecharInfPop(); return; }
+    fecharInfPop();
+    if (k==='novo'){ var abre = menuNovo.hidden; menuNovo.hidden = !abre; menuNovo.classList.toggle('rodape', abre); btnNovo.setAttribute('aria-expanded', String(abre)); return; }
+    fecharMenu(); vista = k; render(); window.scrollTo(0,0);
+  });
+  document.getElementById('inf-pop').addEventListener('click', function(e){ var b = e.target.closest('[data-vista-inf]'); if (!b) return; vista = b.getAttribute('data-vista-inf'); fecharInfPop(); render(); window.scrollTo(0,0); });
+  document.addEventListener('click', function(e){ if (!e.target.closest('#inf-pop') && !e.target.closest('#barra-inf')) fecharInfPop(); });
   function aprovacoes(){
     var r = {minhas:[], enviadas:[], ajustes:[]};
     state.missoes.forEach(function(m){
@@ -3051,54 +3298,112 @@ textarea.campo.rolando{overflow-y:auto}
     }
     var meta = (s.resp && s.resp!==m.resp ? '<span class="sub-pessoa">'+av(s.resp)+esc(pessoa(s.resp).nome)+'</span>' : '');
     if (!s.feita && s.data){ var p = prazoTxt(s.data); meta += '<span class="'+p.c+'">'+esc(p.t)+'</span>'; }
-    meta += '<span class="sub-xp">'+xpSub(s)+' XP</span>';
     var na = (s.anexos||[]).length;
     var sk = 's:'+k, sSel = !!selecao[sk];
     return '<li class="sub'+(s.feita?' feita':'')+(sSel?' selecionada':'')+'" data-sub="'+k+'"'+(selecionando && sSel ? ' draggable="true"' : '')+'>'+(selecionando ? '<button class="sel-box sel-sub'+(sSel?' on':'')+'" type="button" data-sel="'+sk+'" aria-pressed="'+sSel+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(s.titulo)+'">'+CHECK+'</button>' : '<button class="alca-sub" type="button" draggable="true" data-alca-sub="'+k+'" aria-label="Arrastar sub-missão" title="Arraste para fora para virar missão, ou para outra missão">'+ALCA+'</button>')+circ+
-      '<div class="sub-corpo"><div class="sub-linha"><button class="sub-t" type="button" data-sub-editar="'+k+'" title="Editar sub-missão">'+esc(s.titulo)+'</button>'+pilulas(s.tags)+
+      '<div class="sub-corpo"><div class="sub-linha"><button class="sub-t" type="button" data-sub-editar="'+k+'" title="Editar sub-missão">'+esc(s.titulo)+'</button><span class="sub-xp">'+xpSub(s)+' XP</span>'+pilulas(s.tags)+
       (na ? '<button class="indic" type="button" data-sub-editar="'+k+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '')+'</div>'+
       (s.descricao ? '<p class="sub-desc">'+esc(s.descricao)+'</p>' : '')+(meta ? '<div class="sub-meta">'+meta+'</div>' : '')+'</div>'+
       '<button class="sub-x" type="button" data-sub-del="'+k+'" aria-label="Excluir sub-missão: '+esc(s.titulo)+'" title="Excluir">×</button></li>';
   }
+  /* Sub-missões de uma missão (lista, campo para adicionar e dica no ⓘ) */
+  function blocoSubs(m){
+    var subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length;
+    var dica = L('Clique numa sub-missão para editar descrição, responsável, data, cliente e anexos. Arraste-a para fora para virar missão.','Click a sub-mission to edit its description, owner, date, client and attachments. Drag it out to turn it into a mission.','Haz clic en una submisión para editar descripción, responsable, fecha, cliente y adjuntos. Arrástrala fuera para convertirla en misión.','Partem preme ut emendes. Extra trahe ut missio fiat.');
+    return '<div class="det-bloco"><p class="det-tit">'+L('Sub-missões','Sub-missions','Submisiones','Missiunculae')+(subs.length ? ' · '+nf+'/'+subs.length : '')+(subs.length ? '<span class="info" title="'+esc(dica)+'" aria-label="'+esc(dica)+'">ⓘ</span>' : '')+'</p>'+(subs.length ? '<ul class="subs">'+subs.map(function(s){ return itemSub(m,s); }).join('')+'</ul>' : '')+
+      '<form class="sub-nova" data-sub-add="'+m.id+'" autocomplete="off"><input id="sub-in-'+m.id+'" type="text" maxlength="120" placeholder="Nova sub-missão" aria-label="Nova sub-missão"><button class="btn btn-claro btn-p" type="submit">Adicionar</button></form>'+
+      (!m.feita && subs.length && nf===subs.length ? '<p class="sub-pronto">Todas as sub-missões cumpridas.<button class="link" type="button" data-cumprir="'+m.id+'">Cumprir a missão</button></p>' : '')+'</div>';
+  }
+  /* Rascunho do painel da missão: o que foi digitado sobrevive a qualquer redesenho da lista */
+  var rascunho = null;
+  function guardarRascunho(){
+    var f = document.querySelector('[data-m-form]'); if (!f) return;
+    var id = f.getAttribute('data-m-form'); if (id!==editandoMissao) return;
+    var v = {}; Array.prototype.forEach.call(f.elements, function(el){ if (el.name) v[el.name] = el.value; });
+    rascunho = {id:id, v:v};
+  }
+  /* Painel único da missão: título, descrição, cliente, sub-missões, anexos e todos os campos */
   function editorMissao(m){
-    var pesoOps = opcoesPeso(m.peso||'media');
-    var recOps = opcoesRec(m.recorrencia||'');
-    return '<form class="sub-editor m-editor" data-m-form="'+m.id+'" autocomplete="off">'+
-      '<label>Missão<input class="campo" name="titulo" required maxlength="200" value="'+esc(m.titulo)+'"></label>'+
-      '<label>Descrição<textarea class="campo" name="descricao" rows="6" placeholder="Detalhes, links, combinados…">'+esc(m.descricao||'')+'</textarea></label>'+
-      '<div class="campos-sub">'+(m.privada ? '' : '<label>Responsável<select class="campo" name="resp">'+opcoesPessoas(m.resp)+'</select></label>')+
-        '<label>Data<input class="campo" name="data" type="date" value="'+esc(m.data||'')+'"></label>'+
-        '<label>Peso<select class="campo" name="peso">'+pesoOps+'</select></label>'+
-        (usaTipos() ? '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(m.tipo||'')+'</select></label>' : '')+
-        '<label>Repetir<select class="campo" name="recorrencia">'+recOps+'</select></label>'+
-        '<label>'+L('Área','Area','Área','Area')+'<select class="campo" name="espaco">'+
-          (m.privada || m.resp===eu ? '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>'+areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(m.privada && m.area===a?' selected':'')+'>'+L('Minha área · ','My space · ','Mi área · ','Area mea · ')+esc(a)+'</option>'; }).join('')+'<option value="__sem"'+(m.privada && !m.area?' selected':'')+'>'+L('Minha área · sem área','My space · no area','Mi área · sin área','Area mea · sine area')+'</option>'
-            : '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>')+'</select></label>'+
-        (m.privada ? '' : '<label>Aprovação<select class="campo" name="aprovador"><option value="">'+L('Não precisa de aprovação','No approval needed','No necesita aprobación','Approbatio non requiritur')+'</option>'+state.equipe.filter(function(x){ return x.nome; }).map(function(x){ return '<option value="'+esc(x.id)+'"'+(m.aprovador===x.id?' selected':'')+'>'+L('Aprovada por ','Approved by ','Aprobada por ','Approbanda a ')+esc(x.nome)+'</option>'; }).join('')+'</select></label>')+'</div>'+
-      '<div class="acoes"><button class="btn btn-escuro" type="submit">Salvar</button><button class="btn btn-claro" type="button" data-m-cancelar>Cancelar</button></div></form>';
+    var rv = function(n, d){ return rascunho && rascunho.id===m.id && Object.prototype.hasOwnProperty.call(rascunho.v, n) ? rascunho.v[n] : d; };
+    var fid = 'mf-'+m.id, esp = rv('espaco', m.privada ? (m.area || '__sem') : ''), apv = rv('aprovador', m.aprovador||'');
+    var areaOps = (m.privada || m.resp===eu) ? '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>'+areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(esp===a?' selected':'')+'>'+L('Minha área · ','My space · ','Mi área · ','Area mea · ')+esc(a)+'</option>'; }).join('')+'<option value="__sem"'+(esp==='__sem'?' selected':'')+'>'+L('Minha área · sem área','My space · no area','Mi área · sin área','Area mea · sine area')+'</option>'
+      : '<option value="">'+L('Equipe (todos veem)','Team (everyone sees)','Equipo (todos ven)','Sodales (omnes vident)')+'</option>';
+    return '<div class="m-painel">'+
+      '<form class="m-editor" id="'+fid+'" data-m-form="'+m.id+'" autocomplete="off">'+
+      '<label>Missão<input class="campo" name="titulo" required maxlength="200" value="'+esc(rv('titulo', m.titulo))+'"></label>'+
+      '<label>Descrição<textarea class="campo" name="descricao" rows="4" placeholder="Detalhes, links, combinados…">'+esc(rv('descricao', m.descricao||''))+'</textarea></label>'+
+      '<div class="campos">'+(m.privada ? '' : '<label>Responsável<select class="campo" name="resp">'+opcoesPessoas(rv('resp', m.resp))+'</select></label>')+
+        '<label>Data<input class="campo" name="data" type="date" value="'+esc(rv('data', m.data||''))+'"></label>'+
+        '<label>XP<select class="campo" name="peso" data-sem-tr>'+opcoesPeso(rv('peso', m.peso||'media'))+'</select></label>'+
+        (usaTipos() ? '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(rv('tipo', m.tipo||''))+'</select></label>' : '')+
+        '<label>Repetir<select class="campo" name="recorrencia">'+opcoesRec(rv('recorrencia', m.recorrencia||''))+'</select></label>'+
+        '<label>'+L('Onde fica','Where it lives','Dónde queda','Ubi est')+'<select class="campo" name="espaco">'+areaOps+'</select></label>'+
+        (m.privada ? '' : '<label>Aprovação<select class="campo" name="aprovador"><option value="">'+L('Não precisa de aprovação','No approval needed','No necesita aprobación','Approbatio non requiritur')+'</option>'+state.equipe.filter(function(x){ return x.nome; }).map(function(x){ return '<option value="'+esc(x.id)+'"'+(apv===x.id?' selected':'')+'>'+L('Aprovada por ','Approved by ','Aprobada por ','Approbanda a ')+esc(x.nome)+'</option>'; }).join('')+'</select></label>')+'</div>'+
+      (m.privada ? '' : seletorTags('m:'+m.id, m.tags, L('Cliente','Client','Cliente','Cliens')))+
+      '</form>'+
+      blocoSubs(m)+
+      '<div class="det-bloco"><p class="det-tit">Anexos</p>'+htmlAnexos(m.anexos, 'm:'+m.id, true)+'</div>'+
+      '<div class="acoes m-acoes"><button class="btn btn-escuro" type="submit" form="'+fid+'">Salvar</button><button class="btn btn-claro" type="button" data-m-cancelar>Cancelar</button>'+
+        (!m.feita && !m.oferecida && (!m.privada || m.dono===eu) ? '<button class="link" type="button" data-oferecer="'+m.id+'">'+L('Oferecer esta missão por…','Offer this mission for…','Ofrecer esta misión por…','Hanc missionem offerre pro…')+'</button>' : '')+'</div>'+
+      '</div>';
   }
   function extras(m){
-    var subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, aberta = !!abertas[m.id], blocos = '';
+    var blocos = '';
     if (editandoMissao===m.id) blocos += editorMissao(m);
-    if (tagueando==='m:'+m.id) blocos += seletorTags('m:'+m.id, m.tags, 'Cliente desta missão');
     if (movendo===m.id){
       var alvos = state.missoes.filter(function(x){ return x.id!==m.id && !x.feita && !x.privada; }).sort(function(a,b){ return a.titulo.localeCompare(b.titulo,'pt'); });
       blocos += '<div class="r-mover">'+(alvos.length ? '<label>Tornar sub-missão de<select class="campo" id="mv-'+m.id+'">'+alvos.map(function(x){ return '<option value="'+x.id+'">'+esc(x.titulo)+'</option>'; }).join('')+'</select></label>'+
           '<div class="acoes"><button class="btn btn-escuro" type="button" data-mover-ok="'+m.id+'">Mover</button><button class="btn btn-claro" type="button" data-mover-cancelar>Cancelar</button></div>'
         : '<p class="sub-dica" style="padding:0">Não há outra missão em aberto para receber esta.</p><div class="acoes"><button class="btn btn-claro" type="button" data-mover-cancelar>Fechar</button></div>')+'</div>';
     }
-    if (aberta){
-      blocos += '<div class="det-bloco"><p class="det-tit">Anexos</p>'+htmlAnexos(m.anexos, 'm:'+m.id, true)+'</div>';
-      blocos += '<div class="det-bloco"><p class="det-tit">Sub-missões</p>'+(subs.length ? '<ul class="subs">'+subs.map(function(s){ return itemSub(m,s); }).join('')+'</ul>' : '')+
-        '<form class="sub-nova" data-sub-add="'+m.id+'" autocomplete="off"><input id="sub-in-'+m.id+'" type="text" maxlength="120" placeholder="Nova sub-missão" aria-label="Nova sub-missão"><button class="btn btn-claro btn-p" type="submit">Adicionar</button></form>'+
-        (subs.length ? '<p class="sub-dica">Clique numa sub-missão para editar descrição, responsável, data, cliente e anexos. Arraste-a para fora para virar missão.</p>' : '')+
-        (!m.feita && subs.length && nf===subs.length ? '<p class="sub-pronto">Todas as sub-missões cumpridas.<button class="link" type="button" data-cumprir="'+m.id+'">Cumprir a missão</button></p>' : '')+'</div>';
+    if (abertas[m.id] && editandoMissao!==m.id){
+      blocos += blocoSubs(m);
+      if ((m.anexos||[]).length) blocos += '<div class="det-bloco"><p class="det-tit">Anexos</p>'+htmlAnexos(m.anexos, 'm:'+m.id, true)+'</div>';
     }
     return blocos ? '<div class="r-extra">'+blocos+'</div>' : '';
   }
+  var I_MAIS = svgIcone('<circle cx="5" cy="10" r="1.3" fill="currentColor"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/>',1.2);
+  var I_OFERTA = svgIcone('<path d="M10 16.5s-6-3.6-6-8A3.3 3.3 0 0 1 10 6.6 3.3 3.3 0 0 1 16 8.5c0 4.4-6 8-6 8z"/>',1.6);
+  var I_CAL = svgIcone('<rect x="3.5" y="4.5" width="13" height="12" rx="2"/><path d="M3.5 8.5h13M7 3v3M13 3v3"/>',1.6);
+  /* Menu "…" do cartão: as ações menos usadas ficam aqui */
+  var menuM = null;
+  function htmlMenuM(m){
+    var it = function(attr, ic, txt, cls){ return '<button type="button" role="menuitem" '+attr+(cls?' class="'+cls+'"':'')+'>'+ic+'<span>'+txt+'</span></button>'; };
+    var h = '';
+    if (!m.feita && !m.oferecida && (!m.privada || m.dono===eu)) h += it('data-oferecer="'+m.id+'"', I_OFERTA, L('Oferecer esta missão por…','Offer this mission for…','Ofrecer esta misión por…','Offerre pro…'));
+    if (!m.privada) h += it('data-editar-m="'+m.id+'" data-foco="cliente"', I_TAG, L('Cliente…','Client…','Cliente…','Cliens…'));
+    h += it('data-anexar="m:'+m.id+'"', I_CLIPE, L('Anexar arquivo','Attach file','Adjuntar archivo','Documentum adiungere'));
+    h += it('data-duplicar="'+m.id+'"', I_DUP, L('Duplicar','Duplicate','Duplicar','Duplicare'));
+    if (m.privada) h += it('data-levar="'+m.id+'"', svgIcone(ICONES.todas), L('Levar para as missões da equipe','Move to team missions','Llevar a las misiones del equipo','Ad sodales transferre'));
+    else if (m.resp===eu) h += it('data-levar="'+m.id+'"', I_CADEADO, L('Levar para a Minha área','Move to My space','Llevar a Mi área','In Aream meam'));
+    if (!m.privada) h += it('data-mover="'+m.id+'"', I_MOVER, L('Mover para… (virar sub-missão)','Move to… (make it a sub-mission)','Mover a… (convertir en submisión)','Movere ad…'));
+    h += '<div class="card-menu-sep"></div>'+it('data-excluir="'+m.id+'"', I_LIXO, L('Excluir','Delete','Eliminar','Delere'), 'perigo');
+    return '<div class="card-menu" role="menu" data-menu-de="'+m.id+'">'+h+'</div>';
+  }
+  function fecharMenuM(){ if (!menuM) return; menuM = null; var cm = document.querySelector('.card-menu'); if (cm) cm.remove(); document.querySelectorAll('[data-menu-m][aria-expanded="true"]').forEach(function(b){ b.setAttribute('aria-expanded','false'); var ra = b.closest('.r-acoes'); if (ra) ra.classList.remove('aberto'); }); }
+  function posicionarMenuM(){
+    var cm = document.querySelector('.card-menu'); if (!cm) return;
+    var b = document.querySelector('[data-menu-m="'+cm.getAttribute('data-menu-de')+'"]'); if (!b || !b.offsetParent){ cm.remove(); menuM = null; return; }
+    var r = b.getBoundingClientRect(), w = cm.offsetWidth, h = cm.offsetHeight;
+    var top = r.bottom + 4; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 4);
+    cm.style.top = top+'px'; cm.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8))+'px';
+  }
+  document.addEventListener('click', function(e){
+    if (!menuM) return;
+    if (e.target.closest('[data-menu-m]')) return;
+    if (e.target.closest('.card-menu')){
+      var ex = e.target.closest('[data-excluir]'); if (ex && !ex.classList.contains('excluir-ok')) return;
+      menuM = null; setTimeout(function(){ if (!menuM){ var cm = document.querySelector('.card-menu'); if (cm) cm.remove(); } }, 0); return;
+    }
+    fecharMenuM();
+  }, true);
+  window.addEventListener('scroll', function(){ if (menuM) fecharMenuM(); }, true);
+  window.addEventListener('resize', function(){ if (menuM) fecharMenuM(); });
+  document.addEventListener('keydown', function(e){ if (e.key==='Escape' && menuM) fecharMenuM(); });
+  var chegadas = [];
   function linha(m, nova){
-    var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length;
-    var ind = (subs.length ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'" aria-label="'+nf+' de '+subs.length+' sub-missões"><span class="caret" aria-hidden="true">▸</span>'+I_RAMO+nf+'/'+subs.length+'</button>' : '')+(na ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
+    var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length, ed = editandoMissao===m.id;
+    var ind = (subs.length && !ed ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'"><span class="caret" aria-hidden="true">▸</span><span data-sem-tr>'+L(nf+' de '+subs.length+(subs.length===1?' sub-missão':' sub-missões'), nf+' of '+subs.length+' sub-missions', nf+' de '+subs.length+' submisiones', nf+' ex '+subs.length+' missiunculis')+'</span></button>' : '')+(na && !ed ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
     if (m.vemDe) ind += '<span class="st" title="'+esc(L('Veio da missão','Came from mission','Vino de la misión','Ex missione'))+'">↳ '+esc(m.vemDe)+'</span>';
     if (m.tipo && nomeTipo(m.tipo) && !agrupandoTipo && usaTipos()) ind += '<span class="st tipo">'+esc(nomeTipo(m.tipo))+'</span>';
     if (m.recorrencia) ind += '<span class="st" title="Missão recorrente">'+I_REPETE+esc(nomeRec(m.recorrencia))+'</span>';
@@ -3113,25 +3418,23 @@ textarea.campo.rolando{overflow-y:auto}
       status = '<span class="st ajuste">'+I_ESCUDO+'Ajustes pedidos por '+esc(pessoa(m.aprov.por).nome)+'</span>'+(m.aprov.nota ? '<p class="nota-ajuste">'+esc(m.aprov.nota)+'</p>' : '');
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
     if (m.entrega && m.entrega.length && !est) status += htmlLinks(m.entrega, L('Entrega:','Delivery:','Entrega:','Opus:'));
+    /* aguardando aprovação: o círculo fica parado; quem aprova usa o botão Aprovar */
     var circ = m.feita ? (podeReabrir(m) ? '<button class="circ feita" type="button" data-reabrir="'+m.id+'" aria-label="'+esc(L('Voltar a fazer','Mark as not done','Volver a hacer','Iterum facere'))+': '+esc(m.titulo)+'" title="'+esc(L('Cumprida · clique para voltar a fazer','Done · click to mark as not done','Cumplida · haz clic para volver a hacer','Perfecta · preme ut iterum facias'))+'"'+'>'+CHECK+'</button>' : '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>') :
-      '<button class="circ'+(est==='aguardando'?' espera':'')+'" type="button" data-cumprir="'+m.id+'" aria-label="'+(est==='aguardando' ? (m.aprovador===eu ? 'Aprovar' : 'Aguardando aprovação')+': ' : aprova && m.aprovador!==eu ? 'Enviar para aprovação: ' : 'Cumprir missão: ')+esc(m.titulo)+'" title="'+(aprova && m.aprovador!==eu ? 'Concluir e enviar para aprovação' : 'Cumprir missão')+'">'+CHECK+'</button>';
-    return '<article class="linha'+(ehPrioridade(m)?' prioridade':'')+(m.feita?' feita':'')+(nova?' chegou':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'"'+(selecionando && selecao[m.id] ? ' draggable="true"' : '')+'>'+
+      est==='aguardando' ? '<span class="circ espera" role="img" aria-label="'+esc(L('Aguardando aprovação','Waiting for approval','Esperando aprobación','Approbationem exspectat'))+'" title="'+esc(m.aprovador===eu ? L('Use o botão Aprovar','Use the Approve button','Usa el botón Aprobar','Preme “Probare”') : L('Aguardando aprovação','Waiting for approval','Esperando aprobación','Approbationem exspectat'))+'">'+CHECK+'</span>' :
+      '<button class="circ" type="button" data-cumprir="'+m.id+'" aria-label="'+(aprova && m.aprovador!==eu ? 'Enviar para aprovação: ' : 'Cumprir missão: ')+esc(m.titulo)+'" title="'+(aprova && m.aprovador!==eu ? 'Concluir e enviar para aprovação' : 'Cumprir missão')+'">'+CHECK+'</button>';
+    var chegou = !m.feita && chegadas.indexOf(m.id)>=0;
+    return '<article class="linha'+(ehPrioridade(m)?' prioridade':'')+(m.feita?' feita':'')+(nova?' chegou':'')+(chegou?' nova-chegada':'')+(ed?' editando':'')+(descAbertas[m.id]?' desc-aberta':'')+(selecao[m.id]?' selecionada':'')+'" data-id="'+m.id+'"'+(selecionando && selecao[m.id] ? ' draggable="true"' : '')+'>'+
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
-      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+esc(p.nome)+'<span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
-      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo"'+(m.descricao ? ' data-desc-toggle="'+m.id+'" title="'+L('Clique para ver a descrição','Click to see the description','Haz clic para ver la descripción','Preme ut descriptionem videas')+'"' : '')+'>'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+(m.descricao ? '<button class="indic desc-ind" type="button" data-desc-toggle="'+m.id+'" aria-expanded="'+!!descAbertas[m.id]+'" aria-label="'+L('Descrição','Description','Descripción','Descriptio')+'">'+I_DESC+'</button>' : '')+ind+'</div>'+(m.descricao?'<div class="r-desc">'+textoComLinks(m.descricao)+'</div><button class="link desc-editar" type="button" data-editar-m="'+m.id+'">'+L('Editar descrição','Edit description','Editar descripción','Descriptionem emendare')+'</button>':'')+status+'</div>'+
-      '<div class="r-acoes">'+
-        (m.privada ? '' : '<button class="icone-btn" type="button" data-taguear="'+m.id+'" aria-label="Cliente de '+esc(m.titulo)+'" title="Cliente (tag)">'+I_TAG+'</button>')+
-        '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="Editar título, descrição, data…">'+I_EDITAR+'</button>'+
+      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+esc(p.nome)+'<span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
+      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo" data-editar-m="'+m.id+'" role="button" tabindex="0" title="'+L('Abrir a missão','Open the mission','Abrir la misión','Missionem aperire')+'">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+
+      (m.descricao ? '<div class="r-desc" data-desc-toggle="'+m.id+'" title="'+(descAbertas[m.id] ? L('Clique para recolher','Click to collapse','Haz clic para contraer','Preme ut contrahas') : L('Clique para ler tudo','Click to read it all','Haz clic para leer todo','Preme ut totum legas'))+'">'+textoComLinks(m.descricao)+'</div>' : '')+status+'</div>'+
+      '<div class="r-acoes'+(menuM===m.id?' aberto':'')+'">'+
         (usaTipos() && !m.feita ? '<button class="icone-btn prio-btn'+(ehPrioridade(m)?' on':'')+'" type="button" data-prioridade="'+m.id+'" aria-pressed="'+ehPrioridade(m)+'" aria-label="'+L('Prioridade','Priority','Prioridad','Praecipua')+': '+esc(m.titulo)+'" title="'+(ehPrioridade(m) ? L('Tirar das prioridades','Remove from priorities','Quitar de las prioridades','Removere') : L('Marcar como prioridade de hoje','Mark as today’s priority','Marcar como prioridad de hoy','Praecipuam facere'))+'">'+I_ESTRELA+'</button>' : '')+
-        '<button class="icone-btn" type="button" data-duplicar="'+m.id+'" aria-label="'+L('Duplicar','Duplicate','Duplicar','Duplicare')+': '+esc(m.titulo)+'" title="'+L('Duplicar missão','Duplicate mission','Duplicar misión','Missionem duplicare')+'">'+I_DUP+'</button>'+
-        (m.privada ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para as missões da equipe','Move to team missions','Llevar a las misiones del equipo','Ad missiones sodalium transferre')+'" aria-label="'+L('Levar para a equipe','Move to team','Llevar al equipo','Ad sodales')+'">'+svgIcone(ICONES.todas)+'</button>'
-          : (m.resp===eu ? '<button class="icone-btn" type="button" data-levar="'+m.id+'" title="'+L('Levar para a Minha área (só você vê)','Move to My space (only you see it)','Llevar a Mi área (solo tú la ves)','In Aream meam transferre')+'" aria-label="'+L('Levar para a Minha área','Move to My space','Llevar a Mi área','In Aream meam')+'">'+I_CADEADO+'</button>' : ''))+
-        '<button class="icone-btn" type="button" data-anexar="m:'+m.id+'" aria-label="Anexar arquivo em '+esc(m.titulo)+'" title="Anexar arquivo">'+I_CLIPE+'</button>'+
-        '<button class="icone-btn" type="button" data-det="'+m.id+'" aria-label="Sub-missões e anexos de '+esc(m.titulo)+'" title="Sub-missões e anexos">'+I_SUB+'</button>'+
-        (m.privada ? '' : '<button class="icone-btn" type="button" data-mover="'+m.id+'" aria-label="Tornar sub-missão de outra missão" title="Tornar sub-missão de…">'+I_MOVER+'</button>')+
-        '<button class="icone-btn" type="button" data-excluir="'+m.id+'" aria-label="Excluir missão: '+esc(m.titulo)+'" title="Excluir">'+I_LIXO+'</button></div>'+
+        '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="'+L('Abrir e editar','Open and edit','Abrir y editar','Aperire et emendare')+'">'+I_EDITAR+'</button>'+
+        '<button class="icone-btn" type="button" data-menu-m="'+m.id+'" aria-haspopup="menu" aria-expanded="'+(menuM===m.id)+'" aria-label="'+L('Mais ações','More actions','Más acciones','Plura')+': '+esc(m.titulo)+'" title="'+L('Mais ações','More actions','Más acciones','Plura')+'">'+I_MAIS+'</button>'+
+        (menuM===m.id ? htmlMenuM(m) : '')+'</div>'+
       extras(m)+'</article>';
   }
   /* ---------- Reuniões: marcar como feita e repetir ---------- */
@@ -3194,6 +3497,7 @@ textarea.campo.rolando{overflow-y:auto}
       '</div>';
   }
   function htmlNotaLimpa(){
+    return '';
     if (!ritualAtivo() || prefsEu().ritualFeito!==hoje || prefsEu().limpaFeita===hoje || vista!=='hoje') return '';
     return '<div class="nota-limpa" data-sem-tr><span>'+L('Hora da limpa: tire de hoje o que não é prioridade (remarque, mude o tipo ou exclua).','Clean-up time: move out of today what is not a priority (reschedule, change the type or delete).','Hora de la limpieza: saca de hoy lo que no es prioridad.','Tempus purgandi.')+'</span><button class="btn btn-claro btn-p" type="button" data-limpa-ok>'+L('Limpa feita','Clean-up done','Limpieza hecha','Factum')+'</button></div>';
   }
@@ -3201,7 +3505,13 @@ textarea.campo.rolando{overflow-y:auto}
     var b = e.target.closest('[data-ritual]');
     if (b){
       var p = ritualPassos(); p[b.getAttribute('data-ritual')] = true; prefsEu().ritualPassos = p;
-      if (p.cel && p.limpa && p.paz){ prefsEu().ritualFeito = hoje; salvar(); render(); avisar(L('Missões liberadas. Bom trabalho, e que Deus abençoe o dia!','Missions unlocked. Good work, and God bless your day!','Misiones liberadas. ¡Buen trabajo y que Dios bendiga el día!','Missiones apertae. Deus diem benedicat!')); window.scrollTo({top:0, behavior:'smooth'}); }
+      if (p.cel && p.limpa && p.paz){
+        var ag = new Date(); prefsEu().ritualFeito = hoje; prefsEu().ritualHora = pad(ag.getHours())+':'+pad(ag.getMinutes()); prefsEu().limpaFeita = hoje; salvar();
+        /* passo 2 na prática: a lista abre já em modo de seleção para a limpa */
+        selecionando = true; selecao = {}; render();
+        avisar(L('Missões liberadas. Agora a limpa: selecione o que sai de hoje e use Data, Excluir ou Mais. O × fecha a seleção.','Missions unlocked. Now the clean-up: select what leaves today and use Date, Delete or More. × closes the selection.','Misiones liberadas. Ahora la limpieza: selecciona lo que sale de hoy y usa Fecha, Eliminar o Más. La × cierra la selección.','Missiones apertae. Nunc purga: elige quae hodie exeunt.'));
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
       else { salvar(); renderLista(); }
       return;
     }
@@ -3213,6 +3523,7 @@ textarea.campo.rolando{overflow-y:auto}
   document.addEventListener('input', function(e){ crescer(e.target); });
   document.addEventListener('focusin', function(e){ crescer(e.target); });
   function renderLista(){
+    guardarRascunho();
     if (ritualBloqueado()){ gruposNaTela = []; document.getElementById('lista').innerHTML = htmlRitual(); renderGruposTg(); return; }
     var q = busca.trim().toLowerCase();
     var vis = doFiltro().filter(function(m){
@@ -3247,6 +3558,22 @@ textarea.campo.rolando{overflow-y:auto}
     else g = [['Cumpridas',s.feitas]];
     var html = '<div class="zona-fora" id="zona-fora">Solte aqui para a sub-missão virar uma missão</div>', nReunFeitas = 0;
     gruposNaTela = [];
+    /* avisos do topo: o que chegou, ajustes pedidos e a hora em que o dia foi liberado */
+    var cg = chegadas.map(achar).filter(function(m){ return m && !m.feita; });
+    if (cg.length && (vista==='hoje' || vista==='todas') && !q){
+      var apC = cg.filter(function(m){ return m.aprov && m.aprov.estado==='aguardando' && m.aprovador===eu; }).length, novC = cg.length - apC;
+      var tx = [];
+      if (novC) tx.push(L(novC===1 ? 'Chegou <b>1 missão nova</b> para você' : 'Chegaram <b>'+novC+' missões novas</b> para você', novC===1 ? '<b>1 new mission</b> for you' : '<b>'+novC+' new missions</b> for you', novC===1 ? 'Llegó <b>1 misión nueva</b> para ti' : 'Llegaron <b>'+novC+' misiones nuevas</b> para ti', '<b>'+novC+'</b> novae missiones tibi'));
+      if (apC) tx.push(L('<b>'+apC+'</b> '+(apC===1 ? 'aguarda' : 'aguardam')+' sua aprovação', '<b>'+apC+'</b> awaiting your approval', '<b>'+apC+'</b> '+(apC===1 ? 'espera' : 'esperan')+' tu aprobación', '<b>'+apC+'</b> approbationem exspectant'));
+      html += '<div class="nota-chegou" data-sem-tr><span>'+tx.join(' · ')+'. '+L('Elas estão destacadas na lista.','They are highlighted in the list.','Están destacadas en la lista.','In indice notantur.')+'</span><span class="acoes">'+(apC ? '<button class="link" type="button" data-vista-ir="aprovar">'+L('Ver aprovações','See approvals','Ver aprobaciones','Approbanda videre')+'</button>' : '')+'<button class="btn btn-claro btn-p" type="button" data-chegou-ok>'+L('Entendi','Got it','Entendido','Intellexi')+'</button></span></div>';
+    }
+    if (vista==='hoje' && !q && ap.ajustes.length){
+      var porQuem = {}; ap.ajustes.forEach(function(m){ var k = (m.aprov && m.aprov.por) || m.aprovador; porQuem[k] = (porQuem[k]||0)+1; });
+      html += Object.keys(porQuem).map(function(k){
+        return '<div class="nota-ajustes" data-sem-tr><span><b>'+esc(pessoa(k).nome)+'</b> '+L('pediu ajustes em ','asked for changes on ','pidió ajustes en ','emendationes petivit in ')+nMissoes(porQuem[k], true)+'.</span><span class="acoes"><button class="btn btn-claro btn-p" type="button" data-vista-ir="aprovar">'+L('Ver','See','Ver','Videre')+'</button></span></div>';
+      }).join('');
+    }
+    if (vista==='hoje' && !q && ritualAtivo() && prefsEu().ritualFeito===hoje && prefsEu().ritualHora) html += '<p class="dia-liberado" data-sem-tr>'+svgIcone(ICONES.cumpridas)+L('Dia liberado às ','Day unlocked at ','Día liberado a las ','Dies apertus hora ')+esc(prefsEu().ritualHora)+'.</p>';
     if (vista==='hoje' && !q){
       if (new Date().getDay()===0 && !revisaoDaSemana(true)) html += '<p class="nota">Domingo é dia de revisão semanal.<button class="link" type="button" data-abrir-revisao>Fazer a revisão agora</button></p>';
       var rhTodas = reunioesDoDia(hoje), rh = rhTodas.filter(function(r){ return !r.feita; }), rf = rhTodas.filter(function(r){ return r.feita; }); nReunFeitas = rf.length;
@@ -3254,7 +3581,8 @@ textarea.campo.rolando{overflow-y:auto}
       if (rf.length && verReunFeitas) html += htmlGrupo('Reuniões feitas hoje', rf.length, rf.map(linhaReuniao).join(''), false, 'reunioes-feitas-hoje');
     }
     html += g.filter(function(x){ return x[1].length || x[4]; }).map(function(x){
-      if (!x[1].length) return htmlGrupo(x[0], 0, '<p class="grupo-vazio">'+L('Nada aqui hoje. Arraste uma missão até este título para trazê-la.','Nothing here today. Drag a mission onto this title to bring it here.','Nada aquí hoy. Arrastra una misión a este título.','Nihil hodie. Missionem huc trahe.')+'</p>', 0, x[3]);
+      /* tipo sem missões: só uma linha fina, que aparece enquanto se arrasta */
+      if (!x[1].length) return '<section class="grupo grupo-fino" data-grupo-sec="'+x[3]+'"><h3 class="grupo-rot">'+x[0]+' · '+L('solte aqui','drop here','suelta aquí','hic dimitte')+'</h3></section>';
       return htmlGrupo(x[0], x[1].length, x[1].map(function(m){ return linha(m, m.id===ultimaNova); }).join(''), x[2], x[3]);
     }).join('');
     var bfeitas = vista==='hoje' && !q ? botoesFeitas(s.feitasHoje.length, nReunFeitas) : '';
@@ -3262,11 +3590,11 @@ textarea.campo.rolando{overflow-y:auto}
       var vz = { hoje:'Nenhuma missão para hoje. <em>Deo gratias.</em>', todas:'Nenhuma missão em aberto.', atrasadas:'Nenhuma missão atrasada. <em>Deo gratias.</em>', proximas:'Nada agendado para os próximos dias.', cumpridas:'Nenhuma missão cumprida ainda.', aprovar:'Nada aguardando aprovação.' };
       html += '<div class="painel"><p class="vazio">'+(q ? 'Nenhuma missão encontrada para “'+esc(busca.trim())+'”.' : filtroTag ? 'Nenhuma missão deste cliente aqui.' : vz[vista])+'</p></div>';
     }
-    document.getElementById('lista').innerHTML = htmlNotaLimpa() + html + bfeitas;
+    document.getElementById('lista').innerHTML = html + bfeitas;
     renderGruposTg();
     ultimaNova = null;
     document.getElementById('aviso').hidden = !state.missoes.some(function(m){ return m.exemplo; });
-    hidratarImagens();
+    hidratarImagens(); posicionarMenuM();
   }
 
   /* ---------- Agenda ---------- */
@@ -3348,9 +3676,10 @@ textarea.campo.rolando{overflow-y:auto}
         .concat(ms.map(function(m){ return '<span class="ev mis'+(m.privada?' pes':'')+(m.feita?' feita':(ds<hoje?' atrasada':''))+'">'+esc(m.titulo)+'</span>'; }))
         .concat((prev[ds]||[]).map(function(x){ return x.tipo==='r' ? '<span class="ev reu prevista" title="'+esc(L('Prevista · repete ','Planned · repeats ','Prevista · se repite ','Praevisus · iteratur ')+nomeRec(x.r.recorrencia).toLowerCase())+'">'+esc(x.r.inicio)+' '+esc(x.r.titulo)+'</span>' : '<span class="ev mis prevista'+(x.m.privada?' pes':'')+'" title="'+esc(L('Prevista · repete ','Planned · repeats ','Prevista · se repite ','Praevisa · iteratur ')+nomeRec(x.m.recorrencia).toLowerCase())+'">'+esc(x.m.titulo)+'</span>'; }));
       var pts = rs.map(function(){ return '<i class="r"></i>'; }).concat(ms.map(function(){ return '<i></i>'; })).concat((prev[ds]||[]).map(function(){ return '<i class="p"></i>'; })).slice(0,5).join('');
-      var fes = lt.fes && lt.fes.grau!=='m' ? '<span class="cal-fes '+(lt.fes.grau||'')+'" title="'+esc(tituloFes(lt.fes))+'">'+esc(lt.fes.nome)+'</span>' : '';
-      h += '<button type="button" class="cal-dia'+(d.getMonth()!==mes?' fora':'')+(ds===hoje?' hoje':'')+(ds===diaSel?' sel':'')+'" data-dia="'+ds+'" style="--lc:'+CORES_LIT[lt.cor]+'" aria-label="'+esc(dataLonga(ds))+(lt.fes?', '+esc(tr(lt.fes.nome)):'')+', '+plural(rs.length,'reunião','reuniões')+L(' e ',' and ',' y ',' et ')+plural(ms.length,'missão','missões')+'">'+
-        '<span class="cal-lit" aria-hidden="true"></span><span class="cal-num">'+d.getDate()+'</span>'+fes+itens.slice(0,fes?2:3).join('')+(itens.length>(fes?2:3) ? '<span class="ev-mais">+'+(itens.length-(fes?2:3))+' mais</span>' : '')+'<span class="cal-pontos">'+pts+'</span></button>';
+      /* o santo ou a festa do dia aparece só na faixa colorida do topo, com a dica ao passar o mouse */
+      var dicaFes = lt.fes ? tituloFes(lt.fes) : '';
+      h += '<button type="button" class="cal-dia'+(d.getMonth()!==mes?' fora':'')+(ds===hoje?' hoje':'')+(ds===diaSel?' sel':'')+'" data-dia="'+ds+'" style="--lc:'+CORES_LIT[lt.cor]+'"'+(dicaFes ? ' title="'+esc(dicaFes)+'"' : '')+' aria-label="'+esc(dataLonga(ds))+(lt.fes?', '+esc(tr(lt.fes.nome)):'')+', '+plural(rs.length,'reunião','reuniões')+L(' e ',' and ',' y ',' et ')+plural(ms.length,'missão','missões')+'">'+
+        '<span class="cal-lit'+(lt.fes && lt.fes.grau!=='m' ? ' fes' : '')+'" aria-hidden="true"></span><span class="cal-num">'+d.getDate()+'</span>'+itens.slice(0,3).join('')+(itens.length>3 ? '<span class="ev-mais">+'+(itens.length-3)+' mais</span>' : '')+'<span class="cal-pontos">'+pts+'</span></button>';
     }
     document.getElementById('cal').innerHTML = h;
     var rs2 = reunioesDoDia(diaSel), ms2 = miss.filter(function(m){ return m.data===diaSel; }), lt2 = liturgia(diaSel);
@@ -3381,7 +3710,7 @@ textarea.campo.rolando{overflow-y:auto}
   });
 
   function htmlLit(lt){
-    return '<p class="lit"><span class="lit-cor" style="--lc:'+CORES_LIT[lt.cor]+'" title="'+L('Cor litúrgica: ','Liturgical color: ','Color litúrgico: ','Color liturgicus: ')+tr(lt.cor)+'"></span><span>'+esc(lt.desc)+'</span>'+(lt.fes ? '<span>·</span><b>'+esc(tituloFes(lt.fes))+'</b>' : '')+'</p>';
+    return '<p class="lit"><span class="lit-cor" style="--lc:'+CORES_LIT[lt.cor]+'" title="'+L('Cor litúrgica: ','Liturgical color: ','Color litúrgico: ','Color liturgicus: ')+tr(lt.cor)+'"></span><span>'+esc(lt.desc)+'</span>'+(lt.fes ? '<span class="lit-sep">·</span><b>'+esc(tituloFes(lt.fes))+'</b>' : '')+'</p>';
   }
 
   /* ---------- Criativos ---------- */
@@ -3452,7 +3781,10 @@ textarea.campo.rolando{overflow-y:auto}
     document.getElementById('cg-sub').textContent = plural(n+1,'melhoria','melhorias')+' · '+plural(state.missoes.filter(function(m){ return m.feita && !m.privada; }).length,'missão cumprida','missões cumpridas')+(pe ? ' · '+L('faltam '+(pe[0]-n)+' para virar '+pe[1], (pe[0]-n)+' to become '+umEstagio(pe[1]), 'faltan '+(pe[0]-n)+' para ser '+umEstagio(pe[1]), 'desunt '+(pe[0]-n)+' ut '+umEstagio(pe[1])+' fiat') : '');
     document.getElementById('cg-alegria').innerHTML = htmlAlegria(f);
     document.getElementById('cg-visita').innerHTML = htmlVisita();
-    document.getElementById('cg-prox').innerHTML = L('O sítio cresce com o XP das missões da equipe: cada 50 XP é mais uma etapa das obras. Primeiro a entrada e a horta, depois a capelinha, o poço, a cerca, a rua, o pomar, a praça, casas novas e, parede por parede, uma catedral. Faltam '+faltaMelhoria()+' XP para a próxima etapa: ', 'The farm grows with the team\'s mission XP: every 50 XP is one more construction step: the entrance and the garden, then the chapel, the well, the fence, the street, the orchard, the square, new houses and, wall by wall, a cathedral. '+faltaMelhoria()+' XP to go until the next step: ', 'La finca crece con el XP de las misiones del equipo: cada 50 XP es una etapa más de las obras: la entrada y la huerta, luego la capillita, el pozo, la cerca, la calle, el huerto, la plaza, casas nuevas y, pared por pared, una catedral. Faltan '+faltaMelhoria()+' XP para la próxima etapa: ', 'Villa crescit XP missionum: singulis L XP novus gradus aedificandi. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
+    document.getElementById('cid-rotulo').textContent = L('Sítio','Farm','Granja','Villa');
+    document.getElementById('cg-como-sum').textContent = L('Como o sítio cresce','How the farm grows','Cómo crece la granja','Quomodo villa crescit');
+    document.getElementById('cg-prox').innerHTML = '<span data-sem-tr>'+L('Faltam '+faltaMelhoria()+' XP para a próxima etapa: ', faltaMelhoria()+' XP to go until the next step: ', 'Faltan '+faltaMelhoria()+' XP para la próxima etapa: ', 'Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>.</span>';
+    document.getElementById('cg-como-txt').innerHTML = L('O sítio cresce com o XP das missões da equipe: cada 50 XP é mais uma etapa das obras. Primeiro a entrada e a horta, depois a capelinha, o poço, a cerca, a rua, o pomar, a praça, casas novas e, parede por parede, uma catedral. Faltam '+faltaMelhoria()+' XP para a próxima etapa: ', 'The farm grows with the team\'s mission XP: every 50 XP is one more construction step: the entrance and the garden, then the chapel, the well, the fence, the street, the orchard, the square, new houses and, wall by wall, a cathedral. '+faltaMelhoria()+' XP to go until the next step: ', 'La finca crece con el XP de las misiones del equipo: cada 50 XP es una etapa más de las obras: la entrada y la huerta, luego la capillita, el pozo, la cerca, la calle, el huerto, la plaza, casas nuevas y, pared por pared, una catedral. Faltan '+faltaMelhoria()+' XP para la próxima etapa: ', 'Villa crescit XP missionum: singulis L XP novus gradus aedificandi. Desunt '+faltaMelhoria()+' XP ad proximum: ')+'<b>'+esc(tr(proximaPeca(n)))+'</b>'+L('. De vez em quando, um santo aparece para visitar. Clique na cidade para ver a casa de perto.', '. Now and then a saint comes to visit. Click the city to see the house up close.', '. De vez en cuando, un santo viene de visita. Haz clic en la ciudad para ver la casa de cerca.', '. Interdum sanctus visitandi causa venit. Urbem preme ut domum propius aspicias.');
     var ch = n+'|'+santosPresentes().map(function(x){ return x.id; }).join(',');
     if (cidadeN.grande!==ch || !document.querySelector('#cg-arte svg')){ cidadeN.grande = ch; montarMundo(document.getElementById('cg-arte'), n, 14, 'grande'); }
     var l = state.equipe.map(function(p){
@@ -3561,6 +3893,7 @@ textarea.campo.rolando{overflow-y:auto}
   });
   function renderAjustes(){
     txtImportar();
+    var ai = document.getElementById('areas-in'); if (ai && document.activeElement!==ai) ai.value = areasEu().join(', ');
     document.getElementById('aj-eu').innerHTML = opcoesPessoas(eu);
     document.getElementById('aj-eu-painel').hidden = SERVIDOR;
     var ajr = document.getElementById('aj-ritual');
@@ -3590,6 +3923,15 @@ textarea.campo.rolando{overflow-y:auto}
     var fd = document.getElementById('finalizar-dia'), ex = exameDeHoje();
     fd.innerHTML = ex ? svgIcone(ICONES.cumpridas)+'Dia encerrado' : svgIcone('<path d="M15.5 12.5A6.5 6.5 0 0 1 7.5 4.5a6.5 6.5 0 1 0 8 8z"/>')+'Finalizar o dia';
     fd.setAttribute('aria-pressed', String(!!ex));
+    /* "Finalizar o dia" aparece depois das 16h ou quando as missões de hoje acabaram; antes disso fica em Configurações */
+    var meuM = function(m){ return m.privada ? m.dono===eu : m.resp===eu; };
+    var restam = state.missoes.filter(function(m){ return meuM(m) && !m.feita && m.data && m.data<=hoje; }).length;
+    var fezHoje = state.missoes.some(function(m){ return meuM(m) && m.feita && new Date(m.feitaEm).getTime()>=inicioDia(); });
+    fd.hidden = !(ex || h>=16 || (!restam && fezHoje));
+    /* o banner some na Agenda, no Sítio e em Ajustes; o painel da direita some no Sítio */
+    var semBanner = ['agenda','cidade','ajustes'].indexOf(vista)>=0, semLado = vista==='cidade';
+    bannerEl.hidden = semBanner; document.querySelector('.lado').hidden = semLado;
+    var ct = document.querySelector('.conteudo'); ct.classList.toggle('sem-banner', semBanner); ct.classList.toggle('sem-lado', semLado);
     var lista = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'].indexOf(vista)>=0;
     document.getElementById('vista-missoes').hidden = !lista;
     document.getElementById('vista-agenda').hidden = vista!=='agenda';
@@ -3598,8 +3940,10 @@ textarea.campo.rolando{overflow-y:auto}
     document.getElementById('vista-criativos').hidden = vista!=='criativos';
     document.getElementById('vista-pessoal').hidden = vista!=='pessoal';
     var rot = ''; VISTAS.forEach(function(v){ if (v[0]===vista) rot = v[2]; });
-    var t = filtroTag && tagPorId(filtroTag);
-    document.getElementById('rotulo-vista').innerHTML = esc(rot)+(t ? ' '+pilula(t)+'<button class="limpa-filtro" type="button" data-limpa-tag>limpar filtro</button>' : '');
+    var t = filtroTag && tagPorId(filtroTag), fp = filtro!=='todos' ? pessoa(filtro) : null;
+    var pilFiltro = function(conteudo, attr){ return '<span class="filtro-pill" data-sem-tr>'+L('Filtrando: ','Filtering: ','Filtrando: ','Eligitur: ')+conteudo+'<button type="button" '+attr+' aria-label="'+esc(L('Tirar filtro','Clear filter','Quitar filtro','Removere'))+'" title="'+esc(L('Tirar filtro','Clear filter','Quitar filtro','Removere'))+'">×</button></span>'; };
+    document.getElementById('rotulo-vista').innerHTML = '<span>'+esc(tr(rot))+(fp ? ' · '+esc(fp.nome) : '')+(t ? ' · '+esc(t.nome) : '')+'</span>'+
+      (fp ? pilFiltro(av(fp.id)+esc(fp.nome), 'data-limpa-pessoa') : '')+(t ? pilFiltro(pilula(t), 'data-limpa-tag') : '');
     if (lista) renderLista();
     else if (vista==='agenda') renderAgenda();
     else if (vista==='cidade') renderCidade();
@@ -3664,9 +4008,17 @@ textarea.campo.rolando{overflow-y:auto}
       setTimeout(depoisDeEntrar, 700);
     }, 450);
   }
+  /* Uma tela só ao entrar: oferecimento do dia + o que chegou + a hora de oração do momento.
+     O que chegou fica destacado na lista, com um aviso no topo (sem janela separada). */
+  var chegadaInfo = {novas:0, aprov:0};
   function depoisDeEntrar(){
-    var seguir = function(){ mostrarChegada(); checarAngelus(); checarHoras(); };
-    if (!ofertaDoDia() && !lsGet('ora-ofdia-'+eu+'-'+hoje)) abrirOfertaDia(seguir); else seguir();
+    var nv = novasParaMim();
+    chegadas = nv.map(function(m){ return m.id; });
+    chegadaInfo.aprov = nv.filter(function(m){ return m.aprov && m.aprov.estado==='aguardando' && m.aprovador===eu; }).length;
+    chegadaInfo.novas = nv.length - chegadaInfo.aprov;
+    if (nv.length){ marcarVistas(eu, nv.map(chaveAviso)); render(); }
+    var seguir = function(){ checarAngelus(); checarHoras(); };
+    if (!ofertaDoDia() && !lsGet('ora-ofdia-'+eu+'-'+hoje)) abrirOfertaDia(seguir, true); else seguir();
   }
   document.getElementById('comecar').addEventListener('click', entrar);
   document.getElementById('ab-eu').addEventListener('change', function(e){ eu = e.target.value; lsSet(KEY_EU, eu); });
@@ -3712,15 +4064,15 @@ textarea.campo.rolando{overflow-y:auto}
     if (['cidade','ajustes'].indexOf(vista)>=0) vista = 'todas';
     render();
   });
-  document.getElementById('rotulo-vista').addEventListener('click', function(e){ if (e.target.closest('[data-limpa-tag]')){ filtroTag = null; render(); } });
+  document.getElementById('rotulo-vista').addEventListener('click', function(e){ if (e.target.closest('[data-limpa-tag]')){ filtroTag = null; render(); } else if (e.target.closest('[data-limpa-pessoa]')){ filtro = 'todos'; render(); } });
   var buscaCaixa = document.getElementById('busca-caixa'), buscaIn = document.getElementById('busca');
   document.getElementById('busca-btn').addEventListener('click', function(){ if (buscaCaixa.classList.contains('aberta') && !buscaIn.value){ buscaCaixa.classList.remove('aberta'); return; } buscaCaixa.classList.add('aberta'); buscaIn.focus(); });
   buscaIn.addEventListener('input', function(){ busca = buscaIn.value; renderLista(); });
   buscaIn.addEventListener('blur', function(){ if (!buscaIn.value) buscaCaixa.classList.remove('aberta'); });
   var btnNovo = document.getElementById('abrir-novo'), menuNovo = document.getElementById('menu-novo');
   document.getElementById('ic-missao').innerHTML = svgIcone(ICONES.missao); document.getElementById('ic-reuniao').innerHTML = svgIcone(ICONES.reuniao); document.getElementById('ic-pessoal').innerHTML = svgIcone(ICONES.pessoal);
-  function fecharMenu(){ menuNovo.hidden = true; btnNovo.setAttribute('aria-expanded','false'); }
-  btnNovo.addEventListener('click', function(e){ e.stopPropagation(); var abre = menuNovo.hidden; menuNovo.hidden = !abre; btnNovo.setAttribute('aria-expanded', String(abre)); if (abre) menuNovo.querySelector('button').focus(); });
+  function fecharMenu(){ menuNovo.hidden = true; menuNovo.classList.remove('rodape'); btnNovo.setAttribute('aria-expanded','false'); }
+  btnNovo.addEventListener('click', function(e){ e.stopPropagation(); var abre = menuNovo.hidden; menuNovo.hidden = !abre; menuNovo.classList.remove('rodape'); btnNovo.setAttribute('aria-expanded', String(abre)); if (abre) menuNovo.querySelector('button').focus(); });
   document.addEventListener('click', function(e){ if (!menuNovo.hidden && !e.target.closest('.menu-novo')) fecharMenu(); });
   menuNovo.addEventListener('click', function(e){
     var b = e.target.closest('[data-novo]'); if (!b) return; fecharMenu();
@@ -3746,6 +4098,8 @@ textarea.campo.rolando{overflow-y:auto}
     document.getElementById('f-aprov').innerHTML = '<option value="">Sem aprovação</option>'+state.equipe.map(function(p){ return '<option value="'+p.id+'">Aprovação de '+esc(p.nome)+'</option>'; }).join('');
     document.getElementById('f-area').innerHTML = areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(a===areaSel?' selected':'')+'>'+esc(a)+'</option>'; }).join('');
     document.getElementById('f-cri-aviso').innerHTML = ''; document.getElementById('f-cri-det').open = false; preencherListas();
+    document.getElementById('f-mais').open = false;
+    document.getElementById('f-mais-sum').textContent = L('Mais opções · XP, repetição, aprovação, sub-missões e anexos','More options · XP, repeat, approval, sub-missions and attachments','Más opciones · XP, repetición, aprobación, submisiones y adjuntos','Plura · XP, iteratio, approbatio, partes, adiuncta');
     modoPessoal(pessoal);
     form.hidden = false; document.getElementById('f-data').value = hoje; document.getElementById('f-resp').value = filtro!=='todos' ? filtro : eu;
     form.scrollIntoView({block:'nearest'}); document.getElementById('f-titulo').focus();
@@ -3861,13 +4215,15 @@ textarea.campo.rolando{overflow-y:auto}
   function cliqueLista(e){
     if (cliqueGeral(e)) return;
     var t = e.target, el, renderLista = renderListas;
+    if ((el = t.closest('[data-menu-m]'))){ var mid = el.getAttribute('data-menu-m'); menuM = menuM===mid ? null : mid; renderLista(); return; }
+    if (t.closest('[data-chegou-ok]')){ chegadas = []; renderLista(); return; }
+    if ((el = t.closest('[data-vista-ir]'))){ vista = el.getAttribute('data-vista-ir'); chegadas = []; render(); window.scrollTo(0,0); return; }
     if ((el = t.closest('[data-aprovar]'))){ cumprir(el.getAttribute('data-aprovar')); return; }
     if ((el = t.closest('[data-pedir-ajuste]'))){ var pa = el.getAttribute('data-pedir-ajuste'); pedindoAjuste = pedindoAjuste===pa ? null : pa; renderLista(); var ta = document.getElementById('aj-nota-'+pa); if (ta) ta.focus(); return; }
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
     if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){
         var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; if (!r.m.privada){ if (r.s.feita){ r.s.cidadeXp = xpSub(r.s); somarCidade(r.s.cidadeXp); } else if (r.s.cidadeXp){ somarCidade(-r.s.cidadeXp); delete r.s.cidadeXp; } } salvar(); render(); if (r.s.feita) avisar('+'+xpSub(r.s)+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
-        if (!r.s.feita && !r.s.oferecida && !(r.m.privada && r.m.dono!==eu)){ abrirOferta({id:'s:'+k, titulo:r.s.titulo, sub:true}, function(){ r.s.oferecida = true; marcarSub(); }); return; }
         marcarSub(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
     if (t.closest('[data-sub-cancelar]')){ editandoSub = null; renderLista(); return; }
@@ -3878,7 +4234,7 @@ textarea.campo.rolando{overflow-y:auto}
     if ((el = t.closest('[data-mover-ok]'))){ var src = el.getAttribute('data-mover-ok'), dst = document.getElementById('mv-'+src); if (dst) tornarSub(src, dst.value); return; }
     if ((el = t.closest('[data-excluir]'))){
       if (el.classList.contains('excluir-ok')){ var idx = el.getAttribute('data-excluir'), antes = JSON.stringify(state.missoes), tit = achar(idx).titulo; state.missoes = state.missoes.filter(function(m){ return m.id!==idx; }); salvar(); render(); avisar('Missão “'+tit+'” excluída.', antes); }
-      else { el.classList.add('excluir-ok'); el.textContent = 'Excluir?'; el.parentNode.classList.add('fixo'); setTimeout(function(){ if (el.isConnected){ el.classList.remove('excluir-ok'); el.innerHTML = I_LIXO; el.parentNode.classList.remove('fixo'); } }, 3500); }
+      else { var orig = el.innerHTML; el.classList.add('excluir-ok'); el.innerHTML = I_LIXO+'<span>'+L('Clique de novo para excluir','Click again to delete','Haz clic de nuevo para eliminar','Iterum preme ut deleas')+'</span>'; el.parentNode.classList.add('fixo'); setTimeout(function(){ if (el.isConnected){ el.classList.remove('excluir-ok'); el.innerHTML = orig; el.parentNode.classList.remove('fixo'); } }, 3500); }
     }
   }
   listaEl.addEventListener('click', cliqueLista); listaPes.addEventListener('click', cliqueLista);
@@ -3903,7 +4259,7 @@ textarea.campo.rolando{overflow-y:auto}
         if (apv && apv===mm.resp){ avisar(L('Quem aprova precisa ser outra pessoa, não o responsável.','The approver must be someone other than the owner.','Quien aprueba debe ser otra persona, no el responsable.','Approbator alius esse debet ac curator.')); return; }
         if (apv !== (mm.aprovador||null)){ mm.aprovador = apv; if (!apv && mm.aprov && mm.aprov.estado==='aguardando') mm.aprov = null; if (apv && mm.aprov && mm.aprov.estado==='aguardando') mm.aprov.em = new Date().toISOString(); }
       }
-      editandoMissao = null; salvar(); render(); avisar(L('Missão atualizada.','Mission updated.','Misión actualizada.','Missio renovata.'), antesM); return; }
+      editandoMissao = null; rascunho = null; salvar(); render(); avisar(L('Missão atualizada.','Mission updated.','Misión actualizada.','Missio renovata.'), antesM); return; }
     var fe = e.target.closest('[data-sub-form]');
     if (fe){ e.preventDefault(); var r = acharSub(fe.getAttribute('data-sub-form')); if (!r) return; var t = fe.elements.titulo.value.trim(); if (!t) return;
       r.s.titulo = t; r.s.descricao = fe.elements.descricao.value.trim(); r.s.resp = fe.elements.resp.value; r.s.data = fe.elements.data.value || null; if (fe.elements.peso) r.s.peso = fe.elements.peso.value || 'minima'; editandoSub = null; salvar(); render(); return; }
@@ -3925,7 +4281,7 @@ textarea.campo.rolando{overflow-y:auto}
     if (itSel){
       e.stopPropagation(); arrastando = {tipo:'multi'};
       try { e.dataTransfer.setData('text/plain', 'ora'); e.dataTransfer.effectAllowed = 'move'; } catch(err) {}
-      setTimeout(function(){ listaEl.querySelectorAll('.selecionada').forEach(function(x){ x.classList.add('arrastando'); }); if (!idsSel().length) listaEl.classList.add('arrastando-sub'); }, 0);
+      setTimeout(function(){ listaEl.classList.add('arrastando-algo'); listaEl.querySelectorAll('.selecionada').forEach(function(x){ x.classList.add('arrastando'); }); if (!idsSel().length) listaEl.classList.add('arrastando-sub'); }, 0);
       return;
     }
     var hs = e.target.closest && e.target.closest('[data-alca-sub]'), h = !hs && e.target.closest && e.target.closest('[data-alca]');
@@ -3933,7 +4289,7 @@ textarea.campo.rolando{overflow-y:auto}
     var row = hs ? hs.closest('.sub') : h.closest('.linha');
     arrastando = hs ? {tipo:'sub', k:hs.getAttribute('data-alca-sub')} : {tipo:'missao', id:h.getAttribute('data-alca')};
     try { e.dataTransfer.setData('text/plain', 'ora'); e.dataTransfer.effectAllowed='move'; if (row) e.dataTransfer.setDragImage(row, 20, 16); } catch(err) {}
-    setTimeout(function(){ if (row) row.classList.add('arrastando'); if (hs) listaEl.classList.add('arrastando-sub'); }, 0);
+    setTimeout(function(){ listaEl.classList.add('arrastando-algo'); if (row) row.classList.add('arrastando'); if (hs) listaEl.classList.add('arrastando-sub'); }, 0);
   });
   function grupoTipoAlvo(e){ var h = e.target.closest && e.target.closest('.grupo-rot'), sec = h && h.closest('section[data-grupo-sec^="tipo-"]'); return sec || null; }
   listaEl.addEventListener('dragover', function(e){
@@ -3961,7 +4317,7 @@ textarea.campo.rolando{overflow-y:auto}
     if (!arrastando){ if (temArquivos(e) && row){ e.preventDefault(); var mid = row.getAttribute('data-id'); abertas[mid] = true; limparAlvo(); anexar(e.dataTransfer.files, 'm:'+mid); } return; }
     e.preventDefault();
     var gt = grupoTipoAlvo(e);
-    var a = arrastando; arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub');
+    var a = arrastando; arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub'); listaEl.classList.remove('arrastando-algo');
     if (gt && (a.tipo==='missao' || a.tipo==='sub' || a.tipo==='multi')){
       var tk = gt.getAttribute('data-grupo-sec').slice(5); tk = tk==='sem' ? null : tk;
       if (a.tipo==='missao') definirTipo([a.id], tk);
@@ -3979,16 +4335,18 @@ textarea.campo.rolando{overflow-y:auto}
     if (row && row.getAttribute('data-id')===pai && !e.target.closest('#zona-fora')) return;
     if (row && !e.target.closest('#zona-fora')) moverSub(a.k, row.getAttribute('data-id')); else tornarMissao(a.k);
   });
-  listaEl.addEventListener('dragend', function(){ arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub'); listaEl.querySelectorAll('.arrastando').forEach(function(x){ x.classList.remove('arrastando'); }); });
+  listaEl.addEventListener('dragend', function(){ arrastando = null; limparAlvo(); listaEl.classList.remove('arrastando-sub'); listaEl.classList.remove('arrastando-algo'); listaEl.querySelectorAll('.arrastando').forEach(function(x){ x.classList.remove('arrastando'); }); });
 
-  var toast = document.getElementById('toast'), toastAntes = null, toastTipo = 'm', toastTimer = null;
-  function avisar(txt, antes){
-    toastAntes = antes || null; toastTipo = 'm'; document.getElementById('toast-txt').textContent = txt;
-    document.getElementById('toast-desfazer').hidden = !antes; toast.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ toast.hidden = true; toastAntes = null; }, antes ? 7000 : 3500);
+  var toast = document.getElementById('toast'), toastAntes = null, toastTipo = 'm', toastTimer = null, toastFn = null;
+  /* aviso no rodapé; "antes" (cópia das missões) ou "fn" (função) fazem aparecer o Desfazer */
+  function avisar(txt, antes, fn){
+    toastAntes = antes || null; toastFn = fn || null; toastTipo = 'm'; document.getElementById('toast-txt').textContent = txt;
+    document.getElementById('toast-desfazer').hidden = !antes && !fn; toast.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ toast.hidden = true; toastAntes = null; toastFn = null; }, (antes || fn) ? 8000 : 3500);
   }
   function avisarR(txt, antes){ avisar(txt, antes); toastTipo = 'r'; }
   document.getElementById('toast-desfazer').addEventListener('click', function(){
+    if (toastFn){ var f = toastFn; toastFn = null; toast.hidden = true; f(); return; }
     if (toastAntes){ if (toastTipo==='r') state.reunioes = JSON.parse(toastAntes); else state.missoes = JSON.parse(toastAntes); salvar(); render(); }
     toast.hidden = true; toastAntes = null;
   });
@@ -4006,7 +4364,7 @@ textarea.campo.rolando{overflow-y:auto}
     }
     selecao[id] = !selecao[id]; ultimaSel = id; render();
   }
-  function fecharPops(){ ['massa-data-pop','massa-tags-pop'].forEach(function(id){ var el = document.getElementById(id); if (el) el.hidden = true; }); }
+  function fecharPops(){ ['massa-data-pop','massa-tags-pop','massa-mais-pop'].forEach(function(id){ var el = document.getElementById(id); if (el) el.hidden = true; }); }
   function renderMassa(){
     fecharFlut();
     var bt = document.getElementById('sel-modo'); if (bt) bt.textContent = selecionando ? L('Cancelar seleção','Cancel selection','Cancelar selección','Electionem omittere') : L('Selecionar','Select','Seleccionar','Eligere');
@@ -4024,7 +4382,8 @@ textarea.campo.rolando{overflow-y:auto}
     var rap = document.querySelectorAll('[data-massa-data]'), rt = [L('Hoje','Today','Hoy','Hodie'), L('Amanhã','Tomorrow','Mañana','Cras'), L('Em 7 dias','In 7 days','En 7 días','Post VII dies'), L('Sem data','No date','Sin fecha','Sine die')];
     Array.prototype.forEach.call(rap, function(b, i){ b.textContent = rt[i]; });
     document.getElementById('massa-tags-b').textContent = L('Clientes','Clients','Clientes','Clientes')+' ▾';
-    document.getElementById('massa-l-peso').textContent = L('Peso','Weight','Peso','Pondus');
+    document.getElementById('massa-mais-b').textContent = L('Mais','More','Más','Plura')+' ▾';
+    document.getElementById('massa-l-peso').textContent = 'XP';
     document.getElementById('massa-peso').innerHTML = opcoesPeso('', true);
     document.getElementById('massa-l-tipo').textContent = L('Tipo','Type','Tipo','Genus');
     document.getElementById('massa-tipo').innerHTML = opcoesTipo('', true);
@@ -4072,14 +4431,15 @@ textarea.campo.rolando{overflow-y:auto}
   });
   document.getElementById('massa-tipo').addEventListener('change', function(){
     var v = this.value; if (!v) return; v = v==='__nenhum' ? null : v;
-    emMassa(function(m){ if ((m.tipo||null)===v) return false; m.tipo = v; }, L('Tipo trocado em {n} missões.','Type changed on {n} missions.','Tipo cambiado en {n} misiones.','Genus mutatum in {n} missionibus.'));
+    fecharPops(); emMassa(function(m){ if ((m.tipo||null)===v) return false; m.tipo = v; }, L('Tipo trocado em {n} missões.','Type changed on {n} missions.','Tipo cambiado en {n} misiones.','Genus mutatum in {n} missionibus.'));
   });
   document.getElementById('massa-peso').addEventListener('change', function(){
     var v = this.value; if (!v) return;
-    emMassa(function(m){ if (m.peso===v) return false; m.peso = v; }, L('Peso trocado em {n} missões.','Weight changed on {n} missions.','Peso cambiado en {n} misiones.','Pondus mutatum in {n} missionibus.'), function(sb){ if (sb.peso===v) return false; sb.peso = v; });
+    fecharPops(); emMassa(function(m){ if (m.peso===v) return false; m.peso = v; }, L('XP trocado em {n} missões.','XP changed on {n} missions.','XP cambiado en {n} misiones.','XP mutatum in {n} missionibus.'), function(sb){ if (sb.peso===v) return false; sb.peso = v; });
   });
   document.getElementById('massa-data-b').addEventListener('click', function(){ var p = document.getElementById('massa-data-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; });
   document.getElementById('massa-tags-b').addEventListener('click', function(){ var p = document.getElementById('massa-tags-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; if (ab) renderPopTags(); });
+  document.getElementById('massa-mais-b').addEventListener('click', function(){ var p = document.getElementById('massa-mais-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; });
   document.getElementById('massa-data').addEventListener('change', function(){ if (this.value) mudarDataMassa(this.value); });
   document.getElementById('massa').addEventListener('click', function(e){
     var b = e.target.closest('[data-massa-data]');
@@ -4099,12 +4459,12 @@ textarea.campo.rolando{overflow-y:auto}
     }
   });
   document.getElementById('massa-pessoal').addEventListener('click', function(){
-    var ids = idsSel(), outras = 0; if (!ids.length) return;
+    var ids = idsSel(), outras = 0; if (!ids.length) return; fecharPops();
     emMassa(function(m){ if (m.privada) return false; if (m.resp!==eu){ outras++; return false; } paraPessoal(m); }, L('{n} missões foram para a Minha área.','{n} missions moved to My space.','{n} misiones pasaron a Mi área.','{n} missionibus in Aream meam translatis.'));
     if (outras) setTimeout(function(){ avisar(L(outras+' não foram porque têm outro responsável.', outras+' were skipped because someone else owns them.', outras+' no se movieron porque tienen otro responsable.', outras+' omissae sunt: alius curator.')); }, 2600);
   });
-  document.getElementById('massa-prio').addEventListener('click', function(){ var ids = idsSel(); if (!ids.length) return; selecao = {}; alternarPrioridade(ids); });
-  document.getElementById('massa-duplicar').addEventListener('click', function(){ var ids = idsSel(); if (!ids.length){ avisar(L('Selecione missões para duplicar.','Select missions to duplicate.','Selecciona misiones para duplicar.','Missiones elige.')); return; } duplicar(ids); });
+  document.getElementById('massa-prio').addEventListener('click', function(){ var ids = idsSel(); if (!ids.length) return; fecharPops(); selecao = {}; alternarPrioridade(ids); });
+  document.getElementById('massa-duplicar').addEventListener('click', function(){ fecharPops(); var ids = idsSel(); if (!ids.length){ avisar(L('Selecione missões para duplicar.','Select missions to duplicate.','Selecciona misiones para duplicar.','Missiones elige.')); return; } duplicar(ids); });
   document.getElementById('massa-excluir').addEventListener('click', function(){
     var ids = idsSel(), ss = subsSel(), tot = ids.length + ss.length; if (!tot) return;
     var antes = JSON.stringify(state.missoes), set = {}; ids.forEach(function(id){ set[id] = 1; });
@@ -4225,12 +4585,13 @@ textarea.campo.rolando{overflow-y:auto}
     var m = achar(id); if (!m || m.feita) return;
     if (m.privada && m.dono!==eu) return;
     pendenteOferta = null;
+    /* o oferecimento por missão é opcional (o do dia já cobre tudo): cumprir é um clique só */
     if (precisaAprovacao(m) && eu!==m.aprovador){
       if (m.aprov && m.aprov.estado==='aguardando'){ avisar('Já está aguardando a aprovação de '+pessoa(m.aprovador).nome+'.'); return; }
-      if (!m.oferecida) abrirOferta(m, function(links){ confirmarAprovacao(m, links || []); }); else enviarAprovacao(m);
+      enviarAprovacao(m);
       return;
     }
-    if (!m.oferecida) abrirOferta(m, function(){ concluir(m); }); else concluir(m);
+    concluir(m);
   }
   function enviarAprovacao(m){ abrirEntrega(m); }
   function confirmarAprovacao(m, links){
@@ -4322,13 +4683,14 @@ textarea.campo.rolando{overflow-y:auto}
     return l;
   }
   function abrirOferta(m, depois){
-    ofMissao = m; ofDepois = depois;
+    ofMissao = m; ofDepois = depois || null;
     document.getElementById('of-missao').textContent = m.titulo;
     document.getElementById('of-tit').innerHTML = '<span data-sem-tr>'+(m.sub ? L('Por quem ou pelo quê você <em>oferece</em> esta sub-missão?','For whom or for what do you <em>offer</em> this subtask?','¿Por quién o por qué <em>ofreces</em> esta submisión?','Pro quo vel pro qua re hanc partem <em>offers</em>?') : L('Por quem ou pelo quê você <em>oferece</em> esta missão?','For whom or for what do you <em>offer</em> this mission?','¿Por quién o por qué <em>ofreces</em> esta misión?','Pro quo vel pro qua re hanc missionem <em>offers</em>?'))+'</span>';
     document.getElementById('of-chips').innerHTML = sugestoesOferta().map(function(t){ return '<button class="ofe-chip" type="button" data-of="'+esc(t)+'">'+esc(t)+'</button>'; }).join('');
     ofTexto.value = ''; document.getElementById('of-ok').disabled = true;
-    document.getElementById('of-ok').textContent = precisaAprovacao(m) && eu!==m.aprovador ? 'Oferecer e enviar para aprovação' : 'Oferecer e cumprir';
-    var vaiAprov = !m.sub && precisaAprovacao(m) && eu!==m.aprovador, mm = vaiAprov ? achar(m.id) : null;
+    document.getElementById('of-ok').textContent = !depois ? L('Oferecer','Offer','Ofrecer','Offerre') : precisaAprovacao(m) && eu!==m.aprovador ? 'Oferecer e enviar para aprovação' : 'Oferecer e cumprir';
+    document.querySelector('#of-form > .rot').textContent = !depois ? L('Oferecimento','Offering','Ofrecimiento','Oblatio') : L('Antes de cumprir','Before completing','Antes de cumplir','Antequam perficias');
+    var vaiAprov = !!depois && !m.sub && precisaAprovacao(m) && eu!==m.aprovador, mm = vaiAprov ? achar(m.id) : null;
     document.getElementById('of-entrega').hidden = !vaiAprov;
     if (vaiAprov){
       document.getElementById('of-ent-para').textContent = 'Onde está o trabalho finalizado? Cole o link (Drive, Figma, vídeo…) para '+pessoa(m.aprovador).nome+' aprovar. Pode colocar mais de um.';
@@ -4349,9 +4711,15 @@ textarea.campo.rolando{overflow-y:auto}
     var o = {id:uid(), dono:eu, tipo:'missao', missao:m.id, titulo:m.titulo, texto:t, em:new Date().toISOString(), data:hoje}; if (m.sub) o.sub = true;
     state.oferecimentos.push(o); m.oferecida = true; pendenteOferta = o.id;
     var links = document.getElementById('of-entrega').hidden ? null : linksDe('#of-ent-links');
-    fecharOferta(); depois(links);
+    fecharOferta();
+    if (depois) depois(links);
+    else { pendenteOferta = null; salvar(); render(); avisar(L('Missão oferecida por ','Mission offered for ','Misión ofrecida por ','Missio oblata pro ')+t+'. +3 '+tr('Caridade')+'.'); }
   });
 
+  /* Cumprir: um aviso pequeno no rodapé. A janela grande fica para os marcos:
+     obra nova no sítio, subida de grau, santo que chega ou o dia inteiro cumprido. */
+  var pendenteSnap = null;
+  function meuMissao(x){ return x.privada ? x.dono===eu : x.resp===eu; }
   function concluir(m){
     var dono = m.privada ? m.dono : m.resp, antes = nivel(xpDe(dono)).atual.nome, felizAntes = felicidade();
     var aprovou = precisaAprovacao(m) && eu===m.aprovador;
@@ -4373,9 +4741,24 @@ textarea.campo.rolando{overflow-y:auto}
     var rec = m.recorrencia ? gerarRecorrente(m) : null; pendenteRec = rec ? rec.id : null;
     if (rec && rec.resp===eu) marcarVistas(eu, [rec.id]);
     salvar();
+    var snap = {subs:pendenteSubs, visita:pendenteVisita, aprov:pendenteAprov, rec:pendenteRec, oferta:pendenteOferta};
     var depois = nivel(xpDe(dono)).atual.nome, n = state.obras, felizDepois = felicidade(), peca = m.privada || !ganhoObras ? null : elementoN(n-1);
+    var p = pessoa(dono), xpG = PESOS[m.peso] ? PESOS[m.peso].xp : 25;
+    /* o dia inteiro cumprido? (só conta para quem é o dono da missão) */
+    var restam = state.missoes.filter(function(x){ return meuMissao(x) && !x.feita && x.data && x.data<=hoje && !(x.aprov && x.aprov.estado==='aguardando'); }).length;
+    var diaCompleto = meuMissao(m) && !restam && !exameDeHoje();
+    var marco = ganhoObras>0 || antes!==depois || !!novoSanto || diaCompleto;
+    if (!marco){
+      pendente = null; render();
+      var partes = [aprovou ? L('Missão aprovada','Mission approved','Misión aprobada','Missio probata') : m.privada ? L('Missão pessoal cumprida','Personal mission done','Misión personal cumplida','Missio privata perfecta') : L('Missão cumprida','Mission done','Misión cumplida','Missio perfecta')];
+      partes.push('+'+xpG+' XP'+(p.id===eu ? '' : ' '+L('para ','for ','para ','')+p.nome));
+      if (!m.privada) partes.push(L('faltam '+faltaMelhoria()+' XP para ', faltaMelhoria()+' XP to ', 'faltan '+faltaMelhoria()+' XP para ', 'desunt '+faltaMelhoria()+' XP: ')+tr(proximaPeca(n)));
+      if (rec) partes.push(L('repete ','repeats ','se repite ','iteratur ')+fmt(paraData(rec.data), {day:'numeric',month:'short'}));
+      avisar(partes.join(' · '), null, function(){ desfazerConclusao(m, snap); });
+      return;
+    }
     var k; do { k = Math.floor(Math.random()*CIT_FE.length); } while (k===ultimaFe && CIT_FE.length>1); ultimaFe = k;
-    var p = pessoa(dono), ga = document.getElementById('g-arte');
+    var ga = document.getElementById('g-arte');
     ga.hidden = !!m.privada;
     if (!m.privada) ga.innerHTML = cidadeSVG(n, 8, ganhoObras ? {nova:n-1, rotulo:'A cidade com a melhoria nova'} : {rotulo:'A cidade'});
     document.getElementById('g-cidade').innerHTML = m.privada ? 'Uma missão pessoal, longe dos olhos da equipe e perto do coração de Deus.' :
@@ -4390,20 +4773,31 @@ textarea.campo.rolando{overflow-y:auto}
     gv.hidden = !novoSanto && !rec;
     gv.innerHTML = novoSanto ? '<span class="halo"></span><span data-sem-tr><b>'+L('Uma visita!','A visit!','¡Una visita!','Visitatio!')+'</b> '+esc(tr(novoSanto.nome))+L(' chegou para passar um tempo com os moradores.',' came to spend some time with the residents.',' llegó para pasar un tiempo con los habitantes.',' venit ut paulisper cum incolis maneat.')+'</span>' :
       rec ? I_REPETE+'<span>Missão recorrente. Próxima vez: <b>'+esc(dataLonga(rec.data))+'</b>.</span>' : '';
-    document.getElementById('g-rot').textContent = aprovou ? 'Missão aprovada' : m.privada ? 'Missão pessoal cumprida' : 'Missão cumprida';
+    document.getElementById('g-rot').textContent = diaCompleto ? L('Todas as missões de hoje cumpridas','All of today’s missions are done','Todas las misiones de hoy cumplidas','Omnes missiones hodiernae perfectae') : aprovou ? 'Missão aprovada' : m.privada ? 'Missão pessoal cumprida' : 'Missão cumprida';
     document.getElementById('g-titulo').textContent = m.titulo;
     var cf = citacao(CIT_FE, k, 'citF');
     document.getElementById('g-texto').textContent = '“'+cf[0]+'”';
     document.getElementById('g-autor').textContent = cf[1];
-    var g = ganhoMissao(m), partes = [];
-    VIRTUDES.forEach(function(v){ if (g[v[0]]) partes.push('<strong>+'+g[v[0]]+'</strong> '+tr(v[1])); });
+    var g = ganhoMissao(m), partesG = [];
+    VIRTUDES.forEach(function(v){ if (g[v[0]]) partesG.push('<strong>+'+g[v[0]]+'</strong> '+tr(v[1])); });
     var meus = [];
-    if (pendenteOferta) (p.id===eu ? partes : meus).push('<strong>+3</strong> '+tr('Caridade'));
+    if (pendenteOferta) (p.id===eu ? partesG : meus).push('<strong>+3</strong> '+tr('Caridade'));
     if (aprovou) meus.push('<strong>+5</strong> '+tr('Prudência'));
-    document.getElementById('g-recompensa').innerHTML = '<span data-sem-tr>'+partes.join(' · ')+(p.id===eu ? '' : L(' para ',' for ',' para ',' — ')+esc(p.nome))+(meus.length ? '<br>'+meus.join(' · ')+L(' para você',' for you',' para ti',' tibi') : '')+'</span>';
+    document.getElementById('g-recompensa').innerHTML = '<span data-sem-tr>'+partesG.join(' · ')+(p.id===eu ? '' : L(' para ',' for ',' para ',' — ')+esc(p.nome))+(meus.length ? '<br>'+meus.join(' · ')+L(' para você',' for you',' para ti',' tibi') : '')+'</span>';
     var sub = document.getElementById('g-subiu'); sub.hidden = antes===depois; sub.textContent = p.nome+' agora é '+depois;
-    pendente = m; render();
+    pendente = m; pendenteSnap = snap; render();
     document.getElementById('veu').hidden = false; document.getElementById('g-amem').focus();
+  }
+  function desfazerConclusao(m, sn){
+    if (!m || !m.feita) return;
+    sn = sn || {};
+    m.feita = false; m.feitaEm = null; if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_ANTIGO)); delete m.cidadeXp; }
+    (m.subs||[]).forEach(function(s,i){ if (sn.subs && i<sn.subs.length) s.feita = sn.subs[i]; });
+    if (sn.visita){ state.visita = sn.visita.visita; state.semVisita = sn.visita.semVisita; }
+    if (sn.aprov){ m.aprov = sn.aprov.aprov; if (sn.aprov.aprovadaPor) m.aprovadaPor = sn.aprov.aprovadaPor; else delete m.aprovadaPor; }
+    if (sn.rec) state.missoes = state.missoes.filter(function(x){ return x.id!==sn.rec; });
+    if (sn.oferta){ state.oferecimentos = state.oferecimentos.filter(function(o){ return o.id!==sn.oferta; }); m.oferecida = false; }
+    salvar(); render();
   }
   function fechar(){
     var m = pendente; document.getElementById('veu').hidden = true; pendente = null;
@@ -4412,16 +4806,8 @@ textarea.campo.rolando{overflow-y:auto}
   document.getElementById('g-amem').addEventListener('click', fechar);
   document.getElementById('g-desfazer').addEventListener('click', function(){
     var m = pendente;
-    if (m){
-      m.feita = false; m.feitaEm = null; if (!m.privada){ somarCidade(-(m.cidadeXp!=null ? m.cidadeXp : XP_ANTIGO)); delete m.cidadeXp; }
-      (m.subs||[]).forEach(function(s,i){ if (pendenteSubs && i<pendenteSubs.length) s.feita = pendenteSubs[i]; });
-      if (pendenteVisita){ state.visita = pendenteVisita.visita; state.semVisita = pendenteVisita.semVisita; }
-      if (pendenteAprov){ m.aprov = pendenteAprov.aprov; if (pendenteAprov.aprovadaPor) m.aprovadaPor = pendenteAprov.aprovadaPor; else delete m.aprovadaPor; }
-      if (pendenteRec) state.missoes = state.missoes.filter(function(x){ return x.id!==pendenteRec; });
-      if (pendenteOferta){ state.oferecimentos = state.oferecimentos.filter(function(o){ return o.id!==pendenteOferta; }); m.oferecida = false; }
-      salvar(); render();
-    }
-    document.getElementById('veu').hidden = true; pendente = null;
+    if (m) desfazerConclusao(m, pendenteSnap);
+    document.getElementById('veu').hidden = true; pendente = null; pendenteSnap = null;
   });
   document.getElementById('veu').addEventListener('click', function(e){ if (e.target.id==='veu') fechar(); });
 
@@ -4432,9 +4818,13 @@ textarea.campo.rolando{overflow-y:auto}
     document.getElementById('z-tit').innerHTML = '<span data-sem-tr>'+seuEstagio(n, true)+(santosPresentes().length ? L(' · com ',' · with ',' · con ',' · cum ')+esc(listaNomes(santosPresentes())) : '')+'</span>';
     veuZoom.hidden = false;
     zoomMundo = montarMundo(document.getElementById('z-arte'), n, 20, 'zoom', {zoom:true});
-    var b = '<button class="btn btn-claro btn-p" type="button" data-z="luzes">Acender as luzes</button><button class="btn btn-claro btn-p" type="button" data-z="chamar">Chamar os moradores</button><button class="btn btn-claro btn-p" type="button" data-z="aves">Dar comida aos pássaros</button>';
-    if (temSino(n)) b += '<button class="btn btn-claro btn-p" type="button" data-z="sino">Tocar o sino</button><button class="btn btn-claro btn-p" type="button" data-z="missa">Chamar para a Missa</button>';
-    b += '<button class="btn btn-claro btn-p" type="button" data-z="procissao">Fazer uma procissão</button><button class="btn btn-claro btn-p" type="button" data-z="terco">Rezar o terço juntos</button>';
+    document.getElementById('z-dicas').innerHTML =
+      '<span title="'+esc(L('Arraste para passear','Drag to move around','Arrastra para pasear','Trahe ut ambules'))+'">'+svgIcone('<path d="M10 2.5v15M2.5 10h15M10 2.5l-2 2M10 2.5l2 2M10 17.5l-2-2M10 17.5l2-2M2.5 10l2-2M2.5 10l2 2M17.5 10l-2-2M17.5 10l-2 2"/>')+L('Arrastar','Drag','Arrastrar','Trahere')+'</span>'+
+      '<span title="'+esc(L('Rodinha do mouse ou dois dedos','Mouse wheel or two fingers','Rueda del ratón o dos dedos','Rota aut duo digiti'))+'">'+svgIcone('<circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4M6.5 8.5h4M8.5 6.5v4"/>')+L('Zoom','Zoom','Zoom','Amplificare')+'</span>'+
+      '<span title="'+esc(L('Toque nos moradores para conversar, nas casas para acender as luzes e nas árvores para balançá-las','Tap residents to chat, houses to light them up and trees to shake them','Toca a los habitantes para conversar, las casas para encender las luces y los árboles para moverlos','Incolas, domos et arbores tange'))+'">'+svgIcone('<path d="M8 10V4.5a1.5 1.5 0 0 1 3 0V9l3.2.8a2 2 0 0 1 1.5 2.3l-.7 3.9H8.8L5.5 12a1.4 1.4 0 0 1 2-2z"/>')+L('Tocar','Tap','Tocar','Tangere')+'</span>';
+    var b = '<button class="btn btn-claro btn-p" type="button" data-z="procissao">Fazer uma procissão</button><button class="btn btn-claro btn-p" type="button" data-z="terco">Rezar o terço juntos</button>';
+    if (temSino(n)) b += '<button class="btn btn-claro btn-p" type="button" data-z="missa">Chamar para a Missa</button><button class="btn btn-claro btn-p" type="button" data-z="sino">Tocar o sino</button>';
+    b += '<button class="btn btn-claro btn-p" type="button" data-z="luzes">Acender as luzes</button><button class="btn btn-claro btn-p" type="button" data-z="chamar">Chamar os moradores</button><button class="btn btn-claro btn-p" type="button" data-z="aves">Dar comida aos pássaros</button>';
     b += '<button class="btn btn-claro btn-p" type="button" data-z="conversa">Puxar conversa</button>';
     document.getElementById('z-acoes').innerHTML = b;
     document.getElementById('z-fechar').focus();
@@ -4593,12 +4983,16 @@ textarea.campo.rolando{overflow-y:auto}
 
   /* ---------- Minha área ---------- */
   function renderPessoal(){
+    guardarRascunho();
     document.getElementById('priv-aviso').innerHTML = I_CADEADO+'<span>Só você vê o que está nesta área. Ninguém da equipe tem acesso.</span>';
-    var od = ofertaDoDia(), af = angelusFeitos(), ex = exameDeHoje();
-    document.getElementById('pes-oracao').innerHTML =
-      '<div><h5>Oferecimento do dia</h5>'+(od ? '<p>'+(od.texto ? 'Hoje você ofereceu o trabalho por <em>'+esc(od.texto)+'</em>.' : 'Dia oferecido.')+'</p>' : '<p>Ainda não ofereceu o dia.</p><div class="acoes"><button class="btn btn-claro btn-p" type="button" data-of-dia>Oferecer agora</button></div>')+'</div>'+
-      '<div><h5>Ângelus</h5><div class="sinos">'+[6,12,18].map(function(h){ return '<span class="sino-h'+(af.indexOf(h)>=0?' feito':'')+'">'+h+'h</span>'; }).join('')+'</div><div class="acoes"><button class="btn btn-claro btn-p" type="button" data-rezar-angelus>Rezar agora</button></div></div>'+
-      '<div><h5>Exame do dia</h5>'+(ex ? '<p>Dia encerrado'+(ex.proposito ? '. Propósito: <em>'+esc(ex.proposito)+'</em>' : '')+'.</p>' : '<p>Feito ao fim do dia, ou quando todas as suas missões de hoje estiverem cumpridas.</p>')+'<div class="acoes"><button class="btn btn-claro btn-p" type="button" data-exame>'+(ex ? 'Rever o exame' : 'Fazer o exame')+'</button></div></div>';
+    var od = ofertaDoDia(), af = angelusFeitos(), ex = exameDeHoje(), hf = horasFeitas().length;
+    /* as orações do dia numa linha só; cada item abre a sua oração */
+    var ck = function(ok){ return '<span class="ck">'+(ok ? CHECK : '')+'</span>'; };
+    document.getElementById('pes-status').innerHTML =
+      '<button type="button" class="os-it'+(od?' ok':'')+'" data-of-dia title="'+esc(od && od.texto ? L('Ofereceu por: ','Offered for: ','Ofrecido por: ','Oblatum pro: ')+od.texto : L('Oferecer o dia','Offer the day','Ofrecer el día','Diem offerre'))+'">'+ck(!!od)+L('Oferecimento','Offering','Ofrecimiento','Oblatio')+'</button>'+
+      '<button type="button" class="os-it'+(af.length===3?' ok':'')+'" data-rezar-angelus>'+ck(af.length===3)+L('Ângelus','Angelus','Ángelus','Angelus')+' '+[6,12,18].map(function(h){ return '<i class="'+(af.indexOf(h)>=0?'ok':'')+'">'+h+'h</i>'; }).join('')+'</button>'+
+      '<button type="button" class="os-it'+(hf===HORAS.length?' ok':'')+'" data-abrir-horas>'+ck(hf===HORAS.length)+tituloLH()+' <b>'+hf+'/'+HORAS.length+'</b></button>'+
+      '<button type="button" class="os-it'+(ex?' ok':'')+'" data-exame title="'+esc(ex && ex.proposito ? L('Propósito: ','Resolution: ','Propósito: ','Propositum: ')+ex.proposito : '')+'">'+ck(!!ex)+L('Exame do dia','Daily examen','Examen del día','Examen diei')+'</button>';
     document.getElementById('pes-horas').innerHTML = htmlHoras();
     var hs = state.habitos.filter(function(h){ return h.dono===eu; });
     document.getElementById('pes-habitos').innerHTML = hs.length ? hs.map(function(h){
@@ -4623,7 +5017,7 @@ textarea.campo.rolando{overflow-y:auto}
     }).join('') + botoesFeitas(feitas7.length, 0);
     gruposNaTela = guard;
     listaPes.innerHTML = html || '<div class="painel"><p class="vazio" data-sem-tr>'+L('Nenhuma missão pessoal'+(areaSel ? ' em '+esc(areaSel) : '')+'. Use “Nova missão pessoal” para a casa, a família, a saúde ou a vida espiritual.', 'No personal missions'+(areaSel ? ' in '+esc(tr(areaSel)) : '')+'. Use “New personal mission” for home, family, health or spiritual life.', 'Ninguna misión personal'+(areaSel ? ' en '+esc(tr(areaSel)) : '')+'. Usa “Nueva misión personal” para la casa, la familia, la salud o la vida espiritual.', 'Nulla missio privata'+(areaSel ? ' ('+esc(tr(areaSel))+')' : '')+'. “Nova missio privata” adhibe pro domo, familia, valetudine vel vita spiritali.')+'</p></div>';
-    ultimaNova = null; hidratarImagens();
+    ultimaNova = null; hidratarImagens(); posicionarMenuM();
     var rv = revisaoDaSemana(false);
     document.getElementById('rev-btn').textContent = rv && rv.concluida ? 'Rever a desta semana' : rv ? 'Continuar a revisão' : 'Fazer a revisão desta semana';
     var hist = state.revisoes.filter(function(r){ return r.dono===eu && r.concluida; }).sort(function(a,b){ return a.semana<b.semana?1:-1; }).slice(0,10);
@@ -4659,13 +5053,22 @@ textarea.campo.rolando{overflow-y:auto}
     }
     if ((el = t.closest('[data-hb-desfazer]'))){ var h2 = el.getAttribute('data-hb-desfazer'); state.registros = state.registros.filter(function(r){ return !(r.hab===h2 && r.data===hoje); }); salvar(); renderPessoal(); return; }
     if ((el = t.closest('[data-hb-del]'))){
-      if (!el.classList.contains('excluir-ok')){ el.classList.add('excluir-ok'); el.textContent = 'Apagar?'; setTimeout(function(){ if (el.isConnected){ el.classList.remove('excluir-ok'); el.innerHTML = I_LIXO; } }, 3500); return; }
-      var h3 = el.getAttribute('data-hb-del'); state.habitos = state.habitos.filter(function(h){ return h.id!==h3; }); state.registros = state.registros.filter(function(r){ return r.hab!==h3; }); salvar(); renderPessoal(); return;
+      if (!el.classList.contains('excluir-ok')){ el.classList.add('excluir-ok'); el.textContent = L('Apagar hábito?','Delete habit?','¿Borrar hábito?','Delere?'); el.title = L('Clique de novo para apagar o hábito e o histórico dele','Click again to delete the habit and its history','Haz clic de nuevo para borrar el hábito y su historial','Iterum preme'); setTimeout(function(){ if (el.isConnected){ el.classList.remove('excluir-ok'); el.innerHTML = I_LIXO; } }, 4000); return; }
+      var h3 = el.getAttribute('data-hb-del'), hbAntes = state.habitos.slice(), rgAntes = state.registros.slice(), hbNome = (state.habitos.filter(function(h){ return h.id===h3; })[0]||{}).nome || '';
+      state.habitos = state.habitos.filter(function(h){ return h.id!==h3; }); state.registros = state.registros.filter(function(r){ return r.hab!==h3; }); salvar(); renderPessoal();
+      avisar(L('Hábito “'+hbNome+'” apagado.','Habit “'+hbNome+'” deleted.','Hábito “'+hbNome+'” borrado.','Consuetudo “'+hbNome+'” deleta.'), null, function(){ state.habitos = hbAntes; state.registros = rgAntes; salvar(); renderPessoal(); });
+      return;
     }
     if ((el = t.closest('[data-area]'))){ areaSel = el.getAttribute('data-area') || null; renderPessoal(); return; }
     if (t.closest('[data-of-dia]')){ abrirOfertaDia(function(){ renderPessoal(); }); return; }
     if (t.closest('[data-rezar-angelus]')){ var hr = new Date().getHours(); abrirOracaoAngelus(hr<12 ? 6 : hr<18 ? 12 : 18); return; }
     if (t.closest('[data-exame]')){ abrirExame(false); return; }
+    if (t.closest('[data-abrir-horas]')){ var dh = document.getElementById('pes-horas-det'); dh.open = true; dh.scrollIntoView({block:'start', behavior:'smooth'}); return; }
+  });
+  /* seções recolhíveis lembram se estavam abertas */
+  Array.prototype.forEach.call(document.querySelectorAll('details[data-lembrar]'), function(d){
+    if (lsGet('ora-det-'+d.id)==='1') d.open = true;
+    d.addEventListener('toggle', function(){ lsSet('ora-det-'+d.id, d.open ? '1' : ''); });
   });
   document.getElementById('hb-form').addEventListener('submit', function(e){
     e.preventDefault(); var n = document.getElementById('hb-nome').value.trim(); if (!n) return;
@@ -4695,8 +5098,31 @@ textarea.campo.rolando{overflow-y:auto}
 
   /* ---------- Oferecimento do dia ---------- */
   var veuDia = document.getElementById('veu-dia'), odDepois = null;
-  function abrirOfertaDia(depois){
+  function horaDoMomento(){
+    if (!horasAtivas()) return null;
+    var ag = new Date().getHours(), f = horasFeitas(), x = null;
+    HORAS.forEach(function(y){ if (ag>=y.h && ag<y.h+3 && f.indexOf(y.k)<0) x = y; });
+    return x;
+  }
+  function abrirOfertaDia(depois, inicio){
     odDepois = depois || null;
+    var ext = document.getElementById('od-extra'), hx = '';
+    if (inicio){
+      var cn = chegadaInfo.novas, ca = chegadaInfo.aprov;
+      if (cn || ca){
+        var pt = [];
+        if (cn) pt.push(L(cn===1 ? 'Chegou <b>1 missão nova</b> para você' : 'Chegaram <b>'+cn+' missões novas</b> para você', '<b>'+cn+' new mission'+(cn===1?'':'s')+'</b> for you', cn===1 ? 'Llegó <b>1 misión nueva</b> para ti' : 'Llegaron <b>'+cn+' misiones nuevas</b> para ti', '<b>'+cn+'</b> novae missiones tibi'));
+        if (ca) pt.push(L('<b>'+ca+'</b> '+(ca===1?'aguarda':'aguardam')+' sua aprovação', '<b>'+ca+'</b> awaiting your approval', '<b>'+ca+'</b> '+(ca===1?'espera':'esperan')+' tu aprobación', '<b>'+ca+'</b> approbationem exspectant'));
+        hx += '<p>'+svgIcone(ICONES.missao)+'<span>'+pt.join(' · ')+'. '+L('Ficam destacadas na lista.','They are highlighted in the list.','Quedan destacadas en la lista.','In indice notantur.')+'</span></p>';
+      }
+      var hr = horaDoMomento();
+      if (hr){
+        var kh = 'ora-hora-'+eu+'-'+hoje+'-'+hr.k; horaMostrada[kh] = 1; lsSet(kh, '1');
+        hx += '<p>'+I_CRUZ+'<span>'+L('Agora é hora de ','It is time for ','Es la hora de ','Tempus orandi: ')+'<em>'+esc(nomeHora(hr))+'</em>.</span><a class="link" href="'+esc(urlHora(hr))+'" target="_blank" rel="noopener" data-hora-abrir="'+hr.k+'">'+L('Rezar agora','Pray now','Rezar ahora','Nunc orare')+'</a></p>';
+      }
+    }
+    ext.innerHTML = hx; ext.hidden = !hx;
+    document.getElementById('od-ok').textContent = inicio ? L('Amém · ir para as missões','Amen · go to the missions','Amén · ir a las misiones','Amen · ad missiones') : L('Amém','Amen','Amén','Amen');
     var lt = liturgia(hoje);
     document.getElementById('od-arte').innerHTML = svgIso(igreja(), {escala:5});
     document.getElementById('od-data').textContent = dataLonga(hoje)+(lt.fes ? ' · '+lt.fes.nome : '');
@@ -4846,7 +5272,6 @@ textarea.campo.rolando{overflow-y:auto}
     if (angelusFeitos().indexOf(angHora)<0){ state.oferecimentos.push({id:uid(), dono:eu, tipo:'angelus', hora:angHora, data:hoje, em:new Date().toISOString()}); salvar(); avisar('Ângelus rezado. +5 Piedade.'); }
     veuAng.hidden = true; if (!app.hidden) render();
   });
-  document.getElementById('ver-angelus').addEventListener('click', function(){ var hr = new Date().getHours(); mostrarAngelus(hr<12 ? 6 : hr<18 ? 12 : 18); });
   setInterval(checarAngelus, 15000);
   /* ---------- Liturgia das Horas: 6h Laudes, 9h Tércia, 12h Sexta, 15h Noa, 18h Vésperas, 21h Completas ----------
      Em português abre o Liturgia das Horas Online (a página das horas canônicas, com as de hoje no topo);
@@ -4980,7 +5405,7 @@ textarea.campo.rolando{overflow-y:auto}
   }
   function renderContador(){
     var el = document.getElementById('contador'); if (!el) return;
-    if (!logado || app.hidden || selecionando){ el.hidden = true; return; }
+    if (!logado || app.hidden){ el.hidden = true; return; }
     var o = proximaOracao(), r = proximaReuniao(), h = '';
     if (o) h += '<button type="button" data-cont-oracao title="'+esc(L('Próxima oração','Next prayer','Próxima oración','Proxima oratio')+': '+o.nome+' · '+pad(o.t.getHours())+':00')+'">'+I_CRUZ+'<span><b>'+esc(o.nome)+'</b> '+esc(faltam(o.t - Date.now()))+'</span></button>';
     if (r){ var ms = r.t - Date.now(); h += '<button type="button" data-cont-reuniao class="'+(ms < 15*60000 ? 'perto' : '')+'" title="'+esc(r.r.titulo+' · '+r.r.inicio)+'">'+I_REUN+'<span><b>'+esc(r.r.titulo)+'</b> '+esc(faltam(ms))+'</span></button>'; }
@@ -5072,7 +5497,7 @@ textarea.campo.rolando{overflow-y:auto}
   function mostrarLogin(msg, primeiro){
     lgPrimeiro = !!primeiro; app.hidden = true; abertura.hidden = false; pararCitacoes();
     abertura.querySelector('.ab-acoes').hidden = true; document.getElementById('ab-info').hidden = true;
-    document.getElementById('ab-login').hidden = false;
+    document.getElementById('ab-login').hidden = false; abertura.classList.add('com-login');
     document.getElementById('lg-tit').innerHTML = primeiro ? 'Primeiro acesso. Crie a conta do <b>administrador</b>; depois você adiciona a equipe em Ajustes.' : 'Entre com seu nome e sua senha.';
     document.getElementById('lg-conf-rot').hidden = !primeiro;
     document.getElementById('lg-senha').setAttribute('autocomplete', primeiro ? 'new-password' : 'current-password');
@@ -5098,7 +5523,7 @@ textarea.campo.rolando{overflow-y:auto}
       aplicarEquipe(r.equipe); aplicarItens(r.itens||[]); SYNC.desde = r.agora;
       prepararEstado();
       var pi = prefsEu().idioma; if (pi && pi!==LANG && IDIOMAS.indexOf(pi)>=0){ LANG = pi; lsSet('ora-idioma', pi); aplicarIdioma(); }
-      document.getElementById('ab-login').hidden = true; abertura.querySelector('.ab-acoes').hidden = false; document.getElementById('ab-info').hidden = false;
+      document.getElementById('ab-login').hidden = true; abertura.classList.remove('com-login'); abertura.querySelector('.ab-acoes').hidden = false; document.getElementById('ab-info').hidden = false;
       document.getElementById('ab-eu-rot').hidden = true;
       var sair = document.getElementById('sair'); sair.hidden = false; sair.innerHTML = svgIcone('<path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M12 6l4 4-4 4M16 10H8"/>')+'Sair';
       clearInterval(SYNC.laco); SYNC.laco = setInterval(cicloSync, 4000); estadoSync(true);
