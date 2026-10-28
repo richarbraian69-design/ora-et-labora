@@ -4231,6 +4231,7 @@ span.circ.espera{cursor:default}
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
     if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){
         var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; if (!r.m.privada){ if (r.s.feita){ r.s.cidadeXp = xpSub(r.s); somarCidade(r.s.cidadeXp); } else if (r.s.cidadeXp){ somarCidade(-r.s.cidadeXp); delete r.s.cidadeXp; } } salvar(); render(); if (r.s.feita) avisar('+'+xpSub(r.s)+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
+        if (!r.s.feita && !(r.m.privada && r.m.dono!==eu) && pedeOferta({peso:PESOS[r.s.peso] ? r.s.peso : 'minima', oferecida:r.s.oferecida})){ abrirOferta({id:'s:'+k, titulo:r.s.titulo, sub:true}, function(){ r.s.oferecida = true; marcarSub(); }); return; }
         marcarSub(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
     if (t.closest('[data-sub-cancelar]')){ editandoSub = null; renderLista(); return; }
@@ -4592,14 +4593,16 @@ span.circ.espera{cursor:default}
     var m = achar(id); if (!m || m.feita) return;
     if (m.privada && m.dono!==eu) return;
     pendenteOferta = null;
-    /* o oferecimento por missão é opcional (o do dia já cobre tudo): cumprir é um clique só */
+    /* oferecimento antes de cumprir só nas missões médias, árduas e heroicas; leves e mínimas são um clique só */
+    var oferecer = pedeOferta(m);
     if (precisaAprovacao(m) && eu!==m.aprovador){
       if (m.aprov && m.aprov.estado==='aguardando'){ avisar('Já está aguardando a aprovação de '+pessoa(m.aprovador).nome+'.'); return; }
-      enviarAprovacao(m);
+      if (oferecer) abrirOferta(m, function(links, coment){ confirmarAprovacao(m, links || [], coment); }); else enviarAprovacao(m);
       return;
     }
-    concluir(m);
+    if (oferecer) abrirOferta(m, function(){ concluir(m); }); else concluir(m);
   }
+  function pedeOferta(x){ return !x.oferecida && ['media','ardua','heroica'].indexOf(x.peso||'media')>=0; }
   function enviarAprovacao(m){ abrirEntrega(m); }
   function confirmarAprovacao(m, links, coment){
     m.aprov = {estado:'aguardando', em:new Date().toISOString(), por:eu, links:links}; if (coment) m.aprov.comentario = coment; salvar(); render();
@@ -4723,9 +4726,9 @@ span.circ.espera{cursor:default}
     e.preventDefault(); var t = ofTexto.value.trim(), m = ofMissao, depois = ofDepois; if (!t || !m) return;
     var o = {id:uid(), dono:eu, tipo:'missao', missao:m.id, titulo:m.titulo, texto:t, em:new Date().toISOString(), data:hoje}; if (m.sub) o.sub = true;
     state.oferecimentos.push(o); m.oferecida = true; pendenteOferta = o.id;
-    var links = document.getElementById('of-entrega').hidden ? null : linksDe('#of-ent-links');
+    var links = document.getElementById('of-entrega').hidden ? null : linksDe('#of-ent-links'), coment = document.getElementById('of-entrega').hidden ? '' : document.getElementById('of-ent-coment').value.trim();
     fecharOferta();
-    if (depois) depois(links);
+    if (depois) depois(links, coment);
     else { pendenteOferta = null; salvar(); render(); avisar(L('Missão oferecida por ','Mission offered for ','Misión ofrecida por ','Missio oblata pro ')+t+'. +3 '+tr('Caridade')+'.'); }
   });
 
