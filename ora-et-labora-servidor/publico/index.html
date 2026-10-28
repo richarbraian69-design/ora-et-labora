@@ -3663,7 +3663,7 @@ span.circ.espera{cursor:default}
       var resp = idPorNome(state.equipe, d.responsavel) || eu, tag = idPorNome(state.tags, d.cliente) || (r.tags||[])[0] || '';
       return '<div class="ata-it" data-ata-i="'+i+'"><input type="checkbox" checked aria-label="'+esc(L('Lançar esta demanda','Launch this task','Lanzar esta tarea','Mittere'))+'"><div class="ata-corpo">'+
         '<input class="campo tit" name="titulo" maxlength="200" value="'+esc(d.titulo)+'" aria-label="'+esc(L('Título','Title','Título','Titulus'))+'">'+
-        '<div class="ata-campos"><select class="campo" name="resp" aria-label="Responsável">'+opsPes(resp)+'</select><input class="campo" name="data" type="date" value="'+esc(d.data||'')+'" aria-label="Data"><select class="campo" name="tag" aria-label="Cliente">'+opsTag(tag)+'</select><select class="campo" name="peso" aria-label="XP">'+opcoesPeso(PESOS[d.peso] ? d.peso : 'media')+'</select>'+(usaTipos() ? '<select class="campo" name="tipo" aria-label="Tipo">'+opcoesTipo(d.tipo||'')+'</select>' : '')+'</div>'+
+        '<div class="ata-campos"><select class="campo" name="resp" aria-label="Responsável">'+opsPes(resp)+'</select><input class="campo" name="data" type="date" value="'+esc(d.data||'')+'" aria-label="Data"><select class="campo" name="tag" aria-label="Cliente">'+opsTag(tag)+'</select><select class="campo" name="peso" aria-label="XP">'+opcoesPeso(PESOS[d.peso] ? d.peso : 'media')+'</select>'+(usaTipos() ? '<select class="campo" name="tipo" aria-label="Tipo">'+opcoesTipo(d.tipo||'')+'</select>' : '')+'<select class="campo" name="aprov" aria-label="'+esc(L('Aprovação','Approval','Aprobación','Approbatio'))+'"><option value="">'+L('Sem aprovação','No approval','Sin aprobación','Sine approbatione')+'</option>'+state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return '<option value="'+esc(p.id)+'"'+(d.aprov===p.id?' selected':'')+'>'+L('Aprovação de ','Approval by ','Aprobación de ','Approbatio: ')+esc(p.nome)+'</option>'; }).join('')+'</select></div>'+
         '<textarea class="campo" name="descricao" rows="2" placeholder="'+esc(L('Detalhes (opcional)','Details (optional)','Detalles (opcional)','Singula'))+'">'+esc(d.descricao||'')+'</textarea>'+
         (d.trecho ? '<p class="ata-trecho">“'+esc(d.trecho)+'”</p>' : '')+'</div></div>';
     }).join('') : '<p class="nota" style="margin:0">'+L('Nenhuma demanda nova saiu desta reunião.','No new tasks came out of this meeting.','No salió ninguna tarea nueva de esta reunión.','Nulla negotia.')+'</p>';
@@ -3684,6 +3684,7 @@ span.circ.espera{cursor:default}
       if (!it.querySelector('input[type=checkbox]').checked){ ficam.push(d); return; }
       var v = function(n){ var el = it.querySelector('[name="'+n+'"]'); return el ? el.value : ''; }, t = v('titulo').trim(); if (!t){ ficam.push(d); return; }
       var m = {id:uid(), titulo:t, descricao:v('descricao').trim(), resp:v('resp')||eu, data:v('data')||null, peso:v('peso')||'media', feita:false, feitaEm:null, exemplo:false, subs:[], tags:v('tag') ? [v('tag')] : [], anexos:[], criadaPor:eu, criadaEm:new Date().toISOString(), tipo:v('tipo')||null, reuniao:r.id, vemDe:r.titulo};
+      var apv = v('aprov'); if (apv && apv!==m.resp) m.aprovador = apv;
       if (m.resp===eu) marcarVistas(eu, [m.id]);
       state.missoes.push(m); novas.push(m.id);
     });
