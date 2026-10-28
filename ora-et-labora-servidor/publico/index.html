@@ -1014,6 +1014,53 @@ span.circ.espera{cursor:default}
 .coment-entrega{margin-top:6px;padding:8px 12px;border-left:2px solid var(--espera-tx);background:var(--sup);border-radius:0 8px 8px 0;font-size:.86rem;display:grid;gap:2px}
 .coment-entrega b{font-weight:500;font-size:.78rem;color:var(--tx2)}
 .coment-entrega p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+/* ---------- Reuniões gravadas e histórico ---------- */
+.grav-barra{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:46;display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:calc(100% - 24px);padding:8px 8px 8px 16px;border-radius:14px;background:var(--btn);color:var(--btn-tx);box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:.88rem}
+.grav-barra .ponto-rec{width:10px;height:10px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 0 rgba(229,72,77,.6);animation:pulsar 1.6s infinite;flex:none}
+@keyframes pulsar{0%{box-shadow:0 0 0 0 rgba(229,72,77,.6)}70%{box-shadow:0 0 0 9px rgba(229,72,77,0)}100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+.grav-barra b{font-weight:600;font-variant-numeric:tabular-nums}
+.grav-barra small{opacity:.7;font-size:.76rem}
+.grav-barra button{border:0;border-radius:9px;padding:7px 12px;background:var(--btn-tx);color:var(--btn);font:inherit;font-weight:500;cursor:pointer}
+.grav-barra .girando{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:girar .8s linear infinite;flex:none}
+@keyframes girar{to{transform:rotate(360deg)}}
+.grav-txt{display:grid;gap:1px;min-width:0}
+.ata{max-width:760px}
+.ata-resumo{display:grid;gap:8px;padding:12px 14px;border-radius:12px;background:var(--sup);font-size:.9rem}
+.ata-resumo p{margin:0}
+.ata-resumo ul{margin:0;padding-left:18px}
+.ata-dem{display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:2px}
+.ata-it{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px 10px;padding:12px;border:1px solid var(--linha);border-radius:12px;background:var(--painel)}
+.ata-it.off{opacity:.5}
+.ata-it > input[type=checkbox]{width:18px;height:18px;margin-top:9px;accent-color:var(--tx)}
+.ata-corpo{display:grid;gap:8px;min-width:0}
+.ata-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ata-campos .campo{padding:6px 8px;font-size:.86rem}
+.ata-it .campo.tit{font-weight:500}
+.ata-trecho{margin:0;font-family:var(--f-serif);font-style:italic;font-size:.92rem;color:var(--tx2)}
+.ata-it textarea.campo{min-height:44px;font-size:.86rem}
+.reu-grupo{display:grid;gap:8px}
+.reu-grupo-tit{margin:0;display:flex;align-items:baseline;gap:10px;font-family:var(--f-serif);font-size:1.4rem;font-weight:400}
+.reu-grupo-tit small{font-family:var(--f-ui);font-size:.8rem;color:var(--tx3)}
+.rh-it{border-top:1px solid var(--linha)}
+.rh-it:first-child{border-top:0}
+.rh-cab{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:6px 14px;align-items:center;width:100%;padding:13px 16px;border:0;background:transparent;color:var(--tx);font:inherit;text-align:left;cursor:pointer}
+.rh-cab:hover{background:var(--sup)}
+.rh-quando{font-size:.84rem;color:var(--tx2);font-variant-numeric:tabular-nums}
+.rh-quando small{display:block;color:var(--tx3)}
+.rh-t{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0}
+.rh-t b{font-weight:500}
+.rh-badges{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.rh-det{display:grid;gap:12px;padding:2px 16px 16px 150px}
+.rh-det p{margin:0;font-size:.9rem}
+.rh-det ul{margin:0;padding-left:18px;font-size:.9rem;display:grid;gap:3px}
+.rh-det .feita{color:var(--tx3);text-decoration:line-through}
+.rh-acoes{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.st.ata-ok{background:var(--sup-2);color:var(--ok)}
+.st.gravando{background:#fde2e2;color:#b42318}
+.ia-falta{display:grid;gap:6px;padding:12px 16px;border-radius:12px;background:var(--espera-bg);color:var(--espera-tx);font-size:.88rem}
+.ia-falta code{font-size:.82rem}
+@media (max-width:700px){.rh-cab{grid-template-columns:minmax(0,1fr) auto}.rh-quando{grid-column:1/-1}.rh-det{padding:2px 16px 16px}}
+.reu-grupo-tit .tag{font-family:var(--f-ui);font-size:.82rem;height:22px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.ab-marca,.ab-info,.ab-acoes{opacity:1}}
 </style>
 
@@ -1084,6 +1131,7 @@ span.circ.espera{cursor:default}
             <button type="button" role="menuitem" data-novo="missao"><span id="ic-missao"></span><b>Missão</b><small>Uma demanda com responsável e data</small></button>
             <button type="button" role="menuitem" data-novo="reuniao"><span id="ic-reuniao"></span><b>Reunião</b><small>Marcar um horário na agenda</small></button>
             <button type="button" role="menuitem" data-novo="pessoal"><span id="ic-pessoal"></span><b>Missão pessoal</b><small>Só você vê, na sua área privada</small></button>
+            <button type="button" role="menuitem" data-novo="gravar"><span id="ic-gravar"></span><b>Gravar reunião agora</b><small>Grava, transcreve e separa as demandas</small></button>
           </div>
         </div>
         </div>
@@ -1195,6 +1243,14 @@ span.circ.espera{cursor:default}
           </div>
           <div class="cal" id="cal"></div>
           <div class="painel dia-painel" id="dia-painel"></div>
+        </section>
+
+        <section id="vista-reunioes" style="display:grid;gap:14px" hidden>
+          <div class="barra-lista"><h3 class="rotulo-vista" id="rh-rot">Histórico de reuniões</h3>
+            <div class="barra-dir"><div class="seg" id="rh-seg" role="group" data-sem-tr><button type="button" data-rh="data"></button><button type="button" data-rh="cliente"></button></div>
+              <input class="cri-busca" id="rh-busca" type="search" placeholder="Buscar reunião, decisão ou demanda" aria-label="Buscar reunião"></div></div>
+          <div id="rh-ia" data-sem-tr></div>
+          <div id="rh-lista" style="display:grid;gap:22px"></div>
         </section>
 
         <section id="vista-criativos" style="display:grid;gap:14px" hidden>
@@ -1465,6 +1521,26 @@ span.circ.espera{cursor:default}
   </form>
 </div>
 
+<div class="grav-barra" id="grav-barra" role="status" data-sem-tr hidden></div>
+<div class="veu" id="veu-ata" hidden>
+  <form class="cartao largo ata" role="dialog" aria-modal="true" aria-labelledby="ata-tit" id="ata-form" autocomplete="off" data-sem-tr>
+    <p class="rot" id="ata-rot"></p>
+    <h2 id="ata-tit"></h2>
+    <div class="ata-resumo" id="ata-resumo"></div>
+    <div class="ata-dem" id="ata-dem"></div>
+    <p class="nota" id="ata-aviso" style="margin:0"></p>
+    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit" id="ata-ok"></button><button class="btn btn-claro btn-grande" type="button" id="ata-fechar"></button></div>
+  </form>
+</div>
+<div class="veu" id="veu-colar" hidden>
+  <form class="cartao largo" role="dialog" aria-modal="true" aria-labelledby="colar-tit" id="colar-form" autocomplete="off" data-sem-tr>
+    <p class="rot" id="colar-rot"></p>
+    <h2 id="colar-tit"></h2>
+    <p class="nota" id="colar-nota" style="margin:0"></p>
+    <textarea class="campo" id="colar-texto" rows="10" maxlength="400000"></textarea>
+    <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit" id="colar-ok"></button><button class="btn btn-claro btn-grande" type="button" id="colar-cancelar"></button></div>
+  </form>
+</div>
 <div class="voo" id="voo" aria-hidden="true" hidden></div>
 <div class="pilha-oracao"><div class="angelus" id="horas-card" role="status" hidden></div>
 <div class="angelus" id="angelus" role="status" hidden>
@@ -2504,10 +2580,11 @@ span.circ.espera{cursor:default}
     reuniao:'<circle cx="7" cy="7.5" r="2.3"/><circle cx="13.5" cy="8" r="1.9"/><path d="M2.8 16c.5-2.6 2.2-4 4.2-4s3.7 1.4 4.2 4M11.5 12.4c.6-.3 1.3-.5 2-.5 1.8 0 3.2 1.2 3.7 3.4"/>',
     aprovar:'<path d="M10 2.8l5.8 2.2v4.6c0 3.6-2.5 6.4-5.8 7.6-3.3-1.2-5.8-4-5.8-7.6V5z"/><path d="M7.4 10l1.9 1.9 3.4-3.6"/>',
     criativos:'<rect x="3" y="4" width="14" height="12" rx="2"/><path d="M8.5 7.8v4.4l3.8-2.2z"/>',
+    reunioes:'<circle cx="7" cy="7.5" r="2.3"/><circle cx="13.5" cy="8" r="1.9"/><path d="M2.8 16c.5-2.6 2.2-4 4.2-4s3.7 1.4 4.2 4M11.5 12.4c.6-.3 1.3-.5 2-.5 1.8 0 3.2 1.2 3.7 3.4"/>',
     pessoal:'<rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.6a3 3 0 0 1 6 0V9"/>'
   };
   var VISTAS = [ ['hoje','Hoje','Missões de hoje'], ['todas','Todas as missões','Todas as missões'], ['atrasadas','Atrasadas','Atrasadas'],
-    ['proximas','Próximos dias','Próximos dias'], ['cumpridas','Cumpridas','Cumpridas'], ['aprovar','Para aprovar','Aprovações'], ['agenda','Agenda','Agenda'],
+    ['proximas','Próximos dias','Próximos dias'], ['cumpridas','Cumpridas','Cumpridas'], ['aprovar','Para aprovar','Aprovações'], ['agenda','Agenda','Agenda'], ['reunioes','Reuniões','Histórico de reuniões'],
     ['criativos','Criativos','Criativos por cidade'], ['cidade','Sítio','Sítio'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
   var I_REPETE = svgIcone('<path d="M4 8.5A6 6 0 0 1 15 6.2M16 11.5A6 6 0 0 1 5 13.8"/><path d="M15.5 3v3.4h-3.4M4.5 17v-3.4h3.4"/>',1.6);
   var I_ESCUDO = svgIcone(ICONES.aprovar,1.6), I_CADEADO = svgIcone(ICONES.pessoal,1.6);
@@ -3208,7 +3285,7 @@ span.circ.espera{cursor:default}
   var qtdNav = {};
   function nomeVista(v){ return v[0]==='cidade' ? L('Sítio','Farm','Granja','Villa') : v[1]; }
   /* ---------- Celular: barra de baixo (Hoje, Missões, Agenda, Minha área, Novo) ---------- */
-  var VISTAS_MENU_INF = ['todas','atrasadas','proximas','cumpridas','aprovar','criativos','cidade'];
+  var VISTAS_MENU_INF = ['todas','atrasadas','proximas','cumpridas','aprovar','reunioes','criativos','cidade'];
   function renderBarraInf(){
     var bi = document.getElementById('barra-inf'); if (!bi) return;
     var it = function(k, ic, nome, atual){ return '<button type="button" data-inf="'+k+'" aria-current="'+atual+'">'+ic+'<span>'+nome+'</span></button>'; };
@@ -3476,8 +3553,244 @@ span.circ.espera{cursor:default}
     return '<article class="linha reuniao'+(r.feita?' feita':'')+'" data-reuniao="'+r.id+'"><button class="marca-r chk-r'+(r.feita?' on':'')+'" type="button" data-reuniao-feita="'+r.id+'" aria-pressed="'+!!r.feita+'" title="'+(r.feita ? L('Reunião feita. Clique para desmarcar','Meeting done. Click to undo','Reunión hecha. Haz clic para desmarcar','Conventus habitus. Preme ut revoces') : L('Marcar reunião como feita','Mark meeting as done','Marcar reunión como hecha','Conventum habitum notare'))+'" aria-label="'+L('Reunião feita','Meeting done','Reunión hecha','Conventus habitus')+': '+esc(r.titulo)+'">'+(r.feita ? CHECK : svgIcone(ICONES.reuniao,1.8))+'</button>'+
       '<div class="r-info"><span class="hora">'+esc(r.inicio)+(r.fim?'<small>até '+esc(r.fim)+'</small>':'')+'</span><span class="r-resp"><span class="avs">'+r.pessoas.map(av).join('')+'</span></span></div>'+
       '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo">'+esc(r.titulo)+'</h4>'+pilulas(r.tags)+(r.recorrencia ? '<span class="st" title="'+L('Reunião recorrente','Recurring meeting','Reunión recurrente','Conventus iteratus')+'">'+I_REPETE+esc(nomeRec(r.recorrencia))+'</span>' : '')+'</div>'+(local?'<span class="r-local">'+local+'</span>':'')+(r.descricao?'<p class="r-desc">'+esc(r.descricao)+'</p>':'')+'</div>'+
-      '<div class="r-acoes"><button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião '+esc(r.titulo)+'" title="Editar">'+I_EDITAR+'</button></div></article>';
+      '<div class="r-acoes" style="opacity:1">'+botoesGravacao(r)+'<button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião '+esc(r.titulo)+'" title="Editar">'+I_EDITAR+'</button></div></article>';
   }
+  /* ---------- Reuniões gravadas: grava a aba da reunião + o microfone, transcreve no Groq e o Claude separa as demandas ---------- */
+  var I_REC = svgIcone('<circle cx="10" cy="10" r="6.5"/><circle cx="10" cy="10" r="2.6" fill="currentColor"/>',1.6);
+  var grav = null, iaEstado = null;
+  var PARTE_MS = window.ORA_PARTE_MS || 5*60000;
+  function fmtTempo(ms){ var s = Math.max(0, Math.floor(ms/1000)), h = Math.floor(s/3600), m = Math.floor(s%3600/60); return (h ? h+':'+pad(m) : m)+':'+pad(s%60); }
+  function nomesEquipe(){ return state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return p.nome; }); }
+  function ctxReuniao(r){
+    return {hoje:fmt(paraData(hoje), {weekday:'long', day:'numeric', month:'long', year:'numeric'})+' ('+hoje+')', titulo:r ? r.titulo : '',
+      participantes:r ? (r.pessoas||[]).map(function(id){ return pessoa(id).nome; }) : [], equipe:nomesEquipe(), clientes:state.tags.map(function(t){ return t.nome; })};
+  }
+  function carregarIa(){ if (!SERVIDOR || !logado) return Promise.resolve({}); return api('GET','/api/ia/estado').then(function(r){ iaEstado = r; return r; }).catch(function(){ return iaEstado || {}; }); }
+  function htmlFaltaIa(st){
+    if (!SERVIDOR) return '<div class="ia-falta">'+L('A gravação de reuniões funciona na versão do servidor (Railway).','Meeting recording works on the server version (Railway).','La grabación de reuniones funciona en la versión del servidor (Railway).','In servitore tantum.')+'</div>';
+    if (!st || (st.transcricao && st.extracao)) return '';
+    var f = []; if (!st.transcricao) f.push('<code>GROQ_API_KEY</code> ('+L('transcrição','transcription','transcripción','transcriptio')+')'); if (!st.extracao) f.push('<code>ANTHROPIC_API_KEY</code> ('+L('leitura das demandas','reading the tasks','lectura de las tareas','lectio')+')');
+    return '<div class="ia-falta"><b>'+L('Falta ligar no Railway: ','Still to set up in Railway: ','Falta configurar en Railway: ','Deest in Railway: ')+f.join(' · ')+'</b><span>'+L('Em Railway → seu serviço → Variables, adicione a chave e espere o deploy terminar.','In Railway → your service → Variables, add the key and wait for the deploy.','En Railway → tu servicio → Variables, añade la clave y espera el deploy.','Railway → Variables.')+'</span></div>';
+  }
+  function pintarGrav(){
+    var b = document.getElementById('grav-barra');
+    if (!grav){ b.hidden = true; b.innerHTML = ''; return; }
+    b.hidden = false;
+    if (grav.fase==='gravando') b.innerHTML = '<span class="ponto-rec" aria-hidden="true"></span><span class="grav-txt"><span>'+L('Gravando','Recording','Grabando','Excipitur')+' · <b id="grav-tempo">'+fmtTempo(Date.now()-grav.inicio)+'</b> · '+esc(grav.titulo)+'</span><small>'+(grav.semAba ? L('Só o seu microfone está sendo gravado.','Only your microphone is being recorded.','Solo se graba tu micrófono.','Solum microphonum.') : L('Avise os participantes que a reunião está sendo gravada.','Let participants know the meeting is being recorded.','Avisa a los participantes que se está grabando.','Mone participes.'))+'</small></span><button type="button" id="grav-parar">'+L('Encerrar','Stop','Terminar','Finire')+'</button>';
+    else b.innerHTML = '<span class="girando" aria-hidden="true"></span><span class="grav-txt"><span>'+L('Transcrevendo e separando as demandas…','Transcribing and finding the tasks…','Transcribiendo y separando las tareas…','Transcribitur…')+'</span><small>'+esc(grav.titulo)+' · '+fmtTempo(grav.duracao||0)+'</small></span>';
+  }
+  setInterval(function(){ if (grav && grav.fase==='gravando'){ var t = document.getElementById('grav-tempo'); if (t) t.textContent = fmtTempo(Date.now()-grav.inicio); } }, 1000);
+  window.addEventListener('beforeunload', function(e){ if (grav){ e.preventDefault(); e.returnValue = ''; } });
+  document.getElementById('grav-barra').addEventListener('click', function(e){ if (e.target.closest('#grav-parar')) encerrarGravacao(); });
+  function enviarParte(g, n, blob, tent){
+    var p = fetch('/api/gravacao/'+encodeURIComponent(g.gid)+'/parte?n='+n, {method:'POST', credentials:'same-origin', headers:{'Content-Type':blob.type||'audio/webm', 'X-Ora':'1'}, body:blob})
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.erro || 'Erro '+r.status); return j; }); })
+      .catch(function(err){ if ((tent||0) < 2) return new Promise(function(ok){ setTimeout(ok, 4000); }).then(function(){ return enviarParte(g, n, blob, (tent||0)+1); }); g.falhas++; console.warn('parte', n, err); });
+    if (!tent) g.envios.push(p);
+    return p;
+  }
+  function novoSegmento(g){
+    var n = g.n++, partes = [], rec;
+    try { rec = new MediaRecorder(g.mix, g.mime ? {mimeType:g.mime, audioBitsPerSecond:32000} : {audioBitsPerSecond:32000}); } catch (e) { rec = new MediaRecorder(g.mix); }
+    rec.ondataavailable = function(ev){ if (ev.data && ev.data.size) partes.push(ev.data); };
+    var fim = new Promise(function(ok){ rec.onstop = function(){ var blob = new Blob(partes, {type:rec.mimeType||g.mime||'audio/webm'}); ok(blob.size > 2000 ? enviarParte(g, n, blob) : null); }; });
+    rec.start(); g.rec = rec; g.fimSeg = fim;
+    clearTimeout(g.timer); g.timer = setTimeout(function(){ if (grav===g && g.fase==='gravando'){ rec.stop(); novoSegmento(g); } }, PARTE_MS);
+  }
+  function iniciarGravacao(rid){
+    if (grav){ avisar(L('Já tem uma reunião sendo gravada.','A meeting is already being recorded.','Ya se está grabando una reunión.','Iam excipitur.')); return; }
+    var r = acharReuniao(rid); if (!r) return;
+    if (!SERVIDOR){ avisar(L('A gravação funciona na versão do servidor (Railway).','Recording works on the server version.','La grabación funciona en la versión del servidor.','In servitore tantum.')); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || typeof MediaRecorder==='undefined'){ avisar(L('Este navegador não grava reuniões. Use o Chrome ou o Edge no computador.','This browser cannot record meetings. Use Chrome or Edge on a computer.','Este navegador no graba reuniones. Usa Chrome o Edge en el ordenador.','Chrome adhibe.')); return; }
+    carregarIa().then(function(st){
+      if (!st.transcricao){ avisar(L('Falta ligar a transcrição: adicione a chave GROQ_API_KEY nas Variables do Railway.','Transcription is off: add GROQ_API_KEY in Railway Variables.','Falta la transcripción: añade GROQ_API_KEY en Railway.','GROQ_API_KEY deest.')); return; }
+      avisar(L('Escolha a aba da reunião (Meet, Zoom…) e marque “Compartilhar áudio da guia”.','Pick the meeting tab (Meet, Zoom…) and tick “Share tab audio”.','Elige la pestaña de la reunión y marca “Compartir audio de la pestaña”.','Tabulam conventus elige.'));
+      var tela = null, mic = null;
+      navigator.mediaDevices.getDisplayMedia({video:true, audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}, selfBrowserSurface:'exclude', systemAudio:'include', preferCurrentTab:false})
+        .then(function(s){ tela = s; return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true}}).then(function(m){ mic = m; }).catch(function(){ mic = null; }); })
+        .then(function(){
+          var ctx = new (window.AudioContext || window.webkitAudioContext)(), dest = ctx.createMediaStreamDestination(), temAba = tela.getAudioTracks().length>0;
+          if (temAba) ctx.createMediaStreamSource(new MediaStream(tela.getAudioTracks())).connect(dest);
+          if (mic) ctx.createMediaStreamSource(mic).connect(dest);
+          if (!temAba && !mic){ tela.getTracks().forEach(function(t){ t.stop(); }); ctx.close(); avisar(L('Sem áudio para gravar: compartilhe o áudio da aba ou libere o microfone.','No audio to record: share the tab audio or allow the microphone.','Sin audio: comparte el audio de la pestaña o permite el micrófono.','Sine sono.')); return null; }
+          var mime = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].filter(function(x){ return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(x); })[0] || '';
+          return api('POST','/api/gravacao',{reuniao:rid}).then(function(j){
+            var g = {gid:j.id, rid:rid, titulo:r.titulo, inicio:Date.now(), n:0, fase:'gravando', envios:[], falhas:0, mix:dest.stream, mime:mime, ctx:ctx, fontes:[tela, mic].filter(Boolean), semAba:!temAba};
+            grav = g;
+            tela.getVideoTracks().forEach(function(t){ t.addEventListener('ended', function(){ if (grav===g && g.fase==='gravando') encerrarGravacao(); }); });
+            tela.getAudioTracks().forEach(function(t){ t.addEventListener('ended', function(){ if (grav===g && g.fase==='gravando') encerrarGravacao(); }); });
+            novoSegmento(g); pintarGrav(); render();
+            if (!temAba) avisar(L('O áudio da aba não veio: só o seu microfone será gravado. Na próxima, marque “Compartilhar áudio da guia”.','No tab audio: only your microphone will be recorded. Next time tick “Share tab audio”.','No llegó el audio de la pestaña: solo se grabará tu micrófono.','Solum microphonum.'));
+          });
+        })
+        .catch(function(err){ if (tela) tela.getTracks().forEach(function(t){ t.stop(); }); if (mic) mic.getTracks().forEach(function(t){ t.stop(); }); if (err && err.name==='NotAllowedError') avisar(L('Gravação cancelada.','Recording cancelled.','Grabación cancelada.','Omissum.')); else avisar((err && err.message) || L('Não deu para começar a gravação.','Could not start recording.','No se pudo empezar a grabar.','Non potuit.')); });
+    });
+  }
+  function encerrarGravacao(){
+    var g = grav; if (!g || g.fase!=='gravando') return;
+    g.fase = 'processando'; g.duracao = Date.now()-g.inicio; clearTimeout(g.timer);
+    try { g.rec.stop(); } catch (e) {}
+    pintarGrav();
+    var r = acharReuniao(g.rid);
+    g.fimSeg.then(function(){ return Promise.all(g.envios); }).then(function(){
+      g.fontes.forEach(function(s){ s.getTracks().forEach(function(t){ t.stop(); }); }); try { g.ctx.close(); } catch (e) {}
+      return api('POST','/api/gravacao/'+encodeURIComponent(g.gid)+'/finalizar',{contexto:ctxReuniao(r)});
+    }).then(function(res){
+      grav = null; pintarGrav();
+      var rr = acharReuniao(g.rid); if (!rr) return;
+      rr.ata = Object.assign({}, rr.ata||{}, {transcricao:res.transcricao, em:new Date().toISOString(), por:eu, duracao:g.duracao, resumo:res.ata ? res.ata.resumo : '', decisoes:res.ata ? res.ata.decisoes : [], sugestoes:res.ata ? res.ata.demandas : [], demandas:(rr.ata && rr.ata.demandas)||[]});
+      if (!rr.feita){ rr.feita = true; rr.feitaEm = new Date().toISOString(); rr.feitaPor = eu; }
+      salvar(); render();
+      if (res.erroAta) avisar(L('A transcrição foi guardada, mas a leitura das demandas falhou: ','The transcript was saved, but reading the tasks failed: ','La transcripción se guardó, pero falló la lectura: ','Servatum, sed: ')+res.erroAta);
+      else abrirAta(rr.id);
+    }).catch(function(err){
+      grav = null; pintarGrav(); render();
+      avisar(L('Não deu para terminar a transcrição: ','Could not finish the transcript: ','No se pudo terminar: ','Non potuit: ')+((err && err.message) || ''));
+    });
+  }
+  /* ---------- Revisar as demandas antes de lançar ---------- */
+  var ataRid = null;
+  function idPorNome(lista, nome, campo){ var a = norm(nome); if (!a) return null; var x = lista.filter(function(p){ return norm(p[campo||'nome'])===a; })[0] || lista.filter(function(p){ var b = norm(p[campo||'nome']); return b && (b.split(' ')[0]===a.split(' ')[0] || b.indexOf(a)===0 || a.indexOf(b)===0); })[0]; return x ? x.id : null; }
+  function abrirAta(rid){
+    var r = acharReuniao(rid); if (!r || !r.ata) return;
+    ataRid = rid; var a = r.ata, sug = a.sugestoes || [];
+    document.getElementById('ata-rot').textContent = L('Reunião','Meeting','Reunión','Conventus')+' · '+dataLonga(r.data)+(a.duracao ? ' · '+fmtTempo(a.duracao) : '');
+    document.getElementById('ata-tit').innerHTML = esc(r.titulo)+' · <em>'+L('demandas que surgiram','tasks that came up','tareas que surgieron','negotia orta')+'</em>';
+    document.getElementById('ata-resumo').innerHTML = (a.resumo ? '<p>'+esc(a.resumo)+'</p>' : '')+((a.decisoes||[]).length ? '<b style="font-weight:600;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3)">'+L('Decisões','Decisions','Decisiones','Decreta')+'</b><ul>'+a.decisoes.map(function(d){ return '<li>'+esc(d)+'</li>'; }).join('')+'</ul>' : '')+(a.transcricao ? '<a class="link" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+L('Ver a transcrição completa','See the full transcript','Ver la transcripción completa','Totum legere')+'</a>' : '');
+    var opsPes = function(sel){ return state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return '<option value="'+esc(p.id)+'"'+(p.id===sel?' selected':'')+'>'+esc(p.nome)+'</option>'; }).join(''); };
+    var opsTag = function(sel){ return '<option value="">'+L('Sem cliente','No client','Sin cliente','Sine cliente')+'</option>'+state.tags.map(function(t){ return '<option value="'+esc(t.id)+'"'+(t.id===sel?' selected':'')+'>'+esc(t.nome)+'</option>'; }).join(''); };
+    document.getElementById('ata-dem').innerHTML = sug.length ? sug.map(function(d, i){
+      var resp = idPorNome(state.equipe, d.responsavel) || eu, tag = idPorNome(state.tags, d.cliente) || (r.tags||[])[0] || '';
+      return '<div class="ata-it" data-ata-i="'+i+'"><input type="checkbox" checked aria-label="'+esc(L('Lançar esta demanda','Launch this task','Lanzar esta tarea','Mittere'))+'"><div class="ata-corpo">'+
+        '<input class="campo tit" name="titulo" maxlength="200" value="'+esc(d.titulo)+'" aria-label="'+esc(L('Título','Title','Título','Titulus'))+'">'+
+        '<div class="ata-campos"><select class="campo" name="resp" aria-label="Responsável">'+opsPes(resp)+'</select><input class="campo" name="data" type="date" value="'+esc(d.data||'')+'" aria-label="Data"><select class="campo" name="tag" aria-label="Cliente">'+opsTag(tag)+'</select><select class="campo" name="peso" aria-label="XP">'+opcoesPeso(PESOS[d.peso] ? d.peso : 'media')+'</select>'+(usaTipos() ? '<select class="campo" name="tipo" aria-label="Tipo">'+opcoesTipo(d.tipo||'')+'</select>' : '')+'</div>'+
+        '<textarea class="campo" name="descricao" rows="2" placeholder="'+esc(L('Detalhes (opcional)','Details (optional)','Detalles (opcional)','Singula'))+'">'+esc(d.descricao||'')+'</textarea>'+
+        (d.trecho ? '<p class="ata-trecho">“'+esc(d.trecho)+'”</p>' : '')+'</div></div>';
+    }).join('') : '<p class="nota" style="margin:0">'+L('Nenhuma demanda nova saiu desta reunião.','No new tasks came out of this meeting.','No salió ninguna tarea nueva de esta reunión.','Nulla negotia.')+'</p>';
+    var n = (a.demandas||[]).length;
+    document.getElementById('ata-aviso').textContent = n ? L(n===1 ? '1 demanda desta reunião já foi lançada.' : n+' demandas desta reunião já foram lançadas.', n+' task(s) from this meeting already launched.', n+' tarea(s) ya lanzada(s).', n+' iam missa.') : '';
+    var ok = document.getElementById('ata-ok'); ok.hidden = !sug.length; ok.textContent = L('Lançar selecionadas','Launch selected','Lanzar seleccionadas','Electa mittere');
+    document.getElementById('ata-fechar').textContent = sug.length ? L('Agora não','Not now','Ahora no','Non nunc') : L('Fechar','Close','Cerrar','Claudere');
+    document.getElementById('veu-ata').hidden = false;
+    setTimeout(function(){ crescerTodas(document.getElementById('ata-dem')); }, 0);
+  }
+  document.getElementById('ata-dem').addEventListener('change', function(e){ var it = e.target.closest('.ata-it'); if (it && e.target.type==='checkbox') it.classList.toggle('off', !e.target.checked); });
+  document.getElementById('ata-fechar').addEventListener('click', function(){ document.getElementById('veu-ata').hidden = true; ataRid = null; });
+  document.getElementById('ata-form').addEventListener('submit', function(e){
+    e.preventDefault(); var r = acharReuniao(ataRid); if (!r || !r.ata) return;
+    var sug = r.ata.sugestoes || [], novas = [], ficam = [], antes = JSON.stringify(state.missoes), ataAntes = JSON.stringify(r.ata), tagsAntes = (r.tags||[]).slice();
+    Array.prototype.forEach.call(document.querySelectorAll('#ata-dem .ata-it'), function(it){
+      var i = +it.getAttribute('data-ata-i'), d = sug[i]; if (!d) return;
+      if (!it.querySelector('input[type=checkbox]').checked){ ficam.push(d); return; }
+      var v = function(n){ var el = it.querySelector('[name="'+n+'"]'); return el ? el.value : ''; }, t = v('titulo').trim(); if (!t){ ficam.push(d); return; }
+      var m = {id:uid(), titulo:t, descricao:v('descricao').trim(), resp:v('resp')||eu, data:v('data')||null, peso:v('peso')||'media', feita:false, feitaEm:null, exemplo:false, subs:[], tags:v('tag') ? [v('tag')] : [], anexos:[], criadaPor:eu, criadaEm:new Date().toISOString(), tipo:v('tipo')||null, reuniao:r.id, vemDe:r.titulo};
+      if (m.resp===eu) marcarVistas(eu, [m.id]);
+      state.missoes.push(m); novas.push(m.id);
+    });
+    r.ata.demandas = (r.ata.demandas||[]).concat(novas); r.ata.sugestoes = ficam;
+    /* a reunião herda os clientes das demandas, para aparecer no histórico por cliente */
+    r.tags = r.tags || []; novas.forEach(function(id){ var m = achar(id); (m && m.tags || []).forEach(function(t){ if (r.tags.indexOf(t)<0) r.tags.push(t); }); });
+    salvar(); document.getElementById('veu-ata').hidden = true; ataRid = null; render();
+    var rid = r.id;
+    avisar(novas.length===1 ? L('1 demanda lançada.','1 task launched.','1 tarea lanzada.','1 missa.') : L(novas.length+' demandas lançadas.', novas.length+' tasks launched.', novas.length+' tareas lanzadas.', novas.length+' missae.'), null, novas.length ? function(){ state.missoes = JSON.parse(antes); var rr = acharReuniao(rid); if (rr){ rr.ata = JSON.parse(ataAntes); rr.tags = tagsAntes; } salvar(); render(); } : null);
+  });
+  /* ---------- Colar uma transcrição pronta (do Meet, do Zoom…) ---------- */
+  var colarRid = null;
+  function abrirColar(rid){
+    var r = acharReuniao(rid); if (!r) return;
+    if (!SERVIDOR){ avisar(L('Funciona na versão do servidor (Railway).','Works on the server version.','Funciona en la versión del servidor.','In servitore tantum.')); return; }
+    colarRid = rid;
+    document.getElementById('colar-rot').textContent = L('Transcrição','Transcript','Transcripción','Transcriptio')+' · '+dataLonga(r.data);
+    document.getElementById('colar-tit').innerHTML = esc(r.titulo);
+    document.getElementById('colar-nota').textContent = L('Cole aqui a transcrição gerada pelo Meet ou pelo Zoom. O Claude lê e separa as demandas para você revisar.','Paste the transcript from Meet or Zoom. Claude reads it and lists the tasks for you to review.','Pega aquí la transcripción de Meet o Zoom. Claude la lee y separa las tareas.','Transcriptionem hic pone.');
+    document.getElementById('colar-ok').textContent = L('Ler as demandas','Find the tasks','Leer las tareas','Legere');
+    document.getElementById('colar-cancelar').textContent = L('Cancelar','Cancel','Cancelar','Omittere');
+    document.getElementById('colar-texto').value = ''; document.getElementById('veu-colar').hidden = false; document.getElementById('colar-texto').focus();
+  }
+  document.getElementById('colar-cancelar').addEventListener('click', function(){ document.getElementById('veu-colar').hidden = true; colarRid = null; });
+  document.getElementById('colar-form').addEventListener('submit', function(e){
+    e.preventDefault(); var r = acharReuniao(colarRid), texto = document.getElementById('colar-texto').value.trim(); if (!r || !texto) return;
+    var b = document.getElementById('colar-ok'); b.disabled = true; b.textContent = L('Lendo…','Reading…','Leyendo…','Legitur…');
+    api('POST','/api/ia/extrair',{texto:texto, contexto:ctxReuniao(r)}).then(function(res){
+      r.ata = Object.assign({}, r.ata||{}, {transcricao:res.transcricao, em:new Date().toISOString(), por:eu, resumo:res.ata.resumo, decisoes:res.ata.decisoes, sugestoes:res.ata.demandas, demandas:(r.ata && r.ata.demandas)||[]});
+      if (!r.feita){ r.feita = true; r.feitaEm = new Date().toISOString(); r.feitaPor = eu; }
+      salvar(); document.getElementById('veu-colar').hidden = true; colarRid = null; render(); abrirAta(r.id);
+    }).catch(function(err){ avisar(err.message); }).then(function(){ b.disabled = false; b.textContent = L('Ler as demandas','Find the tasks','Leer las tareas','Legere'); });
+  });
+  /* Gravar uma reunião que não estava na agenda */
+  function gravarAgora(){
+    var ag = new Date(), ini = pad(ag.getHours())+':'+pad(ag.getMinutes());
+    var r = {id:uid(), titulo:L('Reunião de ','Meeting at ','Reunión de las ','Conventus ')+ini, data:hoje, inicio:ini, fim:'', pessoas:[eu], local:'', descricao:'', tags:filtroTag ? [filtroTag] : [], exemplo:false, criadaPor:eu, feita:false};
+    state.reunioes.push(r); salvar(); render(); iniciarGravacao(r.id);
+  }
+  document.addEventListener('click', function(e){
+    var b;
+    if ((b = e.target.closest('[data-gravar]'))){ e.preventDefault(); e.stopPropagation(); iniciarGravacao(b.getAttribute('data-gravar')); return; }
+    if ((b = e.target.closest('[data-colar]'))){ e.preventDefault(); e.stopPropagation(); abrirColar(b.getAttribute('data-colar')); return; }
+    if ((b = e.target.closest('[data-ata]'))){ e.preventDefault(); e.stopPropagation(); abrirAta(b.getAttribute('data-ata')); return; }
+    if ((b = e.target.closest('[data-ver-reuniao]'))){ e.preventDefault(); e.stopPropagation(); rhAberta = b.getAttribute('data-ver-reuniao'); vista = 'reunioes'; render(); var it = document.querySelector('[data-rh-it="'+rhAberta+'"]'); if (it) it.scrollIntoView({block:'center'}); }
+  }, true);
+  /* botões de gravação numa reunião (lista de hoje e agenda) */
+  function botoesGravacao(r, compacto){
+    if (grav && grav.rid===r.id) return '<span class="st gravando">'+L('Gravando','Recording','Grabando','Excipitur')+'</span>';
+    var h = '';
+    if (r.ata) h += '<button class="st ata-ok" type="button" data-ver-reuniao="'+r.id+'" title="'+esc(L('Ver a ata desta reunião','See this meeting’s minutes','Ver el acta','Acta videre'))+'">'+CHECK+L('Ata','Minutes','Acta','Acta')+((r.ata.sugestoes||[]).length ? ' · '+r.ata.sugestoes.length+' '+L('a revisar','to review','por revisar','recensenda') : '')+'</button>';
+    if (!SERVIDOR) return h;
+    if (!r.ata || compacto!=='so-ata') h += '<button class="icone-btn" type="button" data-gravar="'+r.id+'" title="'+esc(L('Gravar esta reunião','Record this meeting','Grabar esta reunión','Excipere'))+'" aria-label="'+esc(L('Gravar esta reunião','Record this meeting','Grabar esta reunión','Excipere'))+'">'+I_REC+'</button>';
+    return h;
+  }
+  /* ---------- Histórico de reuniões: por data ou por cliente ---------- */
+  var rhModo = lsGet('ora-rh-modo')==='cliente' ? 'cliente' : 'data', rhAberta = null, rhBusca = '';
+  function reunioesPassadas(){
+    var ag = new Date(), hm = pad(ag.getHours())+':'+pad(ag.getMinutes());
+    return reunioesFiltradas().filter(function(r){ return r.ata || r.feita || r.data < hoje || (r.data===hoje && (r.inicio||'') <= hm); })
+      .sort(function(a,b){ var x = a.data+(a.inicio||''), y = b.data+(b.inicio||''); return x<y ? 1 : x>y ? -1 : 0; });
+  }
+  function textoReuniao(r){ var a = r.ata || {}; return [r.titulo, r.descricao, a.resumo].concat(a.decisoes||[]).concat((a.demandas||[]).map(function(id){ var m = achar(id); return m ? m.titulo : ''; })).concat((r.tags||[]).map(function(t){ var x = tagPorId(t); return x ? x.nome : ''; })).join(' '); }
+  function itemHistorico(r){
+    var a = r.ata, aberta = rhAberta===r.id, dm = a ? (a.demandas||[]).map(achar).filter(Boolean) : [], sg = a ? (a.sugestoes||[]) : [];
+    var badges = (a ? '<span class="st ata-ok">'+CHECK+L('Ata','Minutes','Acta','Acta')+'</span>' : '')+(dm.length ? '<span class="st">'+dm.length+' '+L(dm.length===1?'demanda':'demandas','task'+(dm.length===1?'':'s'),dm.length===1?'tarea':'tareas','negotia')+'</span>' : '')+(sg.length ? '<span class="st espera">'+sg.length+' '+L('a revisar','to review','por revisar','recensenda')+'</span>' : '');
+    var h = '<div class="rh-it" data-rh-it="'+r.id+'"><button class="rh-cab" type="button" data-rh-abrir="'+r.id+'" aria-expanded="'+aberta+'"><span class="rh-quando">'+esc(fmt(paraData(r.data), {weekday:'short', day:'numeric', month:'short'}))+'<small>'+esc(r.inicio||'')+(r.fim ? '–'+esc(r.fim) : '')+'</small></span>'+
+      '<span class="rh-t"><b>'+esc(r.titulo)+'</b>'+pilulas(r.tags)+'<span class="avs">'+(r.pessoas||[]).map(av).join('')+'</span></span><span class="rh-badges">'+badges+'</span></button>';
+    if (aberta){
+      h += '<div class="rh-det">';
+      if (a){
+        if (a.resumo) h += '<p>'+esc(a.resumo)+'</p>';
+        if ((a.decisoes||[]).length) h += '<div><p class="det-tit">'+L('Decisões','Decisions','Decisiones','Decreta')+'</p><ul>'+a.decisoes.map(function(d){ return '<li>'+esc(d)+'</li>'; }).join('')+'</ul></div>';
+        if (dm.length) h += '<div><p class="det-tit">'+L('Demandas lançadas','Launched tasks','Tareas lanzadas','Negotia missa')+'</p><ul>'+dm.map(function(m){ return '<li class="'+(m.feita?'feita':'')+'">'+esc(m.titulo)+' · '+esc(pessoa(m.resp).nome)+(m.data ? ' · '+esc(prazoTxt(m.data).t) : '')+'</li>'; }).join('')+'</ul></div>';
+      } else if (r.descricao) h += '<p>'+esc(r.descricao)+'</p>';
+      h += '<div class="rh-acoes">'+(sg.length ? '<button class="btn btn-escuro btn-p" type="button" data-ata="'+r.id+'">'+L('Revisar demandas','Review tasks','Revisar tareas','Recensere')+' ('+sg.length+')</button>' : '')+
+        (a && a.transcricao ? '<a class="btn btn-claro btn-p" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+L('Transcrição','Transcript','Transcripción','Transcriptio')+'</a>' : '')+
+        (SERVIDOR ? '<button class="btn btn-claro btn-p" type="button" data-colar="'+r.id+'">'+(a ? L('Colar outra transcrição','Paste another transcript','Pegar otra transcripción','Aliam ponere') : L('Colar transcrição','Paste transcript','Pegar transcripción','Transcriptionem ponere'))+'</button>' : '')+
+        '<button class="link" type="button" data-editar-reuniao="'+r.id+'">'+L('Editar reunião','Edit meeting','Editar reunión','Emendare')+'</button></div></div>';
+    }
+    return h+'</div>';
+  }
+  function renderReunioes(){
+    var seg = document.getElementById('rh-seg').querySelectorAll('button');
+    seg[0].textContent = L('Por data','By date','Por fecha','Per diem'); seg[0].setAttribute('aria-pressed', String(rhModo==='data'));
+    seg[1].textContent = L('Por cliente','By client','Por cliente','Per clientem'); seg[1].setAttribute('aria-pressed', String(rhModo==='cliente'));
+    document.getElementById('rh-rot').textContent = L('Histórico de reuniões','Meeting history','Historial de reuniones','Conventus praeteriti');
+    document.getElementById('rh-ia').innerHTML = htmlFaltaIa(iaEstado);
+    if (SERVIDOR && !iaEstado) carregarIa().then(function(){ if (vista==='reunioes') document.getElementById('rh-ia').innerHTML = htmlFaltaIa(iaEstado); });
+    var q = norm(rhBusca), l = reunioesPassadas().filter(function(r){ return !q || norm(textoReuniao(r)).indexOf(q)>=0; }), grupos = [], porChave = {};
+    var por = function(k, titulo, r){ if (!porChave[k]){ porChave[k] = {t:titulo, l:[]}; grupos.push(porChave[k]); } porChave[k].l.push(r); };
+    l.forEach(function(r){
+      if (rhModo==='data'){ var d = paraData(r.data); por(r.data.slice(0,7), nomeMes(d.getMonth())+' <small>'+d.getFullYear()+'</small>', r); }
+      else if ((r.tags||[]).length) r.tags.forEach(function(t){ var x = tagPorId(t); por('t'+t, x ? pilula(x) : '?', r); });
+      else por('sem', L('Sem cliente','No client','Sin cliente','Sine cliente'), r);
+    });
+    if (rhModo==='cliente') grupos.sort(function(a,b){ return a.t===L('Sem cliente','No client','Sin cliente','Sine cliente') ? 1 : b.t===L('Sem cliente','No client','Sin cliente','Sine cliente') ? -1 : b.l.length-a.l.length; });
+    document.getElementById('rh-lista').innerHTML = grupos.length ? grupos.map(function(g){
+      return '<div class="reu-grupo"><h4 class="reu-grupo-tit">'+g.t+'<small>'+plural(g.l.length,'reunião','reuniões')+'</small></h4><div class="painel">'+g.l.map(itemHistorico).join('')+'</div></div>';
+    }).join('') : '<div class="painel"><p class="vazio">'+(q ? L('Nenhuma reunião encontrada.','No meetings found.','Ninguna reunión encontrada.','Nullus.') : L('Nenhuma reunião feita ainda. As reuniões da agenda aparecem aqui depois do horário, com a ata quando forem gravadas.','No meetings yet. Calendar meetings show up here after they happen, with minutes when recorded.','Todavía no hay reuniones. Aparecen aquí después del horario, con el acta si se graban.','Nullus adhuc.'))+'</p></div>';
+  }
+  document.getElementById('rh-seg').addEventListener('click', function(e){ var b = e.target.closest('[data-rh]'); if (!b) return; rhModo = b.getAttribute('data-rh'); lsSet('ora-rh-modo', rhModo); renderReunioes(); });
+  document.getElementById('rh-busca').addEventListener('input', function(e){ rhBusca = e.target.value; renderReunioes(); });
+  document.getElementById('vista-reunioes').addEventListener('click', function(e){
+    var b = e.target.closest('[data-rh-abrir]'); if (b){ var id = b.getAttribute('data-rh-abrir'); rhAberta = rhAberta===id ? null : id; renderReunioes(); return; }
+    var er = e.target.closest('[data-editar-reuniao]'); if (er) abrirReuniao(er.getAttribute('data-editar-reuniao'));
+  });
   /* ---------- Antes das missões (só a conta de administrador): celular, limpa nas demandas e Oração de São Francisco ---------- */
   var ORACAO_PAZ = ['Senhor, fazei de mim um instrumento de vossa paz.','Onde houver ódio, que eu leve o amor;','onde houver ofensa, que eu leve o perdão;','onde houver discórdia, que eu leve a união;','onde houver dúvida, que eu leve a fé;','onde houver erro, que eu leve a verdade;','onde houver desespero, que eu leve a esperança;','onde houver tristeza, que eu leve a alegria;','onde houver trevas, que eu leve a luz.','Ó Mestre, fazei que eu procure mais','consolar que ser consolado;','compreender que ser compreendido;','amar que ser amado.','Pois é dando que se recebe,','é perdoando que se é perdoado,','e é morrendo que se vive para a vida eterna.','Amém.'];
   var VISTAS_MISSOES = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'];
@@ -3692,7 +4005,7 @@ span.circ.espera{cursor:default}
     var corpo = rs2.map(function(r){
       var local = r.local ? (ehLink(r.local) ? '<a href="'+esc(r.local)+'" target="_blank" rel="noopener">'+tr('Entrar na chamada')+'</a>' : esc(r.local)) : '';
       return '<div class="dia-item'+(r.feita?' feita':'')+'"><span class="h"><button class="chk-mini'+(r.feita?' on':'')+'" type="button" data-reuniao-feita="'+r.id+'" aria-pressed="'+!!r.feita+'" aria-label="'+L('Reunião feita','Meeting done','Reunión hecha','Conventus habitus')+'">'+CHECK+'</button>'+esc(r.inicio)+(r.fim?'<small>até '+esc(r.fim)+'</small>':'')+'</span><div class="t"><b>'+esc(r.titulo)+' '+pilulas(r.tags)+(r.recorrencia ? ' <span class="st">'+I_REPETE+esc(nomeRec(r.recorrencia))+'</span>' : '')+'</b>'+(local?'<span>'+local+'</span>':'')+(r.descricao?'<span>'+esc(r.descricao)+'</span>':'')+'<span class="avs">'+r.pessoas.map(av).join('')+'</span></div>'+
-        '<button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião" title="Editar">'+I_EDITAR+'</button></div>';
+        '<span style="display:flex;gap:4px;align-items:center">'+botoesGravacao(r)+'<button class="icone-btn" type="button" data-editar-reuniao="'+r.id+'" aria-label="Editar reunião" title="Editar">'+I_EDITAR+'</button></span></div>';
     }).join('') + ms2.map(function(m){
       return '<div class="dia-item"><span class="h">Missão<small>'+esc(pessoa(m.resp).nome)+'</small></span><div class="t"><b>'+esc(m.titulo)+' '+pilulas(m.tags)+'</b>'+(m.descricao?'<span>'+esc(m.descricao)+'</span>':'')+'</div>'+
         (m.feita ? (podeReabrir(m) ? '<button class="circ feita" type="button" data-reabrir="'+m.id+'" aria-label="'+esc(L('Voltar a fazer','Mark as not done','Volver a hacer','Iterum facere'))+': '+esc(m.titulo)+'" title="'+esc(L('Cumprida · clique para voltar a fazer','Done · click to mark as not done','Cumplida · haz clic para volver a hacer','Perfecta · preme ut iterum facias'))+'"'+' style="grid-area:auto">'+CHECK+'</button>' : '<span class="circ feita" role="img" aria-label="Cumprida" style="grid-area:auto">'+CHECK+'</span>') : '<button class="circ" type="button" data-cumprir="'+m.id+'" aria-label="Cumprir missão: '+esc(m.titulo)+'" style="grid-area:auto">'+CHECK+'</button>')+'</div>';
@@ -3935,7 +4248,7 @@ span.circ.espera{cursor:default}
     var fezHoje = state.missoes.some(function(m){ return meuM(m) && m.feita && new Date(m.feitaEm).getTime()>=inicioDia(); });
     fd.hidden = !(ex || h>=16 || (!restam && fezHoje));
     /* o banner some na Agenda, no Sítio e em Ajustes; o painel da direita some no Sítio */
-    var semBanner = ['agenda','cidade','ajustes'].indexOf(vista)>=0, semLado = vista==='cidade';
+    var semBanner = ['agenda','cidade','ajustes','reunioes'].indexOf(vista)>=0, semLado = vista==='cidade';
     bannerEl.hidden = semBanner; document.querySelector('.lado').hidden = semLado;
     var ct = document.querySelector('.conteudo'); ct.classList.toggle('sem-banner', semBanner); ct.classList.toggle('sem-lado', semLado);
     var lista = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'].indexOf(vista)>=0;
@@ -3944,6 +4257,7 @@ span.circ.espera{cursor:default}
     document.getElementById('vista-cidade').hidden = vista!=='cidade';
     document.getElementById('vista-ajustes').hidden = vista!=='ajustes';
     document.getElementById('vista-criativos').hidden = vista!=='criativos';
+    document.getElementById('vista-reunioes').hidden = vista!=='reunioes';
     document.getElementById('vista-pessoal').hidden = vista!=='pessoal';
     var rot = ''; VISTAS.forEach(function(v){ if (v[0]===vista) rot = v[2]; });
     var t = filtroTag && tagPorId(filtroTag), fp = filtro!=='todos' ? pessoa(filtro) : null;
@@ -3955,6 +4269,7 @@ span.circ.espera{cursor:default}
     else if (vista==='cidade') renderCidade();
     else if (vista==='ajustes' && !document.getElementById('vista-ajustes').contains(document.activeElement)) renderAjustes();
     else if (vista==='criativos') renderCriativos();
+    else if (vista==='reunioes') renderReunioes();
     else if (vista==='pessoal') renderPessoal();
   }
   function renderAbertura(){
@@ -4076,14 +4391,14 @@ span.circ.espera{cursor:default}
   buscaIn.addEventListener('input', function(){ busca = buscaIn.value; renderLista(); });
   buscaIn.addEventListener('blur', function(){ if (!buscaIn.value) buscaCaixa.classList.remove('aberta'); });
   var btnNovo = document.getElementById('abrir-novo'), menuNovo = document.getElementById('menu-novo');
-  document.getElementById('ic-missao').innerHTML = svgIcone(ICONES.missao); document.getElementById('ic-reuniao').innerHTML = svgIcone(ICONES.reuniao); document.getElementById('ic-pessoal').innerHTML = svgIcone(ICONES.pessoal);
+  document.getElementById('ic-missao').innerHTML = svgIcone(ICONES.missao); document.getElementById('ic-reuniao').innerHTML = svgIcone(ICONES.reuniao); document.getElementById('ic-pessoal').innerHTML = svgIcone(ICONES.pessoal); document.getElementById('ic-gravar').innerHTML = I_REC; document.querySelector('[data-novo="gravar"]').hidden = !SERVIDOR;
   function fecharMenu(){ menuNovo.hidden = true; menuNovo.classList.remove('rodape'); btnNovo.setAttribute('aria-expanded','false'); }
   btnNovo.addEventListener('click', function(e){ e.stopPropagation(); var abre = menuNovo.hidden; menuNovo.hidden = !abre; menuNovo.classList.remove('rodape'); btnNovo.setAttribute('aria-expanded', String(abre)); if (abre) menuNovo.querySelector('button').focus(); });
   document.addEventListener('click', function(e){ if (!menuNovo.hidden && !e.target.closest('.menu-novo')) fecharMenu(); });
   menuNovo.addEventListener('click', function(e){
     var b = e.target.closest('[data-novo]'); if (!b) return; fecharMenu();
     var tp = b.getAttribute('data-novo');
-    if (tp==='missao') abrirMissao(false); else if (tp==='pessoal') abrirMissao(true); else abrirReuniao(null, vista==='agenda' ? diaSel : hoje);
+    if (tp==='missao') abrirMissao(false); else if (tp==='pessoal') abrirMissao(true); else if (tp==='gravar') gravarAgora(); else abrirReuniao(null, vista==='agenda' ? diaSel : hoje);
   });
 
   /* ---------- Nova missão ---------- */
@@ -4933,6 +5248,8 @@ span.circ.espera{cursor:default}
   document.addEventListener('keydown', function(e){
     if (e.key==='Escape'){
       if (!lightbox.hidden) lightbox.hidden = true;
+      else if (!document.getElementById('veu-ata').hidden) document.getElementById('ata-fechar').click();
+      else if (!document.getElementById('veu-colar').hidden) document.getElementById('colar-cancelar').click();
       else if (!veuOferta.hidden) fecharOferta();
       else if (!veuEnt.hidden) fecharEntrega();
       else if (!veuAng.hidden) veuAng.hidden = true;

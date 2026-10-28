@@ -155,7 +155,7 @@ function exigirAdmin(req, res, next) { if (!req.u.admin) return res.status(403).
 const rota = fn => (req, res) => Promise.resolve().then(() => fn(req, res)).catch(e => { if (!(e instanceof Erro)) console.error(e); res.status(e.status || 500).json({ erro: e instanceof Erro ? e.message : 'Erro no servidor.' }); });
 
 /* Anexos (antes do leitor de JSON, para aceitar qualquer tipo de arquivo) */
-const SEGUROS = /^(image\/(png|jpe?g|gif|webp|avif)|video\/|audio\/|application\/pdf$)/;
+const SEGUROS = /^(image\/(png|jpe?g|gif|webp|avif)|video\/|audio\/|text\/plain|application\/pdf$)/;
 app.post('/api/anexos', exigir, express.raw({ type: () => true, limit: '50mb' }), rota((req, res) => {
   if (!req.body || !req.body.length) throw new Erro('Arquivo vazio.');
   const aid = id('a'), nome = (() => { try { return decodeURIComponent(req.get('X-Nome') || '') || 'arquivo'; } catch (e) { return 'arquivo'; } })().slice(0, 200);
@@ -177,6 +177,50 @@ app.delete('/api/anexos/:id', exigir, rota((req, res) => {
   const aid = req.params.id;
   if (/^a[\w-]+$/.test(aid) && db.anexos[aid]) { try { fs.unlinkSync(path.join(ANEXOS, aid)); } catch (e) {} delete db.anexos[aid]; gravar(); }
   res.json({ ok: true });
+}));
+
+/* ---------- Reuniões gravadas: áudio em partes de ~5 min, transcritas no Groq ---------- */
+const GRAVACOES = path.join(DADOS, 'gravacoes');
+fs.mkdirSync(GRAVACOES, { recursive: true });
+const gravacoes = new Map(); // id -> { dono, reuniao, partes: [{n, texto, erro, arq}], pendentes: Set }
+function arqGravacao(gid) { return path.join(GRAVACOES, gid + '.json'); }
+function salvarGravacao(gid, g) { try { fs.writeFileSync(arqGravacao(gid), JSON.stringify({ dono: g.dono, reuniao: g.reuniao, em: g.em, partes: g.partes })); } catch (e) {} }
+function acharGravacao(gid, u) {
+  if (!/^g[\w-]+$/.test(gid)) throw new Erro('Gravação não encontrada.', 404);
+  let g = gravacoes.get(gid);
+  if (!g && fs.existsSync(arqGravacao(gid))) { try { g = JSON.parse(fs.readFileSync(arqGravacao(gid), 'utf8')); g.pendentes = new Map(); gravacoes.set(gid, g); } catch (e) {} }
+  if (!g || g.dono !== u.id) throw new Erro('Gravação não encontrada.', 404);
+  return g;
+}
+async function transcreverGroq(buf, tipo) {
+  if (!process.env.GROQ_API_KEY) throw new Erro('A transcrição não está ligada: falta a chave GROQ_API_KEY no Railway.');
+  const fd = new FormData();
+  const ext = /mp4|m4a/.test(tipo) ? 'm4a' : /ogg/.test(tipo) ? 'ogg' : 'webm';
+  fd.append('file', new Blob([buf], { type: tipo || 'audio/webm' }), 'parte.' + ext);
+  fd.append('model', process.env.GROQ_MODELO || 'whisper-large-v3-turbo');
+  fd.append('language', 'pt');
+  fd.append('response_format', 'text');
+  fd.append('temperature', '0');
+  const r = await fetch(process.env.ORA_GROQ_URL || 'https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.GROQ_API_KEY }, body: fd });
+  const t = await r.text();
+  if (!r.ok) throw new Erro('O Groq recusou a transcrição (' + r.status + '): ' + t.slice(0, 200));
+  return t.trim();
+}
+async function transcreverParte(g, parte) {
+  try { const buf = fs.readFileSync(parte.arq); parte.texto = await transcreverGroq(buf, parte.tipo); parte.erro = null; }
+  catch (e) { parte.erro = e.message; }
+}
+app.post('/api/gravacao/:gid/parte', exigir, express.raw({ type: () => true, limit: '60mb' }), rota(async (req, res) => {
+  const gid = req.params.gid, g = acharGravacao(gid, req.u), n = Math.max(0, Math.min(999, parseInt(req.query.n, 10) || 0));
+  if (!req.body || !req.body.length) return res.json({ ok: true, vazio: true });
+  const arq = path.join(GRAVACOES, gid + '-' + n + '.audio');
+  fs.writeFileSync(arq, req.body);
+  let parte = g.partes.find(x => x.n === n);
+  if (!parte) { parte = { n }; g.partes.push(parte); }
+  parte.arq = arq; parte.tipo = String(req.get('Content-Type') || 'audio/webm').slice(0, 60); parte.bytes = req.body.length;
+  const p = transcreverParte(g, parte).then(() => salvarGravacao(gid, g));
+  g.pendentes.set(n, p); await p; g.pendentes.delete(n);
+  res.json({ ok: !parte.erro, erro: parte.erro || null, caracteres: (parte.texto || '').length });
 }));
 
 app.use('/api', express.json({ limit: '5mb' }));
@@ -360,9 +404,99 @@ async function rodarResumos() {
 }
 setInterval(() => { rodarResumos().catch(e => console.error(e)); backupDiario(); }, 30000);
 
+app.get('/api/ia/estado', exigir, (req, res) => res.json({ transcricao: !!process.env.GROQ_API_KEY, extracao: !!process.env.ANTHROPIC_API_KEY }));
+app.post('/api/gravacao', exigir, rota((req, res) => {
+  const gid = id('g'), g = { dono: req.u.id, reuniao: String(req.body.reuniao || '').slice(0, 120), em: new Date().toISOString(), partes: [], pendentes: new Map() };
+  gravacoes.set(gid, g); salvarGravacao(gid, g);
+  res.json({ id: gid, transcricao: !!process.env.GROQ_API_KEY, extracao: !!process.env.ANTHROPIC_API_KEY });
+}));
+/* Claude lê a transcrição e devolve ata + demandas no formato das missões */
+const FERRAMENTA_ATA = {
+  name: 'registrar_reuniao',
+  description: 'Registra a ata da reunião e as demandas (tarefas) que surgiram nela.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      resumo: { type: 'string', description: 'Resumo da reunião em 2 a 5 frases, em português.' },
+      decisoes: { type: 'array', items: { type: 'string' }, description: 'Decisões tomadas, uma por item. Vazio se não houve.' },
+      demandas: {
+        type: 'array',
+        description: 'Cada tarefa concreta que alguém precisa fazer depois da reunião. Não invente tarefas; só o que foi combinado ou pedido.',
+        items: {
+          type: 'object',
+          properties: {
+            titulo: { type: 'string', description: 'Título curto e acionável, começando por verbo (até 90 caracteres).' },
+            descricao: { type: 'string', description: 'Detalhes úteis ditos na reunião: contexto, links, como entregar. Pode ficar vazio.' },
+            responsavel: { type: 'string', description: 'Nome exato de alguém da lista da equipe, ou vazio se não ficou claro.' },
+            data: { type: 'string', description: 'Prazo no formato AAAA-MM-DD, calculado a partir da data de hoje. Vazio se não houve prazo.' },
+            cliente: { type: 'string', description: 'Nome exato de um cliente da lista, ou vazio.' },
+            peso: { type: 'string', enum: ['minima', 'leve', 'media', 'ardua', 'heroica'], description: 'Esforço: minima (minutos), leve (até 1h), media (meio dia), ardua (1 a 2 dias), heroica (vários dias).' },
+            tipo: { type: 'string', enum: ['', 'reuniao', 'rapida', 'mensagem', 'trafego', 'complexa'], description: 'rapida = tarefa curta; mensagem = mandar mensagem ou cobrar alguém; trafego = anúncios e campanhas; complexa = trabalho grande; reuniao = assunto para outra reunião.' },
+            trecho: { type: 'string', description: 'Frase curta da transcrição que originou a demanda.' }
+          },
+          required: ['titulo', 'responsavel', 'data', 'peso']
+        }
+      }
+    },
+    required: ['resumo', 'decisoes', 'demandas']
+  }
+};
+async function extrairAta(texto, ctx) {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Erro('A leitura das demandas não está ligada: falta a chave ANTHROPIC_API_KEY no Railway.');
+  ctx = ctx && typeof ctx === 'object' ? ctx : {};
+  const lista = (a) => (Array.isArray(a) ? a : []).map(x => String(x).slice(0, 60)).slice(0, 80).join(', ') || '(nenhum)';
+  const sistema = 'Você é o secretário de uma agência de marketing brasileira. Lê a transcrição de uma reunião (feita automaticamente, pode ter erros de reconhecimento de voz e não identifica quem fala) e registra a ata e as demandas. Escreva em português do Brasil. Use apenas nomes das listas dadas; se um nome ouvido for parecido com um da lista, use o da lista. Prazos relativos ("sexta", "semana que vem", "amanhã") viram datas a partir de hoje. Não crie demandas genéricas nem repetidas.';
+  const usuario = 'Hoje: ' + String(ctx.hoje || '').slice(0, 60) + '\nReunião: ' + String(ctx.titulo || '').slice(0, 200) +
+    '\nParticipantes: ' + lista(ctx.participantes) + '\nEquipe (responsáveis possíveis): ' + lista(ctx.equipe) + '\nClientes: ' + lista(ctx.clientes) +
+    (ctx.quem ? '\nQuem gravou: ' + String(ctx.quem).slice(0, 60) + ' (quando alguém diz "eu faço", e não dá para saber quem, deixe o responsável vazio)' : '') +
+    '\n\nTranscrição:\n"""\n' + texto.slice(0, 180000) + '\n"""';
+  const r = await fetch(process.env.ORA_ANTHROPIC_URL || 'https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: process.env.ANTHROPIC_MODELO || 'claude-sonnet-5-5', max_tokens: 6000, system: sistema, tools: [FERRAMENTA_ATA], tool_choice: { type: 'tool', name: 'registrar_reuniao' }, messages: [{ role: 'user', content: usuario }] })
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Erro('O Claude recusou a leitura (' + r.status + '): ' + String((j.error && j.error.message) || '').slice(0, 200));
+  const bloco = (j.content || []).find(c => c.type === 'tool_use');
+  if (!bloco || !bloco.input) throw new Erro('O Claude não devolveu a ata. Tente de novo.');
+  const a = bloco.input;
+  return { resumo: String(a.resumo || ''), decisoes: (a.decisoes || []).map(String).slice(0, 40), demandas: (a.demandas || []).slice(0, 60).map(d => ({ titulo: String(d.titulo || '').slice(0, 200), descricao: String(d.descricao || '').slice(0, 2000), responsavel: String(d.responsavel || ''), data: /^\d{4}-\d{2}-\d{2}$/.test(d.data || '') ? d.data : '', cliente: String(d.cliente || ''), peso: d.peso || 'media', tipo: d.tipo || '', trecho: String(d.trecho || '').slice(0, 300) })) };
+}
+function guardarTranscricao(texto, nome, u) {
+  const aid = id('a'), buf = Buffer.from(texto, 'utf8');
+  fs.writeFileSync(path.join(ANEXOS, aid), buf);
+  db.anexos[aid] = { nome: String(nome || 'transcricao').slice(0, 180) + '.txt', tipo: 'text/plain; charset=utf-8', tam: buf.length, dono: u.id, em: new Date().toISOString() };
+  gravar(); return { id: aid, nome: db.anexos[aid].nome, tipo: 'text/plain', tam: buf.length };
+}
+app.post('/api/gravacao/:gid/finalizar', exigir, rota(async (req, res) => {
+  const gid = req.params.gid, g = acharGravacao(gid, req.u);
+  await Promise.all(Array.from(g.pendentes.values()));
+  for (const p of g.partes) if (!p.texto && p.arq && fs.existsSync(p.arq)) await transcreverParte(g, p);   /* tenta de novo o que falhou */
+  salvarGravacao(gid, g);
+  const falhas = g.partes.filter(p => !p.texto && p.erro);
+  const texto = g.partes.slice().sort((a, b) => a.n - b.n).map(p => p.texto || '').filter(Boolean).join('\n\n');
+  if (!texto) throw new Erro(falhas.length ? falhas[0].erro : 'Não deu para ouvir nada na gravação. Confira se o áudio da aba foi compartilhado.');
+  const ctx = req.body.contexto || {};
+  const anexo = guardarTranscricao(texto, 'Transcrição · ' + (ctx.titulo || 'reunião'), req.u);
+  let ata = null, erroAta = null;
+  try { ata = await extrairAta(texto, Object.assign({}, ctx, { quem: req.u.nome })); } catch (e) { erroAta = e.message; }
+  for (const p of g.partes) if (p.arq) { try { fs.unlinkSync(p.arq); } catch (e) {} }   /* o áudio não fica guardado, só o texto */
+  try { fs.unlinkSync(arqGravacao(gid)); } catch (e) {}
+  gravacoes.delete(gid);
+  res.json({ transcricao: anexo, caracteres: texto.length, ata, erroAta, partesComFalha: falhas.length });
+}));
+app.post('/api/ia/extrair', exigir, rota(async (req, res) => {
+  const texto = String(req.body.texto || '').trim();
+  if (texto.length < 40) throw new Erro('Cole a transcrição inteira da reunião.');
+  const ctx = req.body.contexto || {};
+  const anexo = guardarTranscricao(texto, 'Transcrição · ' + (ctx.titulo || 'reunião'), req.u);
+  const ata = await extrairAta(texto, Object.assign({}, ctx, { quem: req.u.nome }));
+  res.json({ transcricao: anexo, ata });
+}));
+
 app.use((req, res) => res.status(404).type('text').send('Página não encontrada.'));
 app.listen(PORTA, () => {
   backupDiario();
   if (!dadosPersistentes()) console.warn('[dados] ATENÇÃO: os dados estão em ' + DADOS + ', fora de um volume. Eles serão apagados na próxima atualização. Crie um Volume no Railway com Mount path /data.');
-  console.log('Ora et Labora rodando na porta ' + PORTA + ' · dados em ' + DADOS + ' · WhatsApp: ' + (provedor() || 'não configurado'));
+  console.log('Ora et Labora rodando na porta ' + PORTA + ' · dados em ' + DADOS + ' · WhatsApp: ' + (provedor() || 'não configurado') + ' · transcrição: ' + (process.env.GROQ_API_KEY ? 'Groq' : 'desligada') + ' · demandas: ' + (process.env.ANTHROPIC_API_KEY ? 'Claude' : 'desligado'));
 });
