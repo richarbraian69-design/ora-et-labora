@@ -1011,6 +1011,9 @@ span.circ.espera{cursor:default}
 .menu-lista button > span{grid-row:span 2;display:grid;place-items:center}
 .filtro-pop{position:fixed}
 @media (max-width:860px){#grupos-tg{display:none!important}.massa-campo span{display:none}}
+.coment-entrega{margin-top:6px;padding:8px 12px;border-left:2px solid var(--espera-tx);background:var(--sup);border-radius:0 8px 8px 0;font-size:.86rem;display:grid;gap:2px}
+.coment-entrega b{font-weight:500;font-size:.78rem;color:var(--tx2)}
+.coment-entrega p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.ab-marca,.ab-info,.ab-acoes{opacity:1}}
 </style>
 
@@ -1398,6 +1401,7 @@ span.circ.espera{cursor:default}
     <p class="nota" style="margin:0" id="ent-para"></p>
     <div class="ent-links" id="ent-links"></div>
     <button class="link" type="button" id="ent-mais" style="justify-self:start">+ Adicionar outro link</button>
+    <label>Comentário para quem aprova (opcional)<textarea class="campo" id="ent-coment" maxlength="1500" rows="3" placeholder="Ex.: fiz uma lista de apps; o primeiro é o melhor. Deixei um print no documento."></textarea></label>
     <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit">Enviar para aprovação</button><button class="btn btn-claro btn-grande" type="button" id="ent-cancelar">Cancelar</button></div>
   </form>
 </div>
@@ -1415,6 +1419,7 @@ span.circ.espera{cursor:default}
       <p class="nota" style="margin:0" id="of-ent-para"></p>
       <div class="ent-links" id="of-ent-links"></div>
       <button class="link" type="button" id="of-ent-mais" style="justify-self:start">+ Adicionar outro link</button>
+      <label>Comentário para quem aprova (opcional)<textarea class="campo" id="of-ent-coment" maxlength="1500" rows="3" placeholder="Observações sobre a entrega"></textarea></label>
     </div>
     <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit" id="of-ok" disabled>Oferecer e cumprir</button><button class="btn btn-claro btn-grande" type="button" id="of-cancelar">Cancelar</button></div>
   </form>
@@ -1566,7 +1571,7 @@ span.circ.espera{cursor:default}
     [RE_PREF, function(m){ var p = PREFIXOS[m[1]]; return p[IX[LANG]]+' '+m[2]; }]
   ];
   /* Tradutor da tela: observa o que é desenhado e traduz textos e atributos, guardando o original para poder voltar. */
-  var SKIP_TR = '[data-sem-tr],script,style,textarea,.r-titulo,.r-desc,.sub-t,.sub-desc,.tag,.ofe-missao,.anexo-nome,.nota-ajuste,.cri-linha .g,#g-titulo,.carta-nova b,.ev,.dia-item .t > b,.dia-item .t > span,.rev-area span,.r-local,.exame-lista li,.hb-info b,.membro > span,.ab-marca,.marca-nome,#cit,#g-texto,#g-autor';
+  var SKIP_TR = '[data-sem-tr],script,style,textarea,.r-titulo,.r-desc,.sub-t,.sub-desc,.tag,.ofe-missao,.anexo-nome,.nota-ajuste,.cri-linha .g,#g-titulo,.carta-nova b,.ev,.dia-item .t > b,.dia-item .t > span,.rev-area span,.r-local,.exame-lista li,.hb-info b,.membro > span,.ab-marca,.marca-nome,#cit,#g-texto,#g-autor,.coment-entrega p';
   var ATTRS_TR = ['placeholder','aria-label','title'], memAttr = (typeof WeakMap!=='undefined') ? new WeakMap() : null, TEM_LETRA = /[A-Za-zÀ-ú]/;
   function trTexto(n){
     var p = n.parentElement; if (!p || p.closest(SKIP_TR)) return;
@@ -3411,13 +3416,14 @@ span.circ.espera{cursor:default}
     if (m.criativo && m.criativo.cidade) ind += '<span class="st" title="Criativo">'+esc(m.criativo.cidade)+' · '+esc(m.criativo.formato||'criativo')+'</span>';
     var aprova = precisaAprovacao(m) && !m.feita, est = aprova && m.aprov ? m.aprov.estado : '', status = '';
     if (est==='aguardando'){
-      status = '<span class="st espera">'+I_ESCUDO+'Aguardando aprovação de '+esc(pessoa(m.aprovador).nome)+'</span>'+htmlLinks(m.aprov.links, L('Entrega:','Delivery:','Entrega:','Opus:'));
+      status = '<span class="st espera">'+I_ESCUDO+'Aguardando aprovação de '+esc(pessoa(m.aprovador).nome)+'</span>'+htmlLinks(m.aprov.links, L('Entrega:','Delivery:','Entrega:','Opus:'))+htmlComentEntrega(m.aprov.comentario, m.aprov.por);
       if (m.aprovador===eu) status += '<div class="aprov-acoes"><button class="btn btn-escuro btn-p" type="button" data-aprovar="'+m.id+'">Aprovar</button><button class="btn btn-claro btn-p" type="button" data-pedir-ajuste="'+m.id+'">Pedir ajustes</button></div>'+
         (pedindoAjuste===m.id ? '<form class="aprov-form" data-ajuste-form="'+m.id+'"><label>O que precisa ser ajustado?<textarea class="campo" name="nota" id="aj-nota-'+m.id+'" maxlength="400" required></textarea></label><div class="acoes"><button class="btn btn-escuro btn-p" type="submit">Enviar para '+esc(p.nome)+'</button><button class="btn btn-claro btn-p" type="button" data-pedir-ajuste="'+m.id+'">Cancelar</button></div></form>' : '');
     } else if (est==='ajustes'){
       status = '<span class="st ajuste">'+I_ESCUDO+'Ajustes pedidos por '+esc(pessoa(m.aprov.por).nome)+'</span>'+(m.aprov.nota ? '<p class="nota-ajuste">'+esc(m.aprov.nota)+'</p>' : '');
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
     if (m.entrega && m.entrega.length && !est) status += htmlLinks(m.entrega, L('Entrega:','Delivery:','Entrega:','Opus:'));
+    if (m.entregaComentario && !est) status += htmlComentEntrega(m.entregaComentario, m.resp);
     /* aguardando aprovação: o círculo fica parado; quem aprova usa o botão Aprovar */
     var circ = m.feita ? (podeReabrir(m) ? '<button class="circ feita" type="button" data-reabrir="'+m.id+'" aria-label="'+esc(L('Voltar a fazer','Mark as not done','Volver a hacer','Iterum facere'))+': '+esc(m.titulo)+'" title="'+esc(L('Cumprida · clique para voltar a fazer','Done · click to mark as not done','Cumplida · haz clic para volver a hacer','Perfecta · preme ut iterum facias'))+'"'+'>'+CHECK+'</button>' : '<span class="circ feita" role="img" aria-label="Cumprida">'+CHECK+'</span>') :
       est==='aguardando' ? '<span class="circ espera" role="img" aria-label="'+esc(L('Aguardando aprovação','Waiting for approval','Esperando aprobación','Approbationem exspectat'))+'" title="'+esc(m.aprovador===eu ? L('Use o botão Aprovar','Use the Approve button','Usa el botón Aprobar','Preme “Probare”') : L('Aguardando aprovação','Waiting for approval','Esperando aprobación','Approbationem exspectat'))+'">'+CHECK+'</span>' :
@@ -4594,8 +4600,8 @@ span.circ.espera{cursor:default}
     concluir(m);
   }
   function enviarAprovacao(m){ abrirEntrega(m); }
-  function confirmarAprovacao(m, links){
-    m.aprov = {estado:'aguardando', em:new Date().toISOString(), por:eu, links:links}; salvar(); render();
+  function confirmarAprovacao(m, links, coment){
+    m.aprov = {estado:'aguardando', em:new Date().toISOString(), por:eu, links:links}; if (coment) m.aprov.comentario = coment; salvar(); render();
     avisar('Enviada para a aprovação de '+pessoa(m.aprovador).nome+'. A missão é cumprida quando for aprovada.');
   }
   /* links do trabalho entregue (um ou vários) */
@@ -4607,6 +4613,7 @@ span.circ.espera{cursor:default}
     document.getElementById('ent-missao').textContent = m.titulo;
     document.getElementById('ent-para').textContent = 'Cole o link da entrega (Drive, Figma, vídeo…) para '+pessoa(m.aprovador).nome+' aprovar. Pode colocar mais de um.';
     document.getElementById('ent-links').innerHTML = (ant.length ? ant : ['']).map(linhaLink).join('');
+    document.getElementById('ent-coment').value = (m.aprov && m.aprov.comentario) || m.entregaComentario || '';
     veuEnt.hidden = false; var i = document.querySelector('#ent-links input'); if (i) i.focus();
   }
   function fecharEntrega(){ veuEnt.hidden = true; entMissao = null; }
@@ -4615,9 +4622,13 @@ span.circ.espera{cursor:default}
   document.getElementById('ent-cancelar').addEventListener('click', fecharEntrega);
   document.getElementById('ent-form').addEventListener('submit', function(e){
     e.preventDefault(); var m = entMissao; if (!m) return;
-    var links = linksDe('#ent-links');
-    fecharEntrega(); confirmarAprovacao(m, links);
+    var links = linksDe('#ent-links'), coment = document.getElementById('ent-coment').value.trim();
+    fecharEntrega(); confirmarAprovacao(m, links, coment);
   });
+  function htmlComentEntrega(c, por){
+    if (!c) return '';
+    return '<div class="coment-entrega"><b data-sem-tr>'+esc(pessoa(por||'').nome)+L(' comentou na entrega',' commented on the delivery',' comentó en la entrega',' de opere notavit')+'</b><p>'+textoComLinks(c)+'</p></div>';
+  }
   function htmlLinks(links, rot){
     if (!links || !links.length) return '';
     return '<div class="ent-ver"><span>'+rot+'</span>'+links.map(function(u, i){ var t = u.replace(/^https?:\/\/(www\.)?/,''); if (t.length>42) t = t.slice(0,40)+'…'; return '<a href="'+esc(u)+'" target="_blank" rel="noopener" title="'+esc(u)+'">'+esc(t)+'</a>'; }).join('')+'</div>';
@@ -4696,6 +4707,7 @@ span.circ.espera{cursor:default}
       document.getElementById('of-ent-para').textContent = 'Onde está o trabalho finalizado? Cole o link (Drive, Figma, vídeo…) para '+pessoa(m.aprovador).nome+' aprovar. Pode colocar mais de um.';
       var ant = (mm && ((mm.aprov && mm.aprov.links) || mm.entrega)) || [];
       document.getElementById('of-ent-links').innerHTML = (ant.length ? ant : ['']).map(linhaLink).join('');
+      document.getElementById('of-ent-coment').value = (mm && ((mm.aprov && mm.aprov.comentario) || mm.entregaComentario)) || '';
     }
     veuOferta.hidden = false; ofTexto.focus();
   }
@@ -4727,7 +4739,7 @@ span.circ.espera{cursor:default}
     pendenteSubs = (m.subs||[]).map(function(s){ return s.feita; });
     (m.subs||[]).forEach(function(s){ s.feita = true; });
     m.feita = true; m.feitaEm = new Date().toISOString();
-    if (aprovou){ if (m.aprov && m.aprov.links && m.aprov.links.length) m.entrega = m.aprov.links.slice(); m.aprovadaPor = eu; m.aprov = null; }
+    if (aprovou){ if (m.aprov && m.aprov.links && m.aprov.links.length) m.entrega = m.aprov.links.slice(); if (m.aprov && m.aprov.comentario) m.entregaComentario = m.aprov.comentario; m.aprovadaPor = eu; m.aprov = null; }
     pendenteVisita = {visita:state.visita||null, semVisita:state.semVisita||0};
     var novoSanto = null;
     var ganhoObras = 0;
