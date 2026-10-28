@@ -1121,6 +1121,10 @@ span.circ.espera{cursor:default}
             <label class="so-trab">Responsável<select class="campo" id="f-resp" name="resp"></select></label>
             <label class="so-pes" hidden>Área da vida<select class="campo" id="f-area"></select></label>
             <label>Data<input class="campo" id="f-data" name="data" type="date"></label>
+            <label>XP<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
+            <label id="f-tipo-l">Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
+            <label>Repetir<select class="campo" id="f-rec"></select></label>
+            <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
             <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
           </div>
           <details class="det-extra f-mais" id="f-mais">
@@ -1128,10 +1132,6 @@ span.circ.espera{cursor:default}
             <div class="campos">
             <label class="check largo"><input type="checkbox" id="f-pessoal"> Missão pessoal — só eu vejo, fica na minha área privada</label>
             <label class="largo">Sub-missões<textarea class="campo" id="f-subs" name="subs" placeholder="Uma por linha (opcional)"></textarea></label>
-            <label>XP<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
-            <label id="f-tipo-l">Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
-            <label>Repetir<select class="campo" id="f-rec"></select></label>
-            <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
             <details class="largo det-extra so-trab" id="f-cri-det">
               <summary>Criativo de anúncio · histórico por cidade</summary>
               <div class="campos">
@@ -4104,13 +4104,14 @@ span.circ.espera{cursor:default}
     document.getElementById('f-aprov').innerHTML = '<option value="">Sem aprovação</option>'+state.equipe.map(function(p){ return '<option value="'+p.id+'">Aprovação de '+esc(p.nome)+'</option>'; }).join('');
     document.getElementById('f-area').innerHTML = areasEu().map(function(a){ return '<option value="'+esc(a)+'"'+(a===areaSel?' selected':'')+'>'+esc(a)+'</option>'; }).join('');
     document.getElementById('f-cri-aviso').innerHTML = ''; document.getElementById('f-cri-det').open = false; preencherListas();
-    document.getElementById('f-mais').open = false;
-    document.getElementById('f-mais-sum').textContent = L('Mais opções · XP, repetição, aprovação, sub-missões e anexos','More options · XP, repeat, approval, sub-missions and attachments','Más opciones · XP, repetición, aprobación, submisiones y adjuntos','Plura · XP, iteratio, approbatio, partes, adiuncta');
+    document.getElementById('f-mais').open = lsGet('ora-f-mais')==='1';
+    document.getElementById('f-mais-sum').textContent = L('Mais opções · sub-missões, anexos, criativo e missão pessoal','More options · sub-missions, attachments, creative and personal mission','Más opciones · submisiones, adjuntos, creativo y misión personal','Plura · partes, adiuncta, praeconium, missio privata');
     modoPessoal(pessoal);
     form.hidden = false; document.getElementById('f-data').value = hoje; document.getElementById('f-resp').value = filtro!=='todos' ? filtro : eu;
     form.scrollIntoView({block:'nearest'}); document.getElementById('f-titulo').focus();
   }
   fPessoal.addEventListener('change', function(){ modoPessoal(fPessoal.checked); });
+  document.getElementById('f-mais').addEventListener('toggle', function(){ lsSet('ora-f-mais', this.open ? '1' : ''); });
   fAnexos.addEventListener('change', function(){ var n = fAnexos.files.length; document.getElementById('f-anexos-sel').textContent = n ? plural(n,'arquivo escolhido','arquivos escolhidos') : 'Nenhum arquivo'; });
   form.addEventListener('click', function(e){ tratarTags(e); });
   form.addEventListener('input', function(e){
