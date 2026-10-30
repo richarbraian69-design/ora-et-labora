@@ -1148,6 +1148,64 @@ span.circ.espera{cursor:default}
 .qd-painel .linha > .r-extra{padding:0;margin:0;border:0;width:auto}
 .qd-painel .m-painel{margin:0;background:var(--painel);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:22px 24px}
 @media (max-width:760px){.quadro{scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 14px}.qd-col{flex-basis:84vw;scroll-snap-align:start;max-height:none}.qd-veu{padding:0}.qd-painel .m-painel{border-radius:0;min-height:100vh;padding:18px 16px}}
+
+/* ---------- Controle de copies das Dras ---------- */
+.pl-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pl-cab-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.pl-abas{flex-wrap:wrap;justify-self:start;max-width:100%}
+.pl-topo{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.pl-mes{display:flex;align-items:center;gap:6px}
+.pl-mes b{font-family:var(--f-serif);font-weight:400;font-size:1.45rem;min-width:180px;text-align:center}
+.pl-mes .icone-btn{font-size:1.2rem;width:32px;height:32px}
+.pl-resumo{display:flex;gap:6px;flex-wrap:wrap}
+.pl-chip,.pl-tag,.pl-st{display:inline-block;font-size:.78rem;padding:2px 9px;border-radius:999px;background:var(--sup);color:var(--tx2);white-space:nowrap}
+.pl-chip.ok,.pl-tag.ok,.pl-st.ok{background:#e3efe7;color:var(--ok)}
+.pl-chip.falta,.pl-st.falta{background:var(--espera-bg);color:var(--espera-tx)}
+.pl-chip.pend,.pl-tag.pend,.pl-st.pend{background:var(--ajuste-bg);color:var(--ajuste-tx)}
+.pl-so{margin-left:auto;font-size:.85rem}
+.pl-tab{overflow-x:auto;border:1px solid var(--linha);border-radius:12px;background:var(--painel)}
+table.pl{width:100%;border-collapse:collapse;font-size:.88rem}
+table.pl th{text-align:left;font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);padding:10px 12px;border-bottom:1px solid var(--linha);white-space:nowrap;background:var(--bg);position:sticky;top:0}
+table.pl td{padding:8px 12px;border-top:1px solid var(--linha);vertical-align:middle}
+table.pl tbody tr:first-child td{border-top:0}
+table.pl tfoot td{font-weight:600;border-top:1px solid var(--linha);background:var(--bg)}
+table.pl .n{text-align:center;white-space:nowrap}
+table.pl th.atual{color:var(--tx)}
+table.pl td.nome{font-weight:500;white-space:nowrap}
+table.pl td.zero{color:var(--tx3)}
+table.pl td.forte,.forte{font-weight:600}
+.pl-sub{color:var(--tx3);font-size:.82rem}
+.pl-barra{color:var(--tx3);margin:0 3px}
+.pl-cont{display:inline-block;min-width:18px;font-weight:600}
+.pl-cont.zero{color:var(--tx3);font-weight:400}
+.pl-mais{border:1px solid var(--linha);background:var(--painel);color:var(--tx2);border-radius:6px;width:22px;height:22px;line-height:18px;padding:0;margin-left:6px;cursor:pointer;font:inherit;font-size:.95rem;opacity:.55}
+tr:hover .pl-mais,.pl-mais:focus-visible{opacity:1}
+.pl-mais:hover{border-color:var(--tx2);color:var(--tx)}
+tr.st-ok td.nome{color:var(--tx2)}
+table.pl-edit td{padding:3px 4px}
+table.pl-edit td.nome,table.pl-edit td.pl-sub,table.pl-edit td.n{padding:8px 10px}
+table.pl td.pl-sub{white-space:nowrap;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.cel{width:100%;min-width:90px;border:1px solid transparent;background:transparent;border-radius:6px;padding:6px 8px;font:inherit;font-size:.86rem;color:var(--tx)}
+.cel:hover{border-color:var(--linha)}
+.cel:focus{outline:none;border-color:var(--tx2);background:var(--painel)}
+select.cel{min-width:96px;cursor:pointer}
+.cel-mes{min-width:130px}
+table.pl-edit td:nth-child(2) .cel{min-width:200px}
+table.pl-edit td:nth-child(6) .cel{min-width:220px}
+tr.pl-rep td{background:rgba(217,162,27,.07)}
+.pl-aviso{display:block;font-size:.72rem;color:var(--espera-tx);padding:0 8px 4px;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tr.pl-pausada td{opacity:.55}
+.pl-filtros .campo-p{width:auto;min-width:0;padding:6px 10px;font-size:.86rem}
+.pl-filtros input[type=search]{flex:1 1 200px}
+.pl-filtros .btn{margin-left:auto}
+.pl-cont-l{margin:0}
+.pl-nova-dra{border-radius:12px}
+.pl-vazio{padding:26px 28px;display:grid;gap:10px;justify-items:start}
+.pl-vazio h3{margin:0;font-family:var(--f-serif);font-weight:400;font-size:1.6rem}
+.pl-vazio p{margin:0;color:var(--tx2);max-width:60ch}
+.pl-confirma{padding:16px 18px;display:grid;gap:10px;border-color:var(--ouro)}
+.pl-confirma p{margin:0}
+@media (max-width:760px){.pl-painel thead,.pl-painel tfoot{display:none}.pl-painel,.pl-painel tbody{display:block}.pl-painel tr{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:8px 14px;padding:12px 14px;border-top:1px solid var(--linha)}.pl-painel tbody tr:first-child{border-top:0}.pl-painel td{border:0!important;padding:0!important}.pl-painel td.nome{grid-column:1/3;white-space:normal}.pl-painel td:nth-child(2){display:none}.pl-painel td.st{grid-column:3;grid-row:1;justify-self:end}.pl-painel td.env{grid-column:1/-1;grid-row:3;justify-self:start}.pl-painel td.env:has(.pl-sub){display:none}.pl-painel td.env::before{content:"Último envio de copy";font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel td[data-l]::before{content:attr(data-l);font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel .pl-mais{opacity:1}.pl-mes b{min-width:0;font-size:1.2rem}.pl-so{margin-left:0}.pl-filtros .campo-p{flex:1 1 140px}.pl-filtros .btn{margin-left:0}}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1341,22 +1399,11 @@ span.circ.espera{cursor:default}
           <div id="rh-lista" style="display:grid;gap:22px"></div>
         </section>
 
-        <section id="vista-criativos" style="display:grid;gap:14px" hidden>
-          <div class="barra-lista"><h3 class="rotulo-vista" id="cri-rot">Criativos por cidade</h3><input class="cri-busca" id="cri-busca" type="search" placeholder="Buscar cidade, formato ou gancho" aria-label="Buscar criativos"></div>
-          <p class="nota">Cada missão com criativo entra aqui. Ao lançar uma nova, o Ora et Labora avisa se o formato ou o gancho já foi usado naquela cidade.</p>
-          <details class="det-extra" id="cri-manual">
-            <summary>Registrar um criativo que já foi ao ar</summary>
-            <form class="campos" id="cri-form" autocomplete="off">
-              <label>Cidade<input class="campo" id="cm-cid" list="dl-cidades" required maxlength="60"></label>
-              <label>Formato<input class="campo" id="cm-for" list="dl-formatos" required maxlength="60"></label>
-              <label>Data<input class="campo" id="cm-data" type="date"></label>
-              <label class="largo">Gancho ou ideia<input class="campo" id="cm-gan" maxlength="140"></label>
-              <label>Cliente<select class="campo" id="cm-tag"></select></label>
-              <div class="largo" id="cm-aviso"></div>
-              <div class="acoes largo"><button class="btn btn-escuro btn-p" type="submit">Salvar</button></div>
-            </form>
-          </details>
-          <div id="cri-lista" style="display:grid;gap:22px"></div>
+        <section id="vista-criativos" class="pl-vista" style="display:grid;gap:14px" hidden data-sem-tr>
+          <div class="barra-lista pl-cab"><h3 class="rotulo-vista">Controle de copies das Dras</h3><div class="pl-cab-acoes"><button class="btn btn-claro btn-p" type="button" data-pl-importar>Importar .xlsx</button><button class="btn btn-claro btn-p" type="button" data-pl-exportar>Baixar .xlsx</button></div></div>
+          <div class="seg pl-abas" id="pl-abas" role="group" aria-label="Abas da planilha"></div>
+          <div class="painel pl-confirma" id="pl-confirma" hidden></div>
+          <div id="pl-corpo" style="display:grid;gap:12px"></div>
         </section>
 
         <section id="vista-pessoal" style="display:grid;gap:14px" hidden>
@@ -2691,7 +2738,7 @@ span.circ.espera{cursor:default}
   };
   var VISTAS = [ ['hoje','Hoje','Missões de hoje'], ['todas','Todas as missões','Todas as missões'], ['atrasadas','Atrasadas','Atrasadas'],
     ['proximas','Próximos dias','Próximos dias'], ['cumpridas','Cumpridas','Cumpridas'], ['aprovar','Para aprovar','Aprovações'], ['agenda','Agenda','Agenda'], ['reunioes','Reuniões','Histórico de reuniões'],
-    ['criativos','Criativos','Criativos por cidade'], ['cidade','Sítio','Sítio'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
+    ['criativos','Criativos','Controle de copies das Dras'], ['cidade','Sítio','Sítio'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
   var I_REPETE = svgIcone('<path d="M4 8.5A6 6 0 0 1 15 6.2M16 11.5A6 6 0 0 1 5 13.8"/><path d="M15.5 3v3.4h-3.4M4.5 17v-3.4h3.4"/>',1.6);
   var I_ESCUDO = svgIcone(ICONES.aprovar,1.6), I_CADEADO = svgIcone(ICONES.pessoal,1.6);
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
@@ -2817,7 +2864,7 @@ span.circ.espera{cursor:default}
     'Relatório semanal de tráfego': [['Puxar números do Gerenciador',1],['Montar o resumo',1],['Enviar no grupo do cliente',0]],
     'Briefing do cliente novo': [['Reunião de briefing',1],['Preencher o documento',1]]
   };
-  var COLS = ['missoes','reunioes','tags','criativos','habitos','registros','revisoes','exames','oferecimentos','modelos'];
+  var COLS = ['missoes','reunioes','tags','criativos','habitos','registros','revisoes','exames','oferecimentos','modelos','dras','copies'];
   function prepararEstado(){
     var temExemplos = state.missoes.some(function(m){ return m.exemplo; });
     if (!state.tags) state.tags = temExemplos ? exemplos().tags : [];
@@ -4538,32 +4585,315 @@ span.circ.espera{cursor:default}
     document.getElementById('dl-cidades').innerHTML = cs.sort().map(function(c){ return '<option value="'+esc(c)+'">'; }).join('');
     document.getElementById('dl-formatos').innerHTML = fs.map(function(c){ return '<option value="'+esc(c)+'">'; }).join('');
   }
-  function renderCriativos(){
-    preencherListas();
-    var q = norm(buscaCri), l = historicoCriativos().filter(function(x){ return (!filtroTag || x.tag===filtroTag) && (!q || norm(x.cidade+' '+x.formato+' '+x.gancho).indexOf(q)>=0); });
-    var grupos = {}; l.forEach(function(x){ var k = x.cidade.trim(); (grupos[k] = grupos[k]||[]).push(x); });
-    var nomes = Object.keys(grupos).sort(function(a,b){ return a.localeCompare(b,'pt'); });
-    document.getElementById('cm-tag').innerHTML = '<option value="">Sem cliente</option>'+state.tags.map(function(t){ return '<option value="'+t.id+'"'+(t.id===filtroTag?' selected':'')+'>'+esc(t.nome)+'</option>'; }).join('');
-    document.getElementById('cri-lista').innerHTML = nomes.length ? nomes.map(function(n){
-      var it = grupos[n].sort(function(a,b){ return a.data<b.data?1:-1; }), cont = {};
-      it.forEach(function(x){ var k = norm(x.formato); cont[k] = (cont[k]||0)+1; });
-      return '<section class="cri-grupo"><h4 class="cri-cid">'+esc(n)+'<small>'+plural(it.length,'criativo','criativos')+'</small></h4><div class="painel">'+it.map(function(x){
-        var t = tagPorId(x.tag), rep = cont[norm(x.formato)]>1;
-        return '<div class="cri-linha'+(rep?' rep':'')+'"><span class="f">'+esc(x.formato||'—')+(rep?' · repetido':'')+'</span><span class="g">'+(x.gancho?'“'+esc(x.gancho)+'”':'')+'</span><span>'+pilula(t)+'</span>'+
-          '<span class="d">'+esc(x.estado)+(x.data?'<br>'+esc(fmt(paraData(x.data), {day:'numeric',month:'short',year:'2-digit'})):'')+'</span></div>';
-      }).join('')+'</div></section>';
-    }).join('') : '<div class="painel"><p class="vazio">'+(q||filtroTag ? 'Nenhum criativo encontrado.' : 'Nenhum criativo registrado ainda. Ao lançar uma missão, abra “Criativo de anúncio” e informe cidade e formato.')+'</p></div>';
+  /* ==================== Controle de copies das Dras (aba Criativos) ==================== */
+  var PL = {aba: lsGet('ora-pl-aba') || 'painel', mes: null, fMes:'', fCli:'', fTipo:'', fBusca:'', soFalta: lsGet('ora-pl-falta')==='1', focar:null};
+  var PL_ABAS = [['painel','Painel do mês'],['resumo','Resumo mensal'],['registro','Registro'],['dras','Dras'],['envio','Envio de copies']];
+  var PL_TIPOS = ['Vídeo','Imagem','Outro'];
+  var PL_ENVIO = [['enviado','Enviado'],['nao','Não enviado'],['sem','Sem roteiro']];
+  var MESES_PT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  function mesAtual(){ return hoje.slice(0,7); }
+  function mesNome(m, curto){ if (!/^\d{4}-\d{2}$/.test(m||'')) return m||'—'; var a = +m.slice(0,4), i = +m.slice(5,7)-1; return curto ? MESES_PT[i].slice(0,3)+'/'+String(a).slice(2) : MESES_PT[i]+' de '+a; }
+  function mesMais(m, n){ var a = +m.slice(0,4), i = +m.slice(5,7)-1+n; a += Math.floor(i/12); i = ((i%12)+12)%12; return a+'-'+pad(i+1); }
+  function slugPl(s){ return norm(s).replace(/ /g,'-').slice(0,48) || 'x'; }
+  function hashPl(s){ var h = 5381; for (var i=0;i<s.length;i++) h = ((h*33) ^ s.charCodeAt(i)) >>> 0; return h.toString(36); }
+  function draPorNome(n){ var k = norm(n); return state.dras.filter(function(d){ return norm(d.nome)===k; })[0] || null; }
+  function regiaoDe(n){ var d = draPorNome(n); return d ? (d.regiao||'—') : ''; }
+  function drasOrdem(){ return state.dras.slice().sort(function(a,b){ return (a.ordem||0)-(b.ordem||0) || a.nome.localeCompare(b.nome,'pt'); }); }
+  function contaMes(nome, mes){
+    var k = norm(nome), v = 0, im = 0;
+    state.copies.forEach(function(c){ if (c.mes===mes && norm(c.cliente)===k){ if (c.tipo==='Vídeo') v++; else if (c.tipo==='Imagem') im++; } });
+    return {v:v, i:im};
   }
-  document.getElementById('cri-busca').addEventListener('input', function(e){ buscaCri = e.target.value; renderCriativos(); });
-  document.getElementById('cri-form').addEventListener('input', function(){
-    document.getElementById('cm-aviso').innerHTML = htmlAvisoCriativo(document.getElementById('cm-cid').value, document.getElementById('cm-for').value, document.getElementById('cm-gan').value);
-  });
-  document.getElementById('cri-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    var c = document.getElementById('cm-cid').value.trim(), f = document.getElementById('cm-for').value.trim(); if (!c || !f) return;
-    state.criativos.push({id:uid(), cidade:c, formato:f, gancho:document.getElementById('cm-gan').value.trim(), tag:document.getElementById('cm-tag').value, data:document.getElementById('cm-data').value||hoje, criadoPor:eu});
-    salvar(); this.reset(); document.getElementById('cm-aviso').innerHTML = ''; renderCriativos(); avisar('Criativo registrado em '+c+'.');
-  });
+  function statusMes(c){ return !c.v && !c.i ? ['pend','Pendente'] : !c.v ? ['falta','Falta vídeo'] : !c.i ? ['falta','Falta imagem'] : ['ok','Completo']; }
+  function diasDesde(ds){ if (!ds) return null; return Math.round((paraData(hoje) - paraData(ds))/864e5); }
+  function dataBr(ds){ return ds ? ds.slice(8,10)+'/'+ds.slice(5,7) : ''; }
+  /* mesmo formato na mesma região, por outra Dra, com até 1 mês de diferença */
+  function repeticoesRegiao(){
+    var r = {}, l = state.copies.filter(function(c){ return c.formato && c.mes; });
+    l.forEach(function(a){
+      var ra = norm(regiaoDe(a.cliente)); if (!ra || ra==='a confirmar' || ra.length<3) return;
+      var fa = norm(a.formato); if (fa.indexOf('antes e depois')===0) return;
+      l.forEach(function(b){
+        if (a===b || norm(b.cliente)===norm(a.cliente) || norm(b.formato)!==fa) return;
+        if (norm(regiaoDe(b.cliente))!==ra) return;
+        var d = Math.abs((+a.mes.slice(0,4)*12 + +a.mes.slice(5,7)) - (+b.mes.slice(0,4)*12 + +b.mes.slice(5,7)));
+        if (d<=1){ (r[a.id] = r[a.id]||[]); if (r[a.id].indexOf(b.cliente+' ('+mesNome(b.mes,true)+')')<0) r[a.id].push(b.cliente+' ('+mesNome(b.mes,true)+')'); }
+      });
+    });
+    return r;
+  }
+
+  function renderPlanilha(){
+    if (!PL.mes) PL.mes = lsGet('ora-pl-mes') || mesAtual();
+    var el = document.getElementById('pl-corpo'), seg = document.getElementById('pl-abas');
+    seg.innerHTML = PL_ABAS.map(function(a){ return '<button type="button" data-pl-aba="'+a[0]+'" aria-pressed="'+(PL.aba===a[0])+'">'+a[1]+'</button>'; }).join('');
+    var vazio = !state.dras.length && !state.copies.length;
+    seg.hidden = vazio;
+    if (vazio){
+      el.innerHTML = '<div class="painel pl-vazio"><h3>A planilha ainda está vazia</h3><p>Importe a planilha de controle (.xlsx, a mesma que o Fuca montou) e tudo entra de uma vez: Dras, regiões, registro de copies e últimos envios. Ou comece cadastrando as Dras na mão.</p>'+
+        '<div class="acoes"><button class="btn btn-escuro" type="button" data-pl-importar>Importar planilha (.xlsx)</button><button class="btn btn-claro" type="button" data-pl-comecar>Cadastrar na mão</button></div></div>';
+      return;
+    }
+    var f = {painel:plPainel, resumo:plResumo, registro:plRegistro, dras:plDras, envio:plEnvio}[PL.aba] || plPainel;
+    var ativo = document.activeElement, idAtivo = ativo && el.contains(ativo) ? ativo.getAttribute('data-pl-k') : null, selA = null;
+    try { if (idAtivo && ativo.selectionStart!=null) selA = [ativo.selectionStart, ativo.selectionEnd]; } catch(e){}
+    el.innerHTML = f();
+    if (PL.focar){ var x = el.querySelector('[data-pl-k="'+PL.focar+'"]'); PL.focar = null; if (x){ x.focus(); try { x.scrollIntoView({block:'center'}); } catch(e){} } }
+    else if (idAtivo){ var y = el.querySelector('[data-pl-k="'+idAtivo+'"]'); if (y){ y.focus({preventScroll:true}); try { if (selA) y.setSelectionRange(selA[0], selA[1]); } catch(e){} } }
+  }
+  function navMes(){
+    return '<div class="pl-mes"><button class="icone-btn" type="button" data-pl-mes="-1" aria-label="Mês anterior">‹</button><b>'+esc(mesNome(PL.mes))+'</b><button class="icone-btn" type="button" data-pl-mes="1" aria-label="Próximo mês">›</button>'+
+      (PL.mes!==mesAtual() ? '<button class="link" type="button" data-pl-mes="0">voltar para este mês</button>' : '')+'</div>';
+  }
+  function plPainel(){
+    var ds = drasOrdem(), ativas = ds.filter(function(d){ return d.ativa!==false; }), pausadas = ds.length - ativas.length;
+    var linhas = ativas.map(function(d){ var c = contaMes(d.nome, PL.mes), s = statusMes(c); return {d:d, c:c, s:s}; });
+    var n = {ok:0, falta:0, pend:0}, tv = 0, ti = 0; linhas.forEach(function(x){ n[x.s[0]]++; tv += x.c.v; ti += x.c.i; });
+    var mostrar = PL.soFalta ? linhas.filter(function(x){ return x.s[0]!=='ok'; }) : linhas;
+    var ord = {pend:0, falta:1, ok:2}; mostrar.sort(function(a,b){ return ord[a.s[0]]-ord[b.s[0]] || (a.d.ordem||0)-(b.d.ordem||0); });
+    var h = '<div class="pl-topo">'+navMes()+'<div class="pl-resumo"><span class="pl-chip ok">'+n.ok+' completas</span><span class="pl-chip falta">'+n.falta+' faltando algo</span><span class="pl-chip pend">'+n.pend+' pendentes</span></div>'+
+      '<label class="check pl-so"><input type="checkbox" data-pl-sofalta'+(PL.soFalta?' checked':'')+'> Só o que falta</label></div>';
+    h += '<div class="pl-tab"><table class="pl pl-painel"><thead><tr><th>Dra./Dr.</th><th>Região</th><th class="n">Vídeos</th><th class="n">Imagens</th><th>Último envio de copy</th><th>Status do mês</th></tr></thead><tbody>'+
+      (mostrar.length ? mostrar.map(function(x){
+        var d = x.d, e = d.envio||{}, dd = diasDesde(e.data), noMes = e.data && e.data.slice(0,7)===PL.mes;
+        var env = e.status==='nao' ? '<span class="pl-tag pend">Não enviado</span>' : e.status==='sem' ? '<span class="pl-tag">Sem roteiro</span>' : e.data ? '<span class="pl-tag '+(noMes?'ok':(dd>30?'pend':''))+'">'+dataBr(e.data)+(dd!==null && dd>=0 ? ' · '+(dd===0?'hoje':'há '+dd+(dd===1?' dia':' dias')) : '')+'</span>' : '<span class="pl-sub">—</span>';
+        return '<tr class="st-'+x.s[0]+'"><td class="nome">'+esc(d.nome)+'</td><td class="pl-sub">'+esc(d.regiao||'—')+'</td>'+
+          '<td class="n" data-l="Vídeos"><span class="pl-cont'+(x.c.v?'':' zero')+'">'+x.c.v+'</span><button class="pl-mais" type="button" data-pl-add="'+d.id+'|Vídeo" title="Registrar um vídeo de '+esc(d.nome)+' em '+esc(mesNome(PL.mes))+'" aria-label="Registrar vídeo">+</button></td>'+
+          '<td class="n" data-l="Imagens"><span class="pl-cont'+(x.c.i?'':' zero')+'">'+x.c.i+'</span><button class="pl-mais" type="button" data-pl-add="'+d.id+'|Imagem" title="Registrar uma imagem de '+esc(d.nome)+' em '+esc(mesNome(PL.mes))+'" aria-label="Registrar imagem">+</button></td>'+
+          '<td class="env">'+env+'</td><td class="st"><span class="pl-st '+x.s[0]+'">'+x.s[1]+'</span></td></tr>';
+      }).join('') : '<tr><td colspan="6" class="pl-sub" style="text-align:center;padding:22px">Tudo completo neste mês.</td></tr>')+
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="n">'+tv+'</td><td class="n">'+ti+'</td><td></td><td>'+(n.pend+n.falta ? (n.pend+n.falta)+' ainda faltam' : 'Mês completo')+'</td></tr></tfoot></table></div>';
+    h += '<p class="nota">O status conta o que está no Registro do mês: precisa de pelo menos um vídeo e uma imagem. O botão + registra uma peça na hora.'+(pausadas ? ' '+plural(pausadas,'Dra. pausada não aparece','Dras pausadas não aparecem')+' aqui (veja na aba Dras).' : '')+'</p>';
+    return h;
+  }
+  function plResumo(){
+    var meses = []; for (var i=5;i>=0;i--) meses.push(mesMais(PL.mes, -i));
+    var ds = drasOrdem(), tot = meses.map(function(){ return {v:0,i:0}; }), tg = {v:0,i:0};
+    var linhas = ds.map(function(d){
+      var g = {v:0,i:0}, k = norm(d.nome); state.copies.forEach(function(c){ if (norm(c.cliente)===k){ if (c.tipo==='Vídeo') g.v++; else if (c.tipo==='Imagem') g.i++; } });
+      var cel = meses.map(function(m,j){ var c = contaMes(d.nome, m); tot[j].v += c.v; tot[j].i += c.i; return c; });
+      tg.v += g.v; tg.i += g.i;
+      return {d:d, cel:cel, g:g};
+    }).filter(function(x){ return x.d.ativa!==false || x.g.v || x.g.i; });
+    var c2 = function(c){ return '<td class="n'+(c.v||c.i?'':' zero')+'">'+(c.v||c.i ? '<span title="vídeos">'+c.v+'</span><span class="pl-barra">/</span><span title="imagens">'+c.i+'</span>' : '·')+'</td>'; };
+    return '<div class="pl-topo">'+navMes()+'<p class="pl-sub" style="margin:0">Seis meses até o escolhido · cada célula: <b>vídeos / imagens</b></p></div>'+
+      '<div class="pl-tab"><table class="pl pl-resumo-t"><thead><tr><th>Dra./Dr.</th>'+meses.map(function(m){ return '<th class="n'+(m===mesAtual()?' atual':'')+'">'+esc(mesNome(m,true))+'</th>'; }).join('')+'<th class="n">Total geral</th></tr></thead><tbody>'+
+      linhas.map(function(x){ return '<tr><td class="nome">'+esc(x.d.nome)+(x.d.ativa===false?' <small class="pl-sub">pausada</small>':'')+'</td>'+x.cel.map(c2).join('')+'<td class="n forte">'+x.g.v+'<span class="pl-barra">/</span>'+x.g.i+' <small class="pl-sub">('+(x.g.v+x.g.i)+')</small></td></tr>'; }).join('')+
+      '</tbody><tfoot><tr><td>Total</td>'+tot.map(function(c){ return '<td class="n">'+c.v+'<span class="pl-barra">/</span>'+c.i+'</td>'; }).join('')+'<td class="n">'+tg.v+'<span class="pl-barra">/</span>'+tg.i+' <small>('+(tg.v+tg.i)+')</small></td></tr></tfoot></table></div>'+
+      '<p class="nota">O total geral conta todo o Registro, inclusive meses fora da janela. Outros clientes (que não estão na aba Dras) não entram aqui.</p>';
+  }
+  function plRegistro(){
+    var meses = []; state.copies.forEach(function(c){ if (c.mes && meses.indexOf(c.mes)<0) meses.push(c.mes); }); meses.sort().reverse();
+    var clis = []; state.copies.forEach(function(c){ if (c.cliente && clis.indexOf(c.cliente)<0) clis.push(c.cliente); }); clis.sort(function(a,b){ return a.localeCompare(b,'pt'); });
+    var q = norm(PL.fBusca), rep = repeticoesRegiao();
+    var l = state.copies.filter(function(c){ return (!PL.fMes || c.mes===PL.fMes) && (!PL.fCli || c.cliente===PL.fCli) && (!PL.fTipo || c.tipo===PL.fTipo) && (!q || norm([c.cliente,c.formato,c.titulo,c.arquivo,c.obs].join(' ')).indexOf(q)>=0); });
+    l.sort(function(a,b){ return (b.mes||'').localeCompare(a.mes||'') || (a.cliente||'').localeCompare(b.cliente||'','pt') || (a.criadoEm||'').localeCompare(b.criadoEm||''); });
+    var sel = function(k, val, ops, todos){ return '<select class="campo campo-p" data-pl-f="'+k+'"><option value="">'+todos+'</option>'+ops.map(function(o){ var v = o.v!==undefined ? o.v : o, t = o.t!==undefined ? o.t : o; return '<option value="'+esc(v)+'"'+(v===val?' selected':'')+'>'+esc(t)+'</option>'; }).join('')+'</select>'; };
+    var h = '<div class="pl-topo pl-filtros">'+sel('fMes', PL.fMes, meses.map(function(m){ return {v:m, t:mesNome(m)}; }), 'Todos os meses')+sel('fCli', PL.fCli, clis, 'Todas as Dras e clientes')+sel('fTipo', PL.fTipo, PL_TIPOS, 'Todos os tipos')+
+      '<input class="campo campo-p" type="search" data-pl-f="fBusca" data-pl-k="pl-busca" value=""'+esc(PL.fBusca)+'" placeholder="Buscar título, formato, arquivo">'+
+      '<button class="btn btn-escuro btn-p" type="button" data-pl-nova>+ Nova linha</button></div>';
+    h += '<datalist id="dl-pl-cli">'+drasOrdem().map(function(d){ return '<option value="'+esc(d.nome)+'">'; }).join('')+clis.filter(function(c){ return !draPorNome(c); }).map(function(c){ return '<option value="'+esc(c)+'">'; }).join('')+'</datalist>';
+    var fs = []; state.copies.forEach(function(c){ if (c.formato && fs.indexOf(c.formato)<0) fs.push(c.formato); });
+    h += '<datalist id="dl-pl-for">'+fs.sort().map(function(x){ return '<option value="'+esc(x)+'">'; }).join('')+'</datalist>';
+    h += '<p class="pl-sub pl-cont-l">'+plural(l.length,'linha','linhas')+(l.length!==state.copies.length ? ' de '+state.copies.length : '')+'</p>';
+    h += '<div class="pl-tab"><table class="pl pl-edit"><thead><tr><th>Mês</th><th>Dra./Cliente</th><th>Região</th><th>Tipo</th><th>Formato</th><th>Título / ângulo</th><th>Arquivo</th><th>Observações</th><th></th></tr></thead><tbody>'+
+      (l.length ? l.map(function(c){
+        var inp = function(k, extra){ return '<input class="cel" data-pl-c="'+c.id+'|'+k+'" data-pl-k="'+c.id+'-'+k+'" value="'+esc(c[k]||'')+'"'+(extra||'')+'>'; };
+        var r = rep[c.id];
+        return '<tr'+(r?' class="pl-rep"':'')+'><td><input class="cel cel-mes" type="month" data-pl-c="'+c.id+'|mes" data-pl-k="'+c.id+'-mes" value="'+esc(c.mes||'')+'"></td><td>'+inp('cliente',' list="dl-pl-cli"')+'</td><td class="pl-sub">'+esc(regiaoDe(c.cliente)||'—')+'</td>'+
+          '<td><select class="cel" data-pl-c="'+c.id+'|tipo" data-pl-k="'+c.id+'-tipo">'+PL_TIPOS.map(function(t){ return '<option'+(t===c.tipo?' selected':'')+'>'+t+'</option>'; }).join('')+'</select></td>'+
+          '<td>'+inp('formato',' list="dl-pl-for"')+(r ? '<span class="pl-aviso" title="Mesmo formato na mesma região: '+esc(r.join(', '))+'">mesma região: '+esc(r.join(', '))+'</span>' : '')+'</td><td>'+inp('titulo')+'</td><td>'+inp('arquivo')+'</td><td>'+inp('obs')+'</td>'+
+          '<td><button class="icone-btn" type="button" data-pl-del="'+c.id+'" aria-label="Apagar linha" title="Apagar linha">'+I_LIXO+'</button></td></tr>';
+      }).join('') : '<tr><td colspan="9" class="pl-sub" style="text-align:center;padding:22px">Nenhuma linha com esses filtros.</td></tr>')+'</tbody></table></div>'+
+      '<p class="nota">Mês = mês em que a copy foi entregue. Vídeo inclui Reels, Stories e roteiros de fala; Imagem é copy de anúncio em imagem. Linhas em destaque usam o mesmo formato que outra Dra. da mesma região, com até um mês de diferença.</p>';
+    return h;
+  }
+  function plDras(){
+    var ds = drasOrdem(), cont = {};
+    state.copies.forEach(function(c){ var k = norm(c.cliente); cont[k] = (cont[k]||0)+1; });
+    return '<div class="pl-tab"><table class="pl pl-edit"><thead><tr><th>Dra./Dr.</th><th>Categoria</th><th>Região</th><th class="n">Copies no registro</th><th>Ativa</th><th></th></tr></thead><tbody>'+
+      ds.map(function(d){
+        return '<tr'+(d.ativa===false?' class="pl-pausada"':'')+'><td><input class="cel forte" data-pl-d="'+d.id+'|nome" data-pl-k="'+d.id+'-nome" value="'+esc(d.nome)+'"></td>'+
+          '<td><select class="cel" data-pl-d="'+d.id+'|categoria" data-pl-k="'+d.id+'-cat">'+['Dra.','Dr.','Outro'].map(function(c){ return '<option'+(c===d.categoria?' selected':'')+'>'+c+'</option>'; }).join('')+'</select></td>'+
+          '<td><input class="cel" data-pl-d="'+d.id+'|regiao" data-pl-k="'+d.id+'-reg" value="'+esc(d.regiao||'')+'" placeholder="Cidade, UF"></td><td class="n pl-sub">'+(cont[norm(d.nome)]||0)+'</td>'+
+          '<td><label class="check"><input type="checkbox" data-pl-ativa="'+d.id+'"'+(d.ativa!==false?' checked':'')+'> '+(d.ativa!==false?'ativa':'pausada')+'</label></td>'+
+          '<td><button class="icone-btn" type="button" data-pl-dra-del="'+d.id+'" aria-label="Apagar '+esc(d.nome)+'" title="Apagar">'+I_LIXO+'</button></td></tr>';
+      }).join('')+'</tbody></table></div>'+
+      '<form class="form-linha pl-nova-dra" data-pl-dra-form autocomplete="off"><input class="campo" name="nome" maxlength="60" placeholder="Nome (ex.: Dra. Fulana)" required><input class="campo" name="regiao" maxlength="60" placeholder="Região (cidade, UF)"><button class="btn btn-escuro btn-p" type="submit">Adicionar</button></form>'+
+      '<p class="nota">Use a região para não repetir o mesmo formato em Dras da mesma cidade. Dra. pausada sai do Painel do mês, mas o histórico fica. Ao renomear, as linhas do Registro acompanham o nome novo.</p>';
+  }
+  function plEnvio(){
+    var ds = drasOrdem().filter(function(d){ return d.ativa!==false; }), ord = {nao:0, '':1, enviado:2, sem:3};
+    ds.sort(function(a,b){ var ea = a.envio||{}, eb = b.envio||{}; return (ord[ea.status||'']-ord[eb.status||'']) || (ea.data||'').localeCompare(eb.data||''); });
+    return '<div class="pl-tab"><table class="pl pl-edit"><thead><tr><th>Dra./Cliente</th><th>Região</th><th>Status</th><th>Data de envio</th><th>Há quanto tempo</th><th>Observações</th><th></th></tr></thead><tbody>'+
+      ds.map(function(d){
+        var e = d.envio||{}, dd = diasDesde(e.data);
+        return '<tr><td class="nome">'+esc(d.nome)+'</td><td class="pl-sub">'+esc(d.regiao||'—')+'</td>'+
+          '<td><select class="cel" data-pl-e="'+d.id+'|status" data-pl-k="'+d.id+'-est"><option value=""'+(!e.status?' selected':'')+'>—</option>'+PL_ENVIO.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===e.status?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></td>'+
+          '<td><input class="cel" type="date" data-pl-e="'+d.id+'|data" data-pl-k="'+d.id+'-dt" value="'+esc(e.data||'')+'"></td>'+
+          '<td>'+(dd===null ? '<span class="pl-sub">—</span>' : '<span class="pl-tag '+(dd>30?'pend':dd<=7?'ok':'')+'">'+(dd===0?'hoje':dd<0?'em '+(-dd)+' dias':dd+(dd===1?' dia':' dias'))+'</span>')+'</td>'+
+          '<td><input class="cel" data-pl-e="'+d.id+'|obs" data-pl-k="'+d.id+'-obs" value="'+esc(e.obs||'')+'"></td>'+
+          '<td><button class="btn btn-claro btn-p" type="button" data-pl-enviei="'+d.id+'">Enviei hoje</button></td></tr>';
+      }).join('')+'</tbody></table></div><p class="nota">Ordem: primeiro quem ainda não recebeu, depois o envio mais antigo. Em vermelho, mais de 30 dias sem copy.</p>';
+  }
+
+  /* ---------- edição ---------- */
+  function plNovaCopy(cliente, tipo, mes){
+    var c = {id:'cp'+uid(), mes:mes||PL.mes, cliente:cliente||'', tipo:tipo||'Vídeo', formato:'', titulo:'', arquivo:'', obs:'', criadoPor:eu, criadoEm:new Date().toISOString()};
+    state.copies.push(c); return c;
+  }
+  var plTimer = null;
+  function plSalvarDepois(){ clearTimeout(plTimer); plTimer = setTimeout(function(){ salvar(); }, 350); }
+  (function(){
+    var v = document.getElementById('vista-criativos');
+    v.addEventListener('click', function(e){
+      var b;
+      if ((b = e.target.closest('[data-pl-aba]'))){ PL.aba = b.getAttribute('data-pl-aba'); lsSet('ora-pl-aba', PL.aba); renderPlanilha(); return; }
+      if ((b = e.target.closest('[data-pl-mes]'))){ var n = +b.getAttribute('data-pl-mes'); PL.mes = n ? mesMais(PL.mes, n) : mesAtual(); lsSet('ora-pl-mes', PL.mes===mesAtual() ? '' : PL.mes); renderPlanilha(); return; }
+      if (e.target.closest('[data-pl-importar]')){ plImportar(); return; }
+      if (e.target.closest('[data-pl-exportar]')){ plExportar(); return; }
+      if (e.target.closest('[data-pl-comecar]')){ PL.aba = 'dras'; state.dras.push({id:'dra-'+uid(), nome:'Dra. ', categoria:'Dra.', regiao:'', ativa:true, ordem:1, envio:{}}); PL.focar = state.dras[state.dras.length-1].id+'-nome'; salvar(); renderPlanilha(); return; }
+      if ((b = e.target.closest('[data-pl-add]'))){
+        var p = b.getAttribute('data-pl-add').split('|'), d = state.dras.filter(function(x){ return x.id===p[0]; })[0]; if (!d) return;
+        var c = plNovaCopy(d.nome, p[1], PL.mes); salvar(); renderPlanilha();
+        avisar((p[1]==='Vídeo'?'Vídeo':'Imagem')+' registrado para '+d.nome+' em '+mesNome(PL.mes)+'. Detalhe no Registro.', null, function(){ state.copies = state.copies.filter(function(x){ return x.id!==c.id; }); salvar(); renderPlanilha(); });
+        return;
+      }
+      if (e.target.closest('[data-pl-nova]')){
+        var c2 = plNovaCopy(PL.fCli || '', PL.fTipo || 'Vídeo', PL.fMes || mesAtual()); PL.focar = c2.id+'-'+(PL.fCli ? 'formato' : 'cliente'); salvar(); renderPlanilha(); return;
+      }
+      if ((b = e.target.closest('[data-pl-del]'))){
+        var id = b.getAttribute('data-pl-del'), antes = state.copies.slice();
+        state.copies = state.copies.filter(function(x){ return x.id!==id; }); salvar(); renderPlanilha();
+        avisar('Linha apagada.', null, function(){ state.copies = antes; salvar(); renderPlanilha(); }); return;
+      }
+      if ((b = e.target.closest('[data-pl-dra-del]'))){
+        if (!b.classList.contains('excluir-ok')){ b.classList.add('excluir-ok'); b.textContent = 'Apagar?'; setTimeout(function(){ if (b.isConnected){ b.classList.remove('excluir-ok'); b.innerHTML = I_LIXO; } }, 3500); return; }
+        var did = b.getAttribute('data-pl-dra-del'), antesD = state.dras.slice();
+        state.dras = state.dras.filter(function(x){ return x.id!==did; }); salvar(); renderPlanilha();
+        avisar('Dra. removida da lista (o Registro dela continua).', null, function(){ state.dras = antesD; salvar(); renderPlanilha(); }); return;
+      }
+      if ((b = e.target.closest('[data-pl-enviei]'))){
+        var de = state.dras.filter(function(x){ return x.id===b.getAttribute('data-pl-enviei'); })[0]; if (!de) return;
+        var antesE = JSON.stringify(de.envio||{}); de.envio = {status:'enviado', data:hoje, obs:(de.envio||{}).status==='enviado' ? ((de.envio||{}).obs||'') : ''}; salvar(); renderPlanilha();
+        avisar('Envio de '+de.nome+' marcado em '+dataBr(hoje)+'.', null, function(){ de.envio = JSON.parse(antesE); salvar(); renderPlanilha(); }); return;
+      }
+    });
+    v.addEventListener('input', function(e){
+      var t = e.target, k;
+      if ((k = t.getAttribute('data-pl-c'))){ var p = k.split('|'), c = state.copies.filter(function(x){ return x.id===p[0]; })[0]; if (c){ c[p[1]] = t.value; plSalvarDepois(); } return; }
+      if ((k = t.getAttribute('data-pl-e'))){ var pe = k.split('|'), d = state.dras.filter(function(x){ return x.id===pe[0]; })[0]; if (d){ d.envio = d.envio || {}; d.envio[pe[1]] = t.value; if (pe[1]==='data' && t.value && !d.envio.status) d.envio.status = 'enviado'; plSalvarDepois(); } return; }
+      if ((k = t.getAttribute('data-pl-d'))){ var pd = k.split('|'), dd = state.dras.filter(function(x){ return x.id===pd[0]; })[0]; if (!dd) return;
+        if (pd[1]==='nome'){ var velho = dd.nome, novo = t.value; state.copies.forEach(function(c){ if (norm(c.cliente)===norm(velho)) c.cliente = novo; }); }
+        dd[pd[1]] = t.value; plSalvarDepois(); return; }
+      if ((k = t.getAttribute('data-pl-f'))==='fBusca'){ PL.fBusca = t.value; renderPlanilha(); }
+    });
+    v.addEventListener('change', function(e){
+      var t = e.target, k;
+      if ((k = t.getAttribute('data-pl-f'))){ PL[k] = t.value; renderPlanilha(); return; }
+      if (t.hasAttribute('data-pl-sofalta')){ PL.soFalta = t.checked; lsSet('ora-pl-falta', t.checked ? '1' : '0'); renderPlanilha(); return; }
+      if ((k = t.getAttribute('data-pl-ativa'))){ var d = state.dras.filter(function(x){ return x.id===k; })[0]; if (d){ d.ativa = t.checked; salvar(); renderPlanilha(); } return; }
+      if (t.getAttribute('data-pl-c') || t.getAttribute('data-pl-e') || t.getAttribute('data-pl-d')){ clearTimeout(plTimer); salvar(); setTimeout(renderPlanilha, 0); }
+    });
+    v.addEventListener('submit', function(e){
+      var f = e.target.closest('[data-pl-dra-form]'); if (!f) return; e.preventDefault();
+      var nome = f.elements.nome.value.trim(); if (!nome) return;
+      if (draPorNome(nome)){ avisar(nome+' já está na lista.'); return; }
+      var mx = 0; state.dras.forEach(function(d){ mx = Math.max(mx, d.ordem||0); });
+      state.dras.push({id:'dra-'+slugPl(nome), nome:nome, categoria:/^dr\.?\s/i.test(nome) && !/^dra/i.test(nome) ? 'Dr.' : 'Dra.', regiao:f.elements.regiao.value.trim(), ativa:true, ordem:mx+1, envio:{}});
+      salvar(); renderPlanilha(); var n = document.querySelector('[data-pl-dra-form] [name=nome]'); if (n) n.focus();
+    });
+  })();
+
+  /* ---------- importar / baixar .xlsx (SheetJS, carregado só quando precisa) ---------- */
+  var XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  function comXlsx(fn){
+    if (window.XLSX) return fn(window.XLSX);
+    var s = document.createElement('script'); s.src = XLSX_URL;
+    s.onload = function(){ fn(window.XLSX); };
+    s.onerror = function(){ avisar('Não consegui carregar o leitor de planilhas. Verifique a internet e tente de novo.'); };
+    document.head.appendChild(s);
+  }
+  function plImportar(){
+    var inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    inp.onchange = function(){ var f = inp.files[0]; if (!f) return; var r = new FileReader(); r.onload = function(){ comXlsx(function(X){ try { plLerPlanilha(X, new Uint8Array(r.result)); } catch(err){ avisar('Não consegui ler essa planilha: '+(err && err.message || err)); } }); }; r.readAsArrayBuffer(f); };
+    inp.click();
+  }
+  function plAba(wb, nomes){ var ks = wb.SheetNames, alvo = ks.filter(function(k){ return nomes.some(function(n){ return norm(k)===norm(n); }); })[0]; return alvo ? wb.Sheets[alvo] : null; }
+  function plDataIso(v){
+    if (v instanceof Date && !isNaN(v)) return iso(v);
+    if (typeof v==='number' && v>20000) { var d = new Date(Math.round((v - 25569) * 864e5)); return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate()); }
+    var s = String(v||'').trim(), m;
+    if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[1]+'-'+m[2]+'-'+m[3];
+    if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))){ var a = m[3].length===2 ? '20'+m[3] : m[3]; return a+'-'+pad(+m[2])+'-'+pad(+m[1]); }
+    return '';
+  }
+  function plMesTxt(v){
+    if (v instanceof Date && !isNaN(v)) return iso(v).slice(0,7);
+    var s = String(v||'').trim(), m;
+    if ((m = s.match(/^(\d{4})-(\d{1,2})/))) return m[1]+'-'+pad(+m[2]);
+    if ((m = s.match(/^(\d{1,2})\/(\d{4})$/))) return m[2]+'-'+pad(+m[1]);
+    return '';
+  }
+  function plLerPlanilha(X, dados){
+    var wb = X.read(dados, {type:'array', cellDates:true});
+    var linhas = function(sh){ return sh ? X.utils.sheet_to_json(sh, {header:1, raw:true, defval:''}) : []; };
+    var sDras = linhas(plAba(wb, ['Dras','Doutoras'])), sReg = linhas(plAba(wb, ['Registro'])), sEnv = linhas(plAba(wb, ['Envio de Copies','Envio']));
+    if (!sDras.length && !sReg.length) throw new Error('não encontrei as abas “Dras” e “Registro”.');
+    var dras = [], copies = [], visto = {};
+    sDras.slice(1).forEach(function(r, i){
+      var nome = String(r[0]||'').trim(), cat = String(r[1]||'').trim(); if (!nome || !cat || /c[eé]lulas amarelas/i.test(nome)) return;
+      if (visto[norm(nome)]) return; visto[norm(nome)] = 1;
+      dras.push({id:'dra-'+slugPl(nome), nome:nome, categoria:cat, regiao:String(r[2]||'').trim(), ativa:true, ordem:i+1, envio:{}});
+    });
+    sEnv.slice(1).forEach(function(r){
+      var nome = String(r[0]||'').trim(); if (!nome) return;
+      var d = dras.filter(function(x){ return norm(x.nome)===norm(nome); })[0];
+      if (!d){ d = {id:'dra-'+slugPl(nome), nome:nome, categoria:/^dr\.?\s/i.test(nome) && !/^dra/i.test(nome) ? 'Dr.' : 'Dra.', regiao:'', ativa:true, ordem:dras.length+1, envio:{}}; dras.push(d); }
+      var st = norm(r[2]); d.envio = {status: st.indexOf('nao')===0 ? 'nao' : st.indexOf('sem')===0 ? 'sem' : st ? 'enviado' : '', data: plDataIso(r[3]), obs: String(r[4]||'').trim()};
+    });
+    var cab = (sReg[0]||[]).map(norm), col = function(re, pad0){ for (var i=0;i<cab.length;i++) if (re.test(cab[i])) return i; return pad0; };
+    var cM = col(/^mes/,0), cC = col(/dra|cliente/,1), cT = col(/^tipo/,3), cF = col(/^formato/,4), cTi = col(/titulo|angulo/,5), cA = col(/^arquivo/,6), cO = col(/observ/,7), rep = {};
+    sReg.slice(1).forEach(function(r){
+      var mes = plMesTxt(r[cM]), cli = String(r[cC]||'').trim(); if (!mes || !cli) return;
+      var tipo = String(r[cT]||'').trim(), tn = norm(tipo); tipo = tn.indexOf('vid')===0 ? 'Vídeo' : tn.indexOf('imag')===0 ? 'Imagem' : 'Outro';
+      var c = {mes:mes, cliente:cli, tipo:tipo, formato:String(r[cF]||'').trim(), titulo:String(r[cTi]||'').trim(), arquivo:String(r[cA]||'').trim(), obs:String(r[cO]||'').trim(), criadoPor:eu, criadoEm:new Date().toISOString()};
+      var base = 'cp-'+hashPl([c.mes,norm(c.cliente),c.tipo,norm(c.formato),norm(c.titulo),norm(c.arquivo)].join('|')); rep[base] = (rep[base]||0)+1;
+      c.id = rep[base]>1 ? base+'-'+rep[base] : base; copies.push(c);
+    });
+    var novasD = dras.filter(function(d){ return !state.dras.some(function(x){ return x.id===d.id || norm(x.nome)===norm(d.nome); }); }).length;
+    var novasC = copies.filter(function(c){ return !state.copies.some(function(x){ return x.id===c.id; }); }).length;
+    var msg = 'Encontrei '+plural(dras.length,'Dra.','Dras')+' e '+plural(copies.length,'linha no Registro','linhas no Registro')+'.\n'+
+      (state.dras.length || state.copies.length ? 'Entram '+novasD+' Dras novas e '+novasC+' linhas novas; as que já existem são atualizadas com o que está na planilha.' : 'Tudo vai entrar no Ora et Labora.');
+    plConfirmar(msg, function(){
+      var antes = {d:JSON.stringify(state.dras), c:JSON.stringify(state.copies)};
+      dras.forEach(function(d){ var x = state.dras.filter(function(y){ return y.id===d.id || norm(y.nome)===norm(d.nome); })[0]; if (x){ x.nome = d.nome; x.categoria = d.categoria; if (d.regiao) x.regiao = d.regiao; if (d.envio && (d.envio.status || d.envio.data)) x.envio = d.envio; } else state.dras.push(d); });
+      copies.forEach(function(c){ var i = -1; state.copies.forEach(function(y, j){ if (y.id===c.id) i = j; }); if (i>=0){ c.criadoEm = state.copies[i].criadoEm || c.criadoEm; state.copies[i] = c; } else state.copies.push(c); });
+      salvar(); PL.aba = 'painel'; PL.mes = mesAtual(); renderPlanilha();
+      avisar('Planilha importada: '+plural(dras.length,'Dra.','Dras')+', '+plural(copies.length,'linha','linhas')+'.', null, function(){ state.dras = JSON.parse(antes.d); state.copies = JSON.parse(antes.c); salvar(); renderPlanilha(); });
+    });
+  }
+  function plConfirmar(msg, ok){
+    var el = document.getElementById('pl-confirma');
+    el.innerHTML = '<p>'+esc(msg).replace(/\n/g,'<br>')+'</p><div class="acoes"><button class="btn btn-escuro btn-p" type="button" data-plc="ok">Importar</button><button class="btn btn-claro btn-p" type="button" data-plc="nao">Cancelar</button></div>';
+    el.hidden = false;
+    el.onclick = function(e){ var b = e.target.closest('[data-plc]'); if (!b) return; el.hidden = true; el.onclick = null; if (b.getAttribute('data-plc')==='ok') ok(); };
+    var p = el.querySelector('[data-plc="ok"]'); if (p) p.focus();
+  }
+  function plExportar(){
+    comXlsx(function(X){
+      var wb = X.utils.book_new(), meses = []; for (var i=5;i>=0;i--) meses.push(mesMais(PL.mes, -i));
+      var ds = drasOrdem();
+      var painel = [['Painel do mês', mesNome(PL.mes)], [], ['Dra./Dr.','Região','Vídeos no mês','Imagens no mês','Último envio','Status']].concat(ds.filter(function(d){ return d.ativa!==false; }).map(function(d){ var c = contaMes(d.nome, PL.mes), e = d.envio||{}; return [d.nome, d.regiao||'', c.v, c.i, e.status==='nao' ? 'Não enviado' : e.status==='sem' ? 'Sem roteiro' : (e.data ? dataBr(e.data)+'/'+e.data.slice(0,4) : ''), statusMes(c)[1]]; }));
+      var cabR = ['Dra./Dr.','Região']; meses.forEach(function(m){ cabR.push(m+' vídeos', m+' imagens'); });
+      var resumo = [cabR].concat(ds.map(function(d){ var r = [d.nome, d.regiao||'']; meses.forEach(function(m){ var c = contaMes(d.nome, m); r.push(c.v, c.i); }); return r; }));
+      var reg = [['Mês (AAAA-MM)','Dra./Cliente','Região','Tipo','Formato','Título / ângulo','Arquivo','Observações']].concat(state.copies.slice().sort(function(a,b){ return (a.mes||'').localeCompare(b.mes||'') || (a.cliente||'').localeCompare(b.cliente||'','pt'); }).map(function(c){ return [c.mes, c.cliente, regiaoDe(c.cliente)||'—', c.tipo, c.formato, c.titulo, c.arquivo, c.obs]; }));
+      var drs = [['Dra./Dr.','Categoria','Região','Ativa']].concat(ds.map(function(d){ return [d.nome, d.categoria||'', d.regiao||'', d.ativa===false ? 'pausada' : 'sim']; }));
+      var env = [['Dra./Cliente','Região','Status','Data de Envio','Observações']].concat(ds.map(function(d){ var e = d.envio||{}; return [d.nome, d.regiao||'', e.status==='nao' ? 'Não enviado' : e.status==='sem' ? 'Sem roteiro' : e.status ? 'Enviado' : '', e.data ? dataBr(e.data)+'/'+e.data.slice(0,4) : '', e.obs||'']; }));
+      [['Painel do Mês',painel],['Resumo Mensal',resumo],['Registro',reg],['Dras',drs],['Envio de Copies',env]].forEach(function(a){ var sh = X.utils.aoa_to_sheet(a[1], {cellDates:true}); sh['!cols'] = a[1][a[1].length>2?2:0].map(function(_, j){ return {wch: j===0 ? 28 : 16}; }); X.utils.book_append_sheet(wb, sh, a[0]); });
+      X.writeFile(wb, 'controle_copies_dras_'+hoje+'.xlsx');
+    });
+  }
 
   /* ---------- Cidade e ajustes ---------- */
   function renderCidade(){
@@ -4727,7 +5057,7 @@ span.circ.espera{cursor:default}
     var fezHoje = state.missoes.some(function(m){ return meuM(m) && m.feita && new Date(m.feitaEm).getTime()>=inicioDia(); });
     fd.hidden = !(ex || h>=16 || (!restam && fezHoje));
     /* o banner some na Agenda, no Sítio e em Ajustes; o painel da direita some no Sítio */
-    var semBanner = ['agenda','cidade','ajustes','reunioes'].indexOf(vista)>=0, semLado = vista==='cidade' || quadroAtivo();
+    var semBanner = ['agenda','cidade','ajustes','reunioes','criativos'].indexOf(vista)>=0, semLado = vista==='cidade' || vista==='criativos' || quadroAtivo();
     bannerEl.hidden = semBanner; document.querySelector('.lado').hidden = semLado;
     var ct = document.querySelector('.conteudo'); ct.classList.toggle('sem-banner', semBanner); ct.classList.toggle('sem-lado', semLado);
     var lista = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'].indexOf(vista)>=0;
@@ -4747,7 +5077,7 @@ span.circ.espera{cursor:default}
     else if (vista==='agenda') renderAgenda();
     else if (vista==='cidade') renderCidade();
     else if (vista==='ajustes' && !document.getElementById('vista-ajustes').contains(document.activeElement)) renderAjustes();
-    else if (vista==='criativos') renderCriativos();
+    else if (vista==='criativos') renderPlanilha();
     else if (vista==='reunioes') renderReunioes();
     else if (vista==='pessoal') renderPessoal();
   }

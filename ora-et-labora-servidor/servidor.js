@@ -17,7 +17,7 @@ const ANEXOS = path.join(DADOS, 'anexos');
 const BACKUPS = path.join(DADOS, 'backups');
 const FUSO = process.env.FUSO || 'America/Sao_Paulo';
 const APP_URL = (process.env.APP_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN : '')).replace(/\/$/, '');
-const COLS = new Set(['missoes', 'reunioes', 'tags', 'criativos', 'habitos', 'registros', 'revisoes', 'exames', 'oferecimentos', 'modelos', 'meta', 'prefs']);
+const COLS = new Set(['missoes', 'reunioes', 'tags', 'criativos', 'habitos', 'registros', 'revisoes', 'exames', 'oferecimentos', 'modelos', 'dras', 'copies', 'meta', 'prefs']);
 const SEMPRE_PRIVADAS = new Set(['habitos', 'registros', 'revisoes', 'exames', 'oferecimentos', 'prefs']);
 const DIAS_SESSAO = 60;
 
