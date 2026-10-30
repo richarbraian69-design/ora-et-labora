@@ -1159,10 +1159,11 @@ span.circ.espera{cursor:default}
 .pl-mes .icone-btn{font-size:1.2rem;width:32px;height:32px}
 .pl-resumo{display:flex;gap:6px;flex-wrap:wrap}
 .pl-chip,.pl-tag,.pl-st{display:inline-block;font-size:.78rem;padding:2px 9px;border-radius:999px;background:var(--sup);color:var(--tx2);white-space:nowrap}
-.pl-chip.ok,.pl-tag.ok,.pl-st.ok{background:#e3efe7;color:var(--ok)}
+.pl-chip.ok,.pl-tag.ok,.pl-st.ok{background:rgba(47,107,79,.14);color:var(--ok)}
 .pl-chip.falta,.pl-st.falta{background:var(--espera-bg);color:var(--espera-tx)}
 .pl-chip.pend,.pl-tag.pend,.pl-st.pend{background:var(--ajuste-bg);color:var(--ajuste-tx)}
 .pl-so{margin-left:auto;font-size:.85rem}
+.pl-ord-sel{display:none}
 .pl-tab{overflow-x:auto;border:1px solid var(--linha);border-radius:12px;background:var(--painel)}
 table.pl{width:100%;border-collapse:collapse;font-size:.88rem}
 table.pl th{text-align:left;font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);padding:10px 12px;border-bottom:1px solid var(--linha);white-space:nowrap;background:var(--bg);position:sticky;top:0}
@@ -1176,8 +1177,28 @@ table.pl td.zero{color:var(--tx3)}
 table.pl td.forte,.forte{font-weight:600}
 .pl-sub{color:var(--tx3);font-size:.82rem}
 .pl-barra{color:var(--tx3);margin:0 3px}
-.pl-cont{display:inline-block;min-width:18px;font-weight:600}
+.pl-cont{display:inline-block;min-width:22px;font-weight:600;border:0;background:none;color:inherit;font:inherit;font-weight:600;padding:2px 4px;border-radius:5px;cursor:pointer}
+.pl-cont:hover{background:var(--sup);text-decoration:underline}
+.pl-ord{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+.pl-ord:hover,.pl-ord.at{color:var(--tx)}
+.pl-ord:focus-visible{outline:2px solid var(--tx2);outline-offset:2px;border-radius:3px}
+.pl-ord .seta{font-size:.7em;min-width:.8em}
+th.n .pl-ord{justify-content:center}
+.pl-env-btn{all:unset;cursor:pointer;border-radius:999px}
+.pl-env-btn:focus-visible{outline:2px solid var(--tx2);outline-offset:2px}
+.cel-sub{color:var(--tx2);font-size:.82rem}
+td.acao{white-space:nowrap;text-align:right;width:1%}
+td.acao .icone-btn{opacity:.35}
+tr:hover td.acao .icone-btn,td.acao .icone-btn:focus-visible,td.acao .excluir-ok{opacity:1}
+table.pl-painel td.nome .cel{min-width:175px}
+table.pl-painel td.reg .cel{min-width:120px}
+table.pl-painel .n{width:72px}
+.pl-acoes{display:flex;gap:2px;justify-content:flex-end}
+.pl-acoes .icone-btn{width:30px;height:30px}
+table.pl-painel th,table.pl-painel td{padding-left:6px;padding-right:6px}
+table.pl-painel .pl-mais{margin-left:2px}
 .pl-cont.zero{color:var(--tx3);font-weight:400}
+table.pl-painel td{padding-top:4px;padding-bottom:4px}
 .pl-mais{border:1px solid var(--linha);background:var(--painel);color:var(--tx2);border-radius:6px;width:22px;height:22px;line-height:18px;padding:0;margin-left:6px;cursor:pointer;font:inherit;font-size:.95rem;opacity:.55}
 tr:hover .pl-mais,.pl-mais:focus-visible{opacity:1}
 .pl-mais:hover{border-color:var(--tx2);color:var(--tx)}
@@ -1205,7 +1226,7 @@ tr.pl-pausada td{opacity:.55}
 .pl-vazio p{margin:0;color:var(--tx2);max-width:60ch}
 .pl-confirma{padding:16px 18px;display:grid;gap:10px;border-color:var(--ouro)}
 .pl-confirma p{margin:0}
-@media (max-width:760px){.pl-painel thead,.pl-painel tfoot{display:none}.pl-painel,.pl-painel tbody{display:block}.pl-painel tr{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:8px 14px;padding:12px 14px;border-top:1px solid var(--linha)}.pl-painel tbody tr:first-child{border-top:0}.pl-painel td{border:0!important;padding:0!important}.pl-painel td.nome{grid-column:1/3;white-space:normal}.pl-painel td:nth-child(2){display:none}.pl-painel td.st{grid-column:3;grid-row:1;justify-self:end}.pl-painel td.env{grid-column:1/-1;grid-row:3;justify-self:start}.pl-painel td.env:has(.pl-sub){display:none}.pl-painel td.env::before{content:"Último envio de copy";font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel td[data-l]::before{content:attr(data-l);font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel .pl-mais{opacity:1}.pl-mes b{min-width:0;font-size:1.2rem}.pl-so{margin-left:0}.pl-filtros .campo-p{flex:1 1 140px}.pl-filtros .btn{margin-left:0}}
+@media (max-width:760px){.pl-ord-sel{display:block;width:auto!important}.pl-painel thead,.pl-painel tfoot{display:none}.pl-painel,.pl-painel tbody{display:block}.pl-painel tr{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:8px 14px;padding:12px 14px;border-top:1px solid var(--linha)}.pl-painel tbody tr:first-child{border-top:0}.pl-painel td{border:0!important;padding:0!important}.pl-painel td.nome{grid-column:1/3;white-space:normal}.pl-painel td.nome .cel{min-width:0;padding-left:0}.pl-painel td.reg{display:none}.pl-painel td.stt{grid-column:3;grid-row:1;justify-self:end}.pl-painel td.acao{grid-column:3;grid-row:2;justify-self:end}.pl-painel td.env{grid-column:1/-1;grid-row:3;justify-self:start}.pl-painel td.env:has(.pl-sub){display:none}.pl-painel td.env::before{content:"Último envio de copy";font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel td[data-l]::before{content:attr(data-l);font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel .pl-mais{opacity:1}.pl-mes b{min-width:0;font-size:1.2rem}.pl-so{margin-left:0}.pl-filtros .campo-p{flex:1 1 140px}.pl-filtros .btn{margin-left:0}}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -4623,6 +4644,28 @@ tr.pl-pausada td{opacity:.55}
     return r;
   }
 
+  /* ordenação por coluna: clique no cabeçalho alterna crescente / decrescente */
+  var PL_ORD = (function(){ try { return JSON.parse(lsGet('ora-pl-ord')||'{}') || {}; } catch(e){ return {}; } })();
+  function ordDe(aba, padrao){ return PL_ORD[aba] || padrao; }
+  function th(aba, k, rot, cls, padrao){
+    var o = ordDe(aba, padrao), at = o && o.k===k, seta = at ? (o.d>0 ? '▲' : '▼') : '';
+    return '<th class="'+(cls||'')+'" aria-sort="'+(at ? (o.d>0?'ascending':'descending') : 'none')+'"><button type="button" class="pl-ord'+(at?' at':'')+'" data-pl-ord="'+aba+'|'+k+'">'+rot+'<span class="seta">'+seta+'</span></button></th>';
+  }
+  function cmpVal(a, b){
+    var va = a===null || a===undefined || a==='' ? null : a, vb = b===null || b===undefined || b==='' ? null : b;
+    if (va===null && vb===null) return 0; if (va===null) return 1; if (vb===null) return -1;
+    if (typeof va==='number' && typeof vb==='number') return va-vb;
+    return String(va).localeCompare(String(vb), 'pt', {numeric:true, sensitivity:'base'});
+  }
+  function ordenar(aba, l, get, padrao){
+    var o = ordDe(aba, padrao); if (!o) return l;
+    return l.sort(function(a, b){ var va = get(a, o.k), vb = get(b, o.k), c = cmpVal(va, vb);
+      if (va===null || va===undefined || va==='' || vb===null || vb===undefined || vb==='') return c; /* vazios sempre no fim */
+      return c*o.d || cmpVal(get(a,'nome'), get(b,'nome')); });
+  }
+  function nomeSemTitulo(n){ return String(n||'').replace(/^(dra?\.?)\s+/i,''); }
+  var ST_ORD = {pend:0, falta:1, ok:2};
+
   function renderPlanilha(){
     if (!PL.mes) PL.mes = lsGet('ora-pl-mes') || mesAtual();
     var el = document.getElementById('pl-corpo'), seg = document.getElementById('pl-abas');
@@ -4645,25 +4688,38 @@ tr.pl-pausada td{opacity:.55}
     return '<div class="pl-mes"><button class="icone-btn" type="button" data-pl-mes="-1" aria-label="Mês anterior">‹</button><b>'+esc(mesNome(PL.mes))+'</b><button class="icone-btn" type="button" data-pl-mes="1" aria-label="Próximo mês">›</button>'+
       (PL.mes!==mesAtual() ? '<button class="link" type="button" data-pl-mes="0">voltar para este mês</button>' : '')+'</div>';
   }
+  function tagEnvio(e, mes){
+    var dd = diasDesde(e.data), noMes = e.data && e.data.slice(0,7)===mes;
+    return e.status==='nao' ? '<span class="pl-tag pend">Não enviado</span>' : e.status==='sem' ? '<span class="pl-tag">Sem roteiro</span>' :
+      e.data ? '<span class="pl-tag '+(noMes?'ok':(dd>30?'pend':''))+'">'+dataBr(e.data)+(dd!==null && dd>=0 ? ' · '+(dd===0?'hoje':'há '+dd+(dd===1?' dia':' dias')) : '')+'</span>' : '<span class="pl-sub">—</span>';
+  }
+  function btnRemover(d){ return '<button class="icone-btn pl-x" type="button" data-pl-dra-del="'+d.id+'" aria-label="Remover '+esc(d.nome)+'" title="Remover da lista (o histórico fica)">'+I_LIXO+'</button>'; }
   function plPainel(){
     var ds = drasOrdem(), ativas = ds.filter(function(d){ return d.ativa!==false; }), pausadas = ds.length - ativas.length;
     var linhas = ativas.map(function(d){ var c = contaMes(d.nome, PL.mes), s = statusMes(c); return {d:d, c:c, s:s}; });
     var n = {ok:0, falta:0, pend:0}, tv = 0, ti = 0; linhas.forEach(function(x){ n[x.s[0]]++; tv += x.c.v; ti += x.c.i; });
     var mostrar = PL.soFalta ? linhas.filter(function(x){ return x.s[0]!=='ok'; }) : linhas;
-    var ord = {pend:0, falta:1, ok:2}; mostrar.sort(function(a,b){ return ord[a.s[0]]-ord[b.s[0]] || (a.d.ordem||0)-(b.d.ordem||0); });
+    var P = {k:'status', d:1};
+    ordenar('painel', mostrar, function(x, k){ var e = x.d.envio||{};
+      return k==='nome' ? nomeSemTitulo(x.d.nome) : k==='regiao' ? (x.d.regiao && x.d.regiao!=='—' ? x.d.regiao : '') : k==='v' ? x.c.v : k==='i' ? x.c.i :
+        k==='envio' ? (e.status==='nao' ? '0' : e.status==='sem' ? '1' : e.data ? '2'+e.data : '') : k==='status' ? ST_ORD[x.s[0]] : ''; }, P);
     var h = '<div class="pl-topo">'+navMes()+'<div class="pl-resumo"><span class="pl-chip ok">'+n.ok+' completas</span><span class="pl-chip falta">'+n.falta+' faltando algo</span><span class="pl-chip pend">'+n.pend+' pendentes</span></div>'+
-      '<label class="check pl-so"><input type="checkbox" data-pl-sofalta'+(PL.soFalta?' checked':'')+'> Só o que falta</label></div>';
-    h += '<div class="pl-tab"><table class="pl pl-painel"><thead><tr><th>Dra./Dr.</th><th>Região</th><th class="n">Vídeos</th><th class="n">Imagens</th><th>Último envio de copy</th><th>Status do mês</th></tr></thead><tbody>'+
+      '<label class="check pl-so"><input type="checkbox" data-pl-sofalta'+(PL.soFalta?' checked':'')+'> Só o que falta</label>'+
+      (function(){ var o = ordDe('painel', P), at = o.k+'|'+o.d; return '<select class="campo campo-p pl-ord-sel" data-pl-ordsel="painel" aria-label="Ordenar por">'+[['status|1','Ordenar: status'],['nome|1','Nome (A a Z)'],['nome|-1','Nome (Z a A)'],['regiao|1','Região'],['v|-1','Mais vídeos'],['i|-1','Mais imagens'],['envio|1','Envio mais antigo'],['envio|-1','Envio mais recente']].map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===at?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'; })()+'</div>';
+    h += '<div class="pl-tab"><table class="pl pl-painel pl-edit"><thead><tr>'+th('painel','nome','Dra./Dr.','',P)+th('painel','regiao','Região','',P)+th('painel','v','Vídeos','n',P)+th('painel','i','Imagens','n',P)+th('painel','envio','Último envio','',P)+th('painel','status','Status','',P)+'<th class="acao"></th></tr></thead><tbody>'+
       (mostrar.length ? mostrar.map(function(x){
-        var d = x.d, e = d.envio||{}, dd = diasDesde(e.data), noMes = e.data && e.data.slice(0,7)===PL.mes;
-        var env = e.status==='nao' ? '<span class="pl-tag pend">Não enviado</span>' : e.status==='sem' ? '<span class="pl-tag">Sem roteiro</span>' : e.data ? '<span class="pl-tag '+(noMes?'ok':(dd>30?'pend':''))+'">'+dataBr(e.data)+(dd!==null && dd>=0 ? ' · '+(dd===0?'hoje':'há '+dd+(dd===1?' dia':' dias')) : '')+'</span>' : '<span class="pl-sub">—</span>';
-        return '<tr class="st-'+x.s[0]+'"><td class="nome">'+esc(d.nome)+'</td><td class="pl-sub">'+esc(d.regiao||'—')+'</td>'+
-          '<td class="n" data-l="Vídeos"><span class="pl-cont'+(x.c.v?'':' zero')+'">'+x.c.v+'</span><button class="pl-mais" type="button" data-pl-add="'+d.id+'|Vídeo" title="Registrar um vídeo de '+esc(d.nome)+' em '+esc(mesNome(PL.mes))+'" aria-label="Registrar vídeo">+</button></td>'+
-          '<td class="n" data-l="Imagens"><span class="pl-cont'+(x.c.i?'':' zero')+'">'+x.c.i+'</span><button class="pl-mais" type="button" data-pl-add="'+d.id+'|Imagem" title="Registrar uma imagem de '+esc(d.nome)+' em '+esc(mesNome(PL.mes))+'" aria-label="Registrar imagem">+</button></td>'+
-          '<td class="env">'+env+'</td><td class="st"><span class="pl-st '+x.s[0]+'">'+x.s[1]+'</span></td></tr>';
-      }).join('') : '<tr><td colspan="6" class="pl-sub" style="text-align:center;padding:22px">Tudo completo neste mês.</td></tr>')+
-      '</tbody><tfoot><tr><td>Total</td><td></td><td class="n">'+tv+'</td><td class="n">'+ti+'</td><td></td><td>'+(n.pend+n.falta ? (n.pend+n.falta)+' ainda faltam' : 'Mês completo')+'</td></tr></tfoot></table></div>';
-    h += '<p class="nota">O status conta o que está no Registro do mês: precisa de pelo menos um vídeo e uma imagem. O botão + registra uma peça na hora.'+(pausadas ? ' '+plural(pausadas,'Dra. pausada não aparece','Dras pausadas não aparecem')+' aqui (veja na aba Dras).' : '')+'</p>';
+        var d = x.d;
+        var cont = function(t, q){ return '<button type="button" class="pl-cont'+(q?'':' zero')+'" data-pl-ver="'+d.id+'|'+t+'" title="Ver no Registro">'+q+'</button>'; };
+        return '<tr class="st-'+x.s[0]+'"><td class="nome"><input class="cel forte" data-pl-d="'+d.id+'|nome" data-pl-k="p-'+d.id+'-nome" value="'+esc(d.nome)+'" aria-label="Nome"></td>'+
+          '<td class="reg"><input class="cel cel-sub" data-pl-d="'+d.id+'|regiao" data-pl-k="p-'+d.id+'-reg" value="'+esc(d.regiao && d.regiao!=='—' ? d.regiao : '')+'" placeholder="—" aria-label="Região"></td>'+
+          '<td class="n" data-l="Vídeos">'+cont('Vídeo', x.c.v)+'<button class="pl-mais" type="button" data-pl-add="'+d.id+'|Vídeo" title="Registrar um vídeo de '+esc(d.nome)+' em '+esc(mesNome(PL.mes))+'" aria-label="Registrar vídeo">+</button></td>'+
+          '<td class="n" data-l="Imagens">'+cont('Imagem', x.c.i)+'<button class="pl-mais" type="button" data-pl-add="'+d.id+'|Imagem" title="Registrar uma imagem de '+esc(d.nome)+' em '+esc(mesNome(PL.mes))+'" aria-label="Registrar imagem">+</button></td>'+
+          '<td class="env"><button type="button" class="pl-env-btn" data-pl-ir-envio="'+d.id+'" title="Editar o envio">'+tagEnvio(d.envio||{}, PL.mes)+'</button></td><td class="stt"><span class="pl-st '+x.s[0]+'">'+x.s[1]+'</span></td>'+
+          '<td class="acao"><div class="pl-acoes">'+btnRemover(d)+'</div></td></tr>';
+      }).join('') : '<tr><td colspan="7" class="pl-sub" style="text-align:center;padding:22px">Tudo completo neste mês.</td></tr>')+
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="n">'+tv+'</td><td class="n">'+ti+'</td><td></td><td>'+(n.pend+n.falta ? (n.pend+n.falta)+' ainda faltam' : 'Mês completo')+'</td><td></td></tr></tfoot></table></div>';
+    h += '<form class="form-linha pl-nova-dra" data-pl-dra-form autocomplete="off"><input class="campo" name="nome" maxlength="60" placeholder="Nova Dra. (ex.: Dra. Fulana)" required><input class="campo" name="regiao" maxlength="60" placeholder="Região (cidade, UF)"><button class="btn btn-escuro btn-p" type="submit">Adicionar</button></form>';
+    h += '<p class="nota">Clique no nome ou na região para editar. Clique no título de uma coluna para ordenar. O número de vídeos e imagens abre as linhas no Registro; o + registra uma peça na hora. A lixeira tira a Dra. da lista (o histórico dela fica); para só pausar, use a aba Dras'+(pausadas ? ' ('+plural(pausadas,'pausada','pausadas')+' agora)' : '')+'.</p>';
     return h;
   }
   function plResumo(){
@@ -4675,32 +4731,37 @@ tr.pl-pausada td{opacity:.55}
       tg.v += g.v; tg.i += g.i;
       return {d:d, cel:cel, g:g};
     }).filter(function(x){ return x.d.ativa!==false || x.g.v || x.g.i; });
+    var P = {k:'nome', d:1};
+    ordenar('resumo', linhas, function(x, k){ if (k==='nome') return nomeSemTitulo(x.d.nome); if (k==='regiao') return x.d.regiao && x.d.regiao!=='—' ? x.d.regiao : ''; if (k==='total') return x.g.v+x.g.i; var j = meses.indexOf(k); return j>=0 ? x.cel[j].v + x.cel[j].i : ''; }, P);
     var c2 = function(c){ return '<td class="n'+(c.v||c.i?'':' zero')+'">'+(c.v||c.i ? '<span title="vídeos">'+c.v+'</span><span class="pl-barra">/</span><span title="imagens">'+c.i+'</span>' : '·')+'</td>'; };
     return '<div class="pl-topo">'+navMes()+'<p class="pl-sub" style="margin:0">Seis meses até o escolhido · cada célula: <b>vídeos / imagens</b></p></div>'+
-      '<div class="pl-tab"><table class="pl pl-resumo-t"><thead><tr><th>Dra./Dr.</th>'+meses.map(function(m){ return '<th class="n'+(m===mesAtual()?' atual':'')+'">'+esc(mesNome(m,true))+'</th>'; }).join('')+'<th class="n">Total geral</th></tr></thead><tbody>'+
-      linhas.map(function(x){ return '<tr><td class="nome">'+esc(x.d.nome)+(x.d.ativa===false?' <small class="pl-sub">pausada</small>':'')+'</td>'+x.cel.map(c2).join('')+'<td class="n forte">'+x.g.v+'<span class="pl-barra">/</span>'+x.g.i+' <small class="pl-sub">('+(x.g.v+x.g.i)+')</small></td></tr>'; }).join('')+
-      '</tbody><tfoot><tr><td>Total</td>'+tot.map(function(c){ return '<td class="n">'+c.v+'<span class="pl-barra">/</span>'+c.i+'</td>'; }).join('')+'<td class="n">'+tg.v+'<span class="pl-barra">/</span>'+tg.i+' <small>('+(tg.v+tg.i)+')</small></td></tr></tfoot></table></div>'+
-      '<p class="nota">O total geral conta todo o Registro, inclusive meses fora da janela. Outros clientes (que não estão na aba Dras) não entram aqui.</p>';
+      '<div class="pl-tab"><table class="pl pl-resumo-t"><thead><tr>'+th('resumo','nome','Dra./Dr.','',P)+th('resumo','regiao','Região','',P)+meses.map(function(m){ return th('resumo', m, esc(mesNome(m,true)), 'n'+(m===mesAtual()?' atual':''), P); }).join('')+th('resumo','total','Total geral','n',P)+'</tr></thead><tbody>'+
+      linhas.map(function(x){ return '<tr><td class="nome">'+esc(x.d.nome)+(x.d.ativa===false?' <small class="pl-sub">pausada</small>':'')+'</td><td class="pl-sub">'+esc(x.d.regiao && x.d.regiao!=='—' ? x.d.regiao : '—')+'</td>'+x.cel.map(c2).join('')+'<td class="n forte">'+x.g.v+'<span class="pl-barra">/</span>'+x.g.i+' <small class="pl-sub">('+(x.g.v+x.g.i)+')</small></td></tr>'; }).join('')+
+      '</tbody><tfoot><tr><td>Total</td><td></td>'+tot.map(function(c){ return '<td class="n">'+c.v+'<span class="pl-barra">/</span>'+c.i+'</td>'; }).join('')+'<td class="n">'+tg.v+'<span class="pl-barra">/</span>'+tg.i+' <small>('+(tg.v+tg.i)+')</small></td></tr></tfoot></table></div>'+
+      '<p class="nota">Ordenar por um mês ordena pelo total daquele mês (vídeos + imagens). O total geral conta todo o Registro, inclusive meses fora da janela. Outros clientes (que não estão na aba Dras) não entram aqui.</p>';
   }
   function plRegistro(){
     var meses = []; state.copies.forEach(function(c){ if (c.mes && meses.indexOf(c.mes)<0) meses.push(c.mes); }); meses.sort().reverse();
     var clis = []; state.copies.forEach(function(c){ if (c.cliente && clis.indexOf(c.cliente)<0) clis.push(c.cliente); }); clis.sort(function(a,b){ return a.localeCompare(b,'pt'); });
     var q = norm(PL.fBusca), rep = repeticoesRegiao();
     var l = state.copies.filter(function(c){ return (!PL.fMes || c.mes===PL.fMes) && (!PL.fCli || c.cliente===PL.fCli) && (!PL.fTipo || c.tipo===PL.fTipo) && (!q || norm([c.cliente,c.formato,c.titulo,c.arquivo,c.obs].join(' ')).indexOf(q)>=0); });
-    l.sort(function(a,b){ return (b.mes||'').localeCompare(a.mes||'') || (a.cliente||'').localeCompare(b.cliente||'','pt') || (a.criadoEm||'').localeCompare(b.criadoEm||''); });
+    var P = {k:'mes', d:-1};
+    l.sort(function(a,b){ return (a.cliente||'').localeCompare(b.cliente||'','pt') || (a.criadoEm||'').localeCompare(b.criadoEm||''); });
+    ordenar('registro', l, function(c, k){ return k==='nome' || k==='cliente' ? nomeSemTitulo(c.cliente) : k==='regiao' ? (function(r){ return r && r!=='—' ? r : ''; })(regiaoDe(c.cliente)) : (c[k]||''); }, P);
     var sel = function(k, val, ops, todos){ return '<select class="campo campo-p" data-pl-f="'+k+'"><option value="">'+todos+'</option>'+ops.map(function(o){ var v = o.v!==undefined ? o.v : o, t = o.t!==undefined ? o.t : o; return '<option value="'+esc(v)+'"'+(v===val?' selected':'')+'>'+esc(t)+'</option>'; }).join('')+'</select>'; };
     var h = '<div class="pl-topo pl-filtros">'+sel('fMes', PL.fMes, meses.map(function(m){ return {v:m, t:mesNome(m)}; }), 'Todos os meses')+sel('fCli', PL.fCli, clis, 'Todas as Dras e clientes')+sel('fTipo', PL.fTipo, PL_TIPOS, 'Todos os tipos')+
-      '<input class="campo campo-p" type="search" data-pl-f="fBusca" data-pl-k="pl-busca" value=""'+esc(PL.fBusca)+'" placeholder="Buscar título, formato, arquivo">'+
+      '<input class="campo campo-p" type="search" data-pl-f="fBusca" data-pl-k="pl-busca" value="'+esc(PL.fBusca)+'" placeholder="Buscar título, formato, arquivo">'+
+      (PL.fMes || PL.fCli || PL.fTipo || PL.fBusca ? '<button class="link" type="button" data-pl-limpar>limpar filtros</button>' : '')+
       '<button class="btn btn-escuro btn-p" type="button" data-pl-nova>+ Nova linha</button></div>';
     h += '<datalist id="dl-pl-cli">'+drasOrdem().map(function(d){ return '<option value="'+esc(d.nome)+'">'; }).join('')+clis.filter(function(c){ return !draPorNome(c); }).map(function(c){ return '<option value="'+esc(c)+'">'; }).join('')+'</datalist>';
     var fs = []; state.copies.forEach(function(c){ if (c.formato && fs.indexOf(c.formato)<0) fs.push(c.formato); });
     h += '<datalist id="dl-pl-for">'+fs.sort().map(function(x){ return '<option value="'+esc(x)+'">'; }).join('')+'</datalist>';
     h += '<p class="pl-sub pl-cont-l">'+plural(l.length,'linha','linhas')+(l.length!==state.copies.length ? ' de '+state.copies.length : '')+'</p>';
-    h += '<div class="pl-tab"><table class="pl pl-edit"><thead><tr><th>Mês</th><th>Dra./Cliente</th><th>Região</th><th>Tipo</th><th>Formato</th><th>Título / ângulo</th><th>Arquivo</th><th>Observações</th><th></th></tr></thead><tbody>'+
+    h += '<div class="pl-tab"><table class="pl pl-edit"><thead><tr>'+th('registro','mes','Mês','',P)+th('registro','cliente','Dra./Cliente','',P)+th('registro','regiao','Região','',P)+th('registro','tipo','Tipo','',P)+th('registro','formato','Formato','',P)+th('registro','titulo','Título / ângulo','',P)+th('registro','arquivo','Arquivo','',P)+th('registro','obs','Observações','',P)+'<th></th></tr></thead><tbody>'+
       (l.length ? l.map(function(c){
         var inp = function(k, extra){ return '<input class="cel" data-pl-c="'+c.id+'|'+k+'" data-pl-k="'+c.id+'-'+k+'" value="'+esc(c[k]||'')+'"'+(extra||'')+'>'; };
-        var r = rep[c.id];
-        return '<tr'+(r?' class="pl-rep"':'')+'><td><input class="cel cel-mes" type="month" data-pl-c="'+c.id+'|mes" data-pl-k="'+c.id+'-mes" value="'+esc(c.mes||'')+'"></td><td>'+inp('cliente',' list="dl-pl-cli"')+'</td><td class="pl-sub">'+esc(regiaoDe(c.cliente)||'—')+'</td>'+
+        var r = rep[c.id], rg = regiaoDe(c.cliente);
+        return '<tr'+(r?' class="pl-rep"':'')+'><td><input class="cel cel-mes" type="month" data-pl-c="'+c.id+'|mes" data-pl-k="'+c.id+'-mes" value="'+esc(c.mes||'')+'"></td><td>'+inp('cliente',' list="dl-pl-cli"')+'</td><td class="pl-sub">'+esc(rg && rg!=='—' ? rg : '—')+'</td>'+
           '<td><select class="cel" data-pl-c="'+c.id+'|tipo" data-pl-k="'+c.id+'-tipo">'+PL_TIPOS.map(function(t){ return '<option'+(t===c.tipo?' selected':'')+'>'+t+'</option>'; }).join('')+'</select></td>'+
           '<td>'+inp('formato',' list="dl-pl-for"')+(r ? '<span class="pl-aviso" title="Mesmo formato na mesma região: '+esc(r.join(', '))+'">mesma região: '+esc(r.join(', '))+'</span>' : '')+'</td><td>'+inp('titulo')+'</td><td>'+inp('arquivo')+'</td><td>'+inp('obs')+'</td>'+
           '<td><button class="icone-btn" type="button" data-pl-del="'+c.id+'" aria-label="Apagar linha" title="Apagar linha">'+I_LIXO+'</button></td></tr>';
@@ -4711,30 +4772,35 @@ tr.pl-pausada td{opacity:.55}
   function plDras(){
     var ds = drasOrdem(), cont = {};
     state.copies.forEach(function(c){ var k = norm(c.cliente); cont[k] = (cont[k]||0)+1; });
-    return '<div class="pl-tab"><table class="pl pl-edit"><thead><tr><th>Dra./Dr.</th><th>Categoria</th><th>Região</th><th class="n">Copies no registro</th><th>Ativa</th><th></th></tr></thead><tbody>'+
+    var P = {k:'ordem', d:1};
+    ordenar('dras', ds, function(d, k){ return k==='nome' ? nomeSemTitulo(d.nome) : k==='regiao' ? (d.regiao && d.regiao!=='—' ? d.regiao : '') : k==='qtd' ? (cont[norm(d.nome)]||0) : k==='ativa' ? (d.ativa===false ? 1 : 0) : k==='ordem' ? (d.ordem||0) : (d[k]||''); }, P);
+    return '<div class="pl-tab"><table class="pl pl-edit"><thead><tr>'+th('dras','nome','Dra./Dr.','',P)+th('dras','categoria','Categoria','',P)+th('dras','regiao','Região','',P)+th('dras','qtd','Copies no registro','n',P)+th('dras','ativa','Situação','',P)+'<th></th></tr></thead><tbody>'+
       ds.map(function(d){
         return '<tr'+(d.ativa===false?' class="pl-pausada"':'')+'><td><input class="cel forte" data-pl-d="'+d.id+'|nome" data-pl-k="'+d.id+'-nome" value="'+esc(d.nome)+'"></td>'+
           '<td><select class="cel" data-pl-d="'+d.id+'|categoria" data-pl-k="'+d.id+'-cat">'+['Dra.','Dr.','Outro'].map(function(c){ return '<option'+(c===d.categoria?' selected':'')+'>'+c+'</option>'; }).join('')+'</select></td>'+
-          '<td><input class="cel" data-pl-d="'+d.id+'|regiao" data-pl-k="'+d.id+'-reg" value="'+esc(d.regiao||'')+'" placeholder="Cidade, UF"></td><td class="n pl-sub">'+(cont[norm(d.nome)]||0)+'</td>'+
+          '<td><input class="cel" data-pl-d="'+d.id+'|regiao" data-pl-k="'+d.id+'-reg" value="'+esc(d.regiao && d.regiao!=='—' ? d.regiao : '')+'" placeholder="Cidade, UF"></td><td class="n pl-sub">'+(cont[norm(d.nome)]||0)+'</td>'+
           '<td><label class="check"><input type="checkbox" data-pl-ativa="'+d.id+'"'+(d.ativa!==false?' checked':'')+'> '+(d.ativa!==false?'ativa':'pausada')+'</label></td>'+
-          '<td><button class="icone-btn" type="button" data-pl-dra-del="'+d.id+'" aria-label="Apagar '+esc(d.nome)+'" title="Apagar">'+I_LIXO+'</button></td></tr>';
+          '<td>'+btnRemover(d)+'</td></tr>';
       }).join('')+'</tbody></table></div>'+
       '<form class="form-linha pl-nova-dra" data-pl-dra-form autocomplete="off"><input class="campo" name="nome" maxlength="60" placeholder="Nome (ex.: Dra. Fulana)" required><input class="campo" name="regiao" maxlength="60" placeholder="Região (cidade, UF)"><button class="btn btn-escuro btn-p" type="submit">Adicionar</button></form>'+
-      '<p class="nota">Use a região para não repetir o mesmo formato em Dras da mesma cidade. Dra. pausada sai do Painel do mês, mas o histórico fica. Ao renomear, as linhas do Registro acompanham o nome novo.</p>';
+      '<p class="nota">Use a região para não repetir o mesmo formato em Dras da mesma cidade. Dra. pausada sai do Painel do mês, mas o histórico fica. Remover tira da lista; as linhas dela no Registro continuam. Ao renomear, as linhas do Registro acompanham o nome novo.</p>';
   }
   function plEnvio(){
-    var ds = drasOrdem().filter(function(d){ return d.ativa!==false; }), ord = {nao:0, '':1, enviado:2, sem:3};
-    ds.sort(function(a,b){ var ea = a.envio||{}, eb = b.envio||{}; return (ord[ea.status||'']-ord[eb.status||'']) || (ea.data||'').localeCompare(eb.data||''); });
-    return '<div class="pl-tab"><table class="pl pl-edit"><thead><tr><th>Dra./Cliente</th><th>Região</th><th>Status</th><th>Data de envio</th><th>Há quanto tempo</th><th>Observações</th><th></th></tr></thead><tbody>'+
+    var ds = drasOrdem().filter(function(d){ return d.ativa!==false; }), ordS = {nao:0, '':1, enviado:2, sem:3};
+    var P = {k:'prioridade', d:1};
+    ordenar('envio', ds, function(d, k){ var e = d.envio||{};
+      return k==='prioridade' ? ordS[e.status||'']*1e9 + (e.data ? +e.data.replace(/-/g,'') : 0) : k==='nome' ? nomeSemTitulo(d.nome) : k==='regiao' ? (d.regiao && d.regiao!=='—' ? d.regiao : '') :
+        k==='status' ? (e.status ? ordS[e.status] : '') : k==='data' ? (e.data||'') : k==='dias' ? diasDesde(e.data) : k==='obs' ? (e.obs||'') : ''; }, P);
+    return '<div class="pl-tab"><table class="pl pl-edit"><thead><tr>'+th('envio','nome','Dra./Cliente','',P)+th('envio','regiao','Região','',P)+th('envio','status','Status','',P)+th('envio','data','Data de envio','',P)+th('envio','dias','Há quanto tempo','',P)+th('envio','obs','Observações','',P)+'<th></th></tr></thead><tbody>'+
       ds.map(function(d){
         var e = d.envio||{}, dd = diasDesde(e.data);
-        return '<tr><td class="nome">'+esc(d.nome)+'</td><td class="pl-sub">'+esc(d.regiao||'—')+'</td>'+
+        return '<tr><td class="nome">'+esc(d.nome)+'</td><td class="pl-sub">'+esc(d.regiao && d.regiao!=='—' ? d.regiao : '—')+'</td>'+
           '<td><select class="cel" data-pl-e="'+d.id+'|status" data-pl-k="'+d.id+'-est"><option value=""'+(!e.status?' selected':'')+'>—</option>'+PL_ENVIO.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===e.status?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></td>'+
           '<td><input class="cel" type="date" data-pl-e="'+d.id+'|data" data-pl-k="'+d.id+'-dt" value="'+esc(e.data||'')+'"></td>'+
           '<td>'+(dd===null ? '<span class="pl-sub">—</span>' : '<span class="pl-tag '+(dd>30?'pend':dd<=7?'ok':'')+'">'+(dd===0?'hoje':dd<0?'em '+(-dd)+' dias':dd+(dd===1?' dia':' dias'))+'</span>')+'</td>'+
           '<td><input class="cel" data-pl-e="'+d.id+'|obs" data-pl-k="'+d.id+'-obs" value="'+esc(e.obs||'')+'"></td>'+
           '<td><button class="btn btn-claro btn-p" type="button" data-pl-enviei="'+d.id+'">Enviei hoje</button></td></tr>';
-      }).join('')+'</tbody></table></div><p class="nota">Ordem: primeiro quem ainda não recebeu, depois o envio mais antigo. Em vermelho, mais de 30 dias sem copy.</p>';
+      }).join('')+'</tbody></table></div><p class="nota">Sem ordenação escolhida, aparece primeiro quem ainda não recebeu e depois o envio mais antigo. Em vermelho, mais de 30 dias sem copy.</p>';
   }
 
   /* ---------- edição ---------- */
@@ -4748,6 +4814,16 @@ tr.pl-pausada td{opacity:.55}
     var v = document.getElementById('vista-criativos');
     v.addEventListener('click', function(e){
       var b;
+      if ((b = e.target.closest('[data-pl-ord]'))){
+        var po = b.getAttribute('data-pl-ord').split('|'), at = PL_ORD[po[0]];
+        if (!at || at.k!==po[1]) PL_ORD[po[0]] = {k:po[1], d:1}; else if (at.d>0) at.d = -1; else delete PL_ORD[po[0]];
+        lsSet('ora-pl-ord', JSON.stringify(PL_ORD)); renderPlanilha(); return; }
+      if ((b = e.target.closest('[data-pl-ver]'))){ var pv = b.getAttribute('data-pl-ver').split('|'), dv = state.dras.filter(function(x){ return x.id===pv[0]; })[0]; if (!dv) return;
+        PL.aba = 'registro'; lsSet('ora-pl-aba', 'registro'); PL.fCli = dv.nome; PL.fMes = PL.mes; PL.fTipo = pv[1]; PL.fBusca = ''; renderPlanilha(); window.scrollTo(0,0); return; }
+      if ((b = e.target.closest('[data-pl-ir-envio]'))){ PL.aba = 'envio'; lsSet('ora-pl-aba', 'envio'); PL.focar = b.getAttribute('data-pl-ir-envio')+'-dt'; renderPlanilha(); return; }
+      if (e.target.closest('[data-pl-limpar]')){ PL.fMes = PL.fCli = PL.fTipo = PL.fBusca = ''; renderPlanilha(); return; }
+      if ((b = e.target.closest('[data-pl-pausar]'))){ var dp = state.dras.filter(function(x){ return x.id===b.getAttribute('data-pl-pausar'); })[0]; if (!dp) return;
+        dp.ativa = false; salvar(); renderPlanilha(); avisar(dp.nome+' pausada. Ela sai do painel; o histórico fica.', null, function(){ dp.ativa = true; salvar(); renderPlanilha(); }); return; }
       if ((b = e.target.closest('[data-pl-aba]'))){ PL.aba = b.getAttribute('data-pl-aba'); lsSet('ora-pl-aba', PL.aba); renderPlanilha(); return; }
       if ((b = e.target.closest('[data-pl-mes]'))){ var n = +b.getAttribute('data-pl-mes'); PL.mes = n ? mesMais(PL.mes, n) : mesAtual(); lsSet('ora-pl-mes', PL.mes===mesAtual() ? '' : PL.mes); renderPlanilha(); return; }
       if (e.target.closest('[data-pl-importar]')){ plImportar(); return; }
@@ -4785,12 +4861,13 @@ tr.pl-pausada td{opacity:.55}
       if ((k = t.getAttribute('data-pl-e'))){ var pe = k.split('|'), d = state.dras.filter(function(x){ return x.id===pe[0]; })[0]; if (d){ d.envio = d.envio || {}; d.envio[pe[1]] = t.value; if (pe[1]==='data' && t.value && !d.envio.status) d.envio.status = 'enviado'; plSalvarDepois(); } return; }
       if ((k = t.getAttribute('data-pl-d'))){ var pd = k.split('|'), dd = state.dras.filter(function(x){ return x.id===pd[0]; })[0]; if (!dd) return;
         if (pd[1]==='nome'){ var velho = dd.nome, novo = t.value; state.copies.forEach(function(c){ if (norm(c.cliente)===norm(velho)) c.cliente = novo; }); }
-        dd[pd[1]] = t.value; plSalvarDepois(); return; }
+        dd[pd[1]] = pd[1]==='nome' ? t.value : t.value; plSalvarDepois(); return; }
       if ((k = t.getAttribute('data-pl-f'))==='fBusca'){ PL.fBusca = t.value; renderPlanilha(); }
     });
     v.addEventListener('change', function(e){
       var t = e.target, k;
       if ((k = t.getAttribute('data-pl-f'))){ PL[k] = t.value; renderPlanilha(); return; }
+      if ((k = t.getAttribute('data-pl-ordsel'))){ var pz = t.value.split('|'); PL_ORD[k] = {k:pz[0], d:+pz[1]}; lsSet('ora-pl-ord', JSON.stringify(PL_ORD)); renderPlanilha(); return; }
       if (t.hasAttribute('data-pl-sofalta')){ PL.soFalta = t.checked; lsSet('ora-pl-falta', t.checked ? '1' : '0'); renderPlanilha(); return; }
       if ((k = t.getAttribute('data-pl-ativa'))){ var d = state.dras.filter(function(x){ return x.id===k; })[0]; if (d){ d.ativa = t.checked; salvar(); renderPlanilha(); } return; }
       if (t.getAttribute('data-pl-c') || t.getAttribute('data-pl-e') || t.getAttribute('data-pl-d')){ clearTimeout(plTimer); salvar(); setTimeout(renderPlanilha, 0); }
