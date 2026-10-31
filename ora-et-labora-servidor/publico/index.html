@@ -308,7 +308,8 @@ a.anexo-nome{text-decoration:underline;text-decoration-color:var(--tx3);text-und
 .sel-box{position:absolute;left:6px;top:16px;width:20px;height:20px;padding:0;border:1.5px solid var(--tx3);border-radius:6px;background:var(--painel);color:transparent;display:grid;place-items:center;cursor:pointer;z-index:2}
 .sel-box svg{width:12px;height:12px}
 .sel-box.on{background:var(--btn);border-color:var(--btn);color:var(--btn-tx)}
-.app.selecionando .linha[data-id]{cursor:pointer;padding-left:34px}
+.app.selecionando .linha[data-id]{cursor:pointer}
+.linha > .sel-box{position:static;grid-area:chk;align-self:center;justify-self:start}
 .app.selecionando .linha > .alca{display:none}
 .sel-box.sel-sub{left:-30px;top:4px;transform:none;width:17px;height:17px;border-radius:5px}
 .sel-box.sel-sub svg{width:10px;height:10px}
@@ -963,7 +964,7 @@ textarea.campo.rolando{overflow-y:auto}
 /* Menu lateral: separador antes da Minha área */
 .nav-sep{height:1px;background:var(--linha);margin:6px 10px}
 /* Seleção: sem círculo de cumprir; aprovação só pelo botão */
-.app.selecionando .linha > .circ{visibility:hidden}
+.app.selecionando .linha > .circ{display:none}
 span.circ.espera{cursor:default}
 /* Painel da direita */
 .lado-resumo{display:grid;align-content:start}
