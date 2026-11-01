@@ -1228,6 +1228,102 @@ tr.pl-pausada td{opacity:.55}
 .pl-confirma{padding:16px 18px;display:grid;gap:10px;border-color:var(--ouro)}
 .pl-confirma p{margin:0}
 @media (max-width:760px){.pl-ord-sel{display:block;width:auto!important}.pl-painel thead,.pl-painel tfoot{display:none}.pl-painel,.pl-painel tbody{display:block}.pl-painel tr{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:8px 14px;padding:12px 14px;border-top:1px solid var(--linha)}.pl-painel tbody tr:first-child{border-top:0}.pl-painel td{border:0!important;padding:0!important}.pl-painel td.nome{grid-column:1/3;white-space:normal}.pl-painel td.nome .cel{min-width:0;padding-left:0}.pl-painel td.reg{display:none}.pl-painel td.stt{grid-column:3;grid-row:1;justify-self:end}.pl-painel td.acao{grid-column:3;grid-row:2;justify-self:end}.pl-painel td.env{grid-column:1/-1;grid-row:3;justify-self:start}.pl-painel td.env:has(.pl-sub){display:none}.pl-painel td.env::before{content:"Último envio de copy";font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel td[data-l]::before{content:attr(data-l);font-size:.72rem;color:var(--tx3);margin-right:6px}.pl-painel .pl-mais{opacity:1}.pl-mes b{min-width:0;font-size:1.2rem}.pl-so{margin-left:0}.pl-filtros .campo-p{flex:1 1 140px}.pl-filtros .btn{margin-left:0}}
+
+/* ===== Visual 2: cor do tempo litúrgico, menos bordas, mais espaço ===== */
+:root{--ac:#9C7412;--ac-tx:#86620C;--ac-suave:rgba(156,116,18,.12);--ac-sobre:#FFFFFF}
+:root[data-lit="ouro"]{--ac:#9C7412;--ac-tx:#86620C;--ac-suave:rgba(156,116,18,.12);--ac-sobre:#FFFFFF}
+:root[data-lit="branco"]{--ac:#9C7412;--ac-tx:#86620C;--ac-suave:rgba(156,116,18,.12);--ac-sobre:#FFFFFF}
+:root[data-lit="verde"]{--ac:#2F7A4B;--ac-tx:#2A6E43;--ac-suave:rgba(47,122,75,.12);--ac-sobre:#FFFFFF}
+:root[data-lit="roxo"]{--ac:#6B46A8;--ac-tx:#5E3D96;--ac-suave:rgba(107,70,168,.12);--ac-sobre:#FFFFFF}
+:root[data-lit="rosa"]{--ac:#B04F7E;--ac-tx:#9C4570;--ac-suave:rgba(176,79,126,.11);--ac-sobre:#FFFFFF}
+:root[data-lit="vermelho"]{--ac:#B3322A;--ac-tx:#A02C25;--ac-suave:rgba(179,50,42,.10);--ac-sobre:#FFFFFF}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--ac:#D6AE4F;--ac-tx:#E2BE6A;--ac-suave:rgba(214,174,79,.14);--ac-sobre:#1A1406}
+  :root:not([data-theme="light"])[data-lit="ouro"]{--ac:#D6AE4F;--ac-tx:#E2BE6A;--ac-suave:rgba(214,174,79,.14);--ac-sobre:#1A1406}
+  :root:not([data-theme="light"])[data-lit="branco"]{--ac:#F1ECDD;--ac-tx:#E5C778;--ac-suave:rgba(229,199,120,.14);--ac-sobre:#1A1A18}
+  :root:not([data-theme="light"])[data-lit="verde"]{--ac:#5FB37E;--ac-tx:#7CC896;--ac-suave:rgba(95,179,126,.14);--ac-sobre:#06140B}
+  :root:not([data-theme="light"])[data-lit="roxo"]{--ac:#A688DB;--ac-tx:#B9A0E6;--ac-suave:rgba(166,136,219,.15);--ac-sobre:#140B22}
+  :root:not([data-theme="light"])[data-lit="rosa"]{--ac:#E592B8;--ac-tx:#EFA9C9;--ac-suave:rgba(229,146,184,.14);--ac-sobre:#22091A}
+  :root:not([data-theme="light"])[data-lit="vermelho"]{--ac:#E2685F;--ac-tx:#EE8A82;--ac-suave:rgba(226,104,95,.14);--ac-sobre:#1E0806}
+}
+:root[data-theme="dark"]{--ac:#D6AE4F;--ac-tx:#E2BE6A;--ac-suave:rgba(214,174,79,.14);--ac-sobre:#1A1406}
+:root[data-theme="dark"][data-lit="ouro"]{--ac:#D6AE4F;--ac-tx:#E2BE6A;--ac-suave:rgba(214,174,79,.14);--ac-sobre:#1A1406}
+:root[data-theme="dark"][data-lit="branco"]{--ac:#F1ECDD;--ac-tx:#E5C778;--ac-suave:rgba(229,199,120,.14);--ac-sobre:#1A1A18}
+:root[data-theme="dark"][data-lit="verde"]{--ac:#5FB37E;--ac-tx:#7CC896;--ac-suave:rgba(95,179,126,.14);--ac-sobre:#06140B}
+:root[data-theme="dark"][data-lit="roxo"]{--ac:#A688DB;--ac-tx:#B9A0E6;--ac-suave:rgba(166,136,219,.15);--ac-sobre:#140B22}
+:root[data-theme="dark"][data-lit="rosa"]{--ac:#E592B8;--ac-tx:#EFA9C9;--ac-suave:rgba(229,146,184,.14);--ac-sobre:#22091A}
+:root[data-theme="dark"][data-lit="vermelho"]{--ac:#E2685F;--ac-tx:#EE8A82;--ac-suave:rgba(226,104,95,.14);--ac-sobre:#1E0806}
+
+.app{box-shadow:inset 0 3px 0 var(--ac)}
+.principal{background:transparent;border:0;border-radius:0;margin:0;padding-top:32px}
+.painel{border:0;border-radius:16px;box-shadow:0 1px 2px rgba(20,20,18,.05)}
+.lado{border:0;border-radius:18px;box-shadow:0 1px 2px rgba(20,20,18,.05)}
+.cidade-card{border-top-color:var(--bg)}
+@media (max-width:1180px){.cidade-card{border-left-color:var(--bg)}}
+.linha{border-top-color:transparent}
+.painel > .linha + .linha::before{content:"";position:absolute;left:52px;right:16px;top:-1px;height:1px;background:var(--linha);opacity:.55}
+.linha:hover{background:var(--sup)}
+.linha:hover::before,.linha:hover + .linha::before{opacity:0}
+.saudacao{font-family:var(--f-serif);font-weight:400;font-size:clamp(2rem,3.4vw,2.75rem);letter-spacing:-.01em;line-height:1.05}
+.saudacao em{font-style:normal;font-size:1em}
+.lit{margin-top:6px}
+.grupo{gap:10px}
+.grupo-rot{font-size:.95rem;font-weight:600;letter-spacing:0;text-transform:none;color:var(--tx)}
+.grupo-rot .n{margin-left:8px;font-size:.75rem;font-weight:500;color:var(--tx2);background:var(--sup-2);padding:1px 8px;border-radius:999px}
+.grupo-rot .grupo-tg .n{margin-left:2px}
+.grupo-rot.alerta{color:var(--alerta)}
+.tag{border-radius:999px;padding:0 9px;background:color-mix(in srgb,var(--t) 17%,transparent);color:color-mix(in srgb,var(--t) 70%,var(--tx))}
+.tag.cinza{background:var(--sup-2);color:var(--tx2)}
+.r-titulo{font-size:1rem;letter-spacing:-.005em}
+.r-resp .xp{color:var(--ac-tx);font-weight:600}
+.r-resp .r-nome{max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.nav button[aria-current="true"]{background:var(--ac-suave);color:var(--ac-tx);font-weight:600}
+.nav button[aria-current="true"] .qtd{color:var(--ac-tx)}
+.btn-escuro{background:var(--ac);color:var(--ac-sobre)}
+.btn-escuro:hover{opacity:1;filter:brightness(1.07)}
+.circ:hover{border-color:var(--ac);color:var(--ac)}
+.circ.feita{background:var(--ac);border-color:var(--ac);color:var(--ac-sobre)}
+.circ:active{transform:scale(.85)}
+.sel-box.on{background:var(--ac);border-color:var(--ac);color:var(--ac-sobre)}
+.seg{border-color:transparent}
+.barra-dir .btn-claro{background:transparent;border-color:transparent;color:var(--tx2)}
+.barra-dir .btn-claro:hover,.barra-dir .btn-claro[aria-expanded="true"]{background:var(--sup);color:var(--tx)}
+.m-painel{animation:aparecer .18s ease}
+.anel-dia{display:flex;align-items:center;gap:14px;padding:4px 0 10px}
+.anel-dia svg{width:58px;height:58px;flex:none}
+.anel-dia .trilho{stroke:var(--sup-2)}
+.anel-dia .feito{stroke:var(--ac);transition:stroke-dashoffset .6s ease}
+.anel-dia b{font-weight:600;font-size:1rem;display:block}
+.anel-dia span{font-size:.84rem;color:var(--tx2)}
+.anel-dia .meio{position:relative;width:58px;height:58px;flex:none}
+.anel-dia .meio i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-weight:600;font-size:.86rem}
+.alegria-barra i{background:var(--ac)}
+.banner{border:0;--banner:var(--painel);--banner-tx:var(--tx);--banner-tx2:var(--tx2);--banner-prog-bg:var(--sup-2);--banner-prog:var(--ac);box-shadow:0 1px 2px rgba(20,20,18,.05)}
+.banner .iso.escuro{--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49}
+#cid-arte,#z-arte,#cg-arte{--bg:#f4f3ef;--painel:#ffffff;--tx:#1c1c1a;--tx3:#a3a29c;--tx2:#6d6c67;--linha:#e8e7e3;--iso-top:#ffffff;--iso-esq:#f0efeb;--iso-dir:#e0dfd9;--iso-vao:#c9c7c0;--iso-linha:#4f4e49;--iso-fant:#c4c3bd;--iso-chao:#f6f5f1;--copa-top:#eaf2e5;--copa-esq:#dbe8d3;--copa-dir:#c8dabd;--agua:#cfe2f0;--pele:#f0d2b4}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .banner{--banner:var(--painel);--banner-tx:var(--tx);--banner-tx2:var(--tx2);--banner-prog-bg:var(--sup-2);--banner-prog:var(--ac)}
+  :root:not([data-theme="light"]) .banner .iso.escuro{--iso-top:#2c2b29;--iso-esq:#1f1e1d;--iso-dir:#161615;--iso-vao:#050505;--iso-linha:#b5b4ae}
+  :root:not([data-theme="light"]) #cid-arte,:root:not([data-theme="light"]) #z-arte,:root:not([data-theme="light"]) #cg-arte{--bg:#111110;--painel:#1c1c1a;--tx:#ecebe7;--tx2:#a6a59f;--tx3:#6b6a65;--linha:#2a2927;--iso-top:#2c2b29;--iso-esq:#222120;--iso-dir:#1a1918;--iso-vao:#0c0c0b;--iso-linha:#bdbcb6;--iso-fant:#4a4945;--iso-chao:#1d1c1b;--copa-top:#283329;--copa-esq:#1f2a21;--copa-dir:#18211a;--agua:#20354a;--pele:#d9b894}
+  :root:not([data-theme="light"]) .painel,:root:not([data-theme="light"]) .lado,:root:not([data-theme="light"]) .banner{box-shadow:none}
+}
+:root[data-theme="dark"] .banner{--banner:var(--painel);--banner-tx:var(--tx);--banner-tx2:var(--tx2);--banner-prog-bg:var(--sup-2);--banner-prog:var(--ac)}
+:root[data-theme="dark"] .banner .iso.escuro{--iso-top:#2c2b29;--iso-esq:#1f1e1d;--iso-dir:#161615;--iso-vao:#050505;--iso-linha:#b5b4ae}
+:root[data-theme="dark"] #cid-arte,:root[data-theme="dark"] #z-arte,:root[data-theme="dark"] #cg-arte{--bg:#111110;--painel:#1c1c1a;--tx:#ecebe7;--tx2:#a6a59f;--tx3:#6b6a65;--linha:#2a2927;--iso-top:#2c2b29;--iso-esq:#222120;--iso-dir:#1a1918;--iso-vao:#0c0c0b;--iso-linha:#bdbcb6;--iso-fant:#4a4945;--iso-chao:#1d1c1b;--copa-top:#283329;--copa-esq:#1f2a21;--copa-dir:#18211a;--agua:#20354a;--pele:#d9b894}
+:root[data-theme="dark"] .painel,:root[data-theme="dark"] .lado,:root[data-theme="dark"] .banner{box-shadow:none}
+@media (min-width:761px){
+  .linha:not(.reuniao){grid-template-columns:22px minmax(0,1fr) auto auto auto;grid-template-areas:"chk cnt prz rsp act" ". sub sub sub sub"}
+  .linha:not(.reuniao) > .r-info > .prazo-btn{grid-area:prz;justify-self:end}
+  .linha:not(.reuniao) .r-resp .r-nome{display:none}
+  .app[data-vista="hoje"] .linha:not(.reuniao) .r-prazo.hoje{display:none}
+  .app[data-vista="hoje"] .linha:not(.reuniao) .prazo-btn:has(.r-prazo.hoje){width:22px;justify-content:center}
+}
+.aj-cores{display:flex;gap:10px;flex-wrap:wrap}
+.aj-cor{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:var(--sup);cursor:pointer;border:2px solid transparent}
+.aj-cor:has(input:checked){border-color:var(--ac)}
+.aj-cor input{accent-color:var(--ac)}
+.aj-cor .bolas{display:inline-flex;gap:3px}
+.aj-cor .bolas i{width:12px;height:12px;border-radius:50%;display:block}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1504,6 +1600,7 @@ tr.pl-pausada td{opacity:.55}
           <div class="aj-bloco">
             <h4 class="aj-tit">Preferências</h4>
             <div class="painel ajustes-painel" id="aj-ritual" hidden data-sem-tr></div>
+            <div class="painel ajustes-painel" id="aj-cor" data-sem-tr></div>
             <div class="painel ajustes-painel">
               <p class="det-tit">Áreas da vida</p>
               <label>Separe por vírgulas<input class="campo" id="areas-in" maxlength="300"></label>
@@ -3521,7 +3618,9 @@ tr.pl-pausada td{opacity:.55}
   }
   function renderLado(){
     var s = separar(doFiltro()), rh = reunioesDoDia(hoje).length;
+    var totDia = s.hoje.length + s.atras.length + s.feitasHoje.length, fracDia = totDia ? s.feitasHoje.length/totDia : 0, circDia = 2*Math.PI*24;
     document.getElementById('numeros').innerHTML =
+      '<div class="anel-dia"><div class="meio"><svg viewBox="0 0 58 58" aria-hidden="true"><circle class="trilho" cx="29" cy="29" r="24" fill="none" stroke-width="6"/><circle class="feito" cx="29" cy="29" r="24" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+circDia.toFixed(1)+'" stroke-dashoffset="'+(circDia*(1-fracDia)).toFixed(1)+'" transform="rotate(-90 29 29)"/></svg><i>'+s.feitasHoje.length+'/'+totDia+'</i></div><div><b>'+(totDia && s.feitasHoje.length===totDia ? L('Dia cumprido','Day complete','Día cumplido','Dies perfectus') : L('Seu dia','Your day','Tu día','Dies tuus'))+'</b><span>'+(totDia ? Math.round(fracDia*100)+'% '+L('cumprido','done','cumplido','perfectum') : L('Nada para hoje','Nothing for today','Nada para hoy','Nihil hodie'))+'</span></div></div>'+
       '<div class="num"><b>'+s.hoje.length+'</b><span>'+(s.hoje.length===1?'missão para hoje':'missões para hoje')+'</span></div>'+
       '<div class="num'+(s.atras.length?' alerta':'')+'"><b>'+s.atras.length+'</b><span>'+(s.atras.length===1?'atrasada':'atrasadas')+'</span></div>'+
       '<div class="num"><b>'+rh+'</b><span>'+(rh===1?'reunião hoje':'reuniões hoje')+'</span></div>'+
@@ -3693,7 +3792,7 @@ tr.pl-pausada td{opacity:.55}
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
-      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+esc(p.nome)+'<span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
+      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+'<span class="r-nome">'+esc(String(p.nome||'').split(' ')[0])+'</span><span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
       '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo" data-editar-m="'+m.id+'" role="button" tabindex="0" title="'+L('Abrir a missão','Open the mission','Abrir la misión','Missionem aperire')+'">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+
       (m.descricao ? '<div class="r-desc" data-desc-toggle="'+m.id+'" title="'+(descAbertas[m.id] ? L('Clique para recolher','Click to collapse','Haz clic para contraer','Preme ut contrahas') : L('Clique para ler tudo','Click to read it all','Haz clic para leer todo','Preme ut totum legas'))+'">'+textoComLinks(m.descricao)+'</div>' : '')+status+'</div>'+
       '<div class="r-acoes'+(menuM===m.id?' aberto':'')+'">'+
@@ -5095,6 +5194,10 @@ tr.pl-pausada td{opacity:.55}
     var ai = document.getElementById('areas-in'); if (ai && document.activeElement!==ai) ai.value = areasEu().join(', ');
     document.getElementById('aj-eu').innerHTML = opcoesPessoas(eu);
     document.getElementById('aj-eu-painel').hidden = SERVIDOR;
+    var ajc = document.getElementById('aj-cor'), pcA = prefsEu().corApp || 'lit', ltA = liturgia(hoje);
+    ajc.innerHTML = '<p class="det-tit">'+L('Cor do app','App color','Color de la app','Color')+'</p><div class="aj-cores">'+
+      '<label class="aj-cor"><input type="radio" name="cor-app" value="lit"'+(pcA!=='ouro'?' checked':'')+'><span class="bolas"><i style="background:#2F7A4B"></i><i style="background:#6B46A8"></i><i style="background:#D6AE4F"></i><i style="background:#B3322A"></i></span><span><b>'+L('Seguir o tempo litúrgico','Follow the liturgical season','Seguir el tiempo litúrgico','Tempus liturgicum sequi')+'</b><br><small style="color:var(--tx2)">'+L('Hoje: ','Today: ','Hoy: ','Hodie: ')+esc(tr(ltA.cor))+'</small></span></label>'+
+      '<label class="aj-cor"><input type="radio" name="cor-app" value="ouro"'+(pcA==='ouro'?' checked':'')+'><span class="bolas"><i style="background:#D6AE4F"></i></span><span><b>'+L('Dourado fixo','Fixed gold','Dorado fijo','Aureus')+'</b><br><small style="color:var(--tx2)">'+L('Não muda durante o ano','Stays the same all year','No cambia durante el año','Semper idem')+'</small></span></label></div>';
     var ajr = document.getElementById('aj-ritual');
     ajr.hidden = !(SERVIDOR && pessoa(eu).admin);
     if (!ajr.hidden) ajr.innerHTML = '<p class="det-tit">'+L('Antes das missões','Before the missions','Antes de las misiones','Ante missiones')+'</p><label class="check"><input type="checkbox" id="aj-ritual-on"'+(prefsEu().ritual!==false?' checked':'')+'> '+L('Pedir os três passos (celular, limpa e Oração de São Francisco) antes de liberar as minhas missões. Só vale para a conta de administrador.','Ask for the three steps before unlocking my missions. Admin account only.','Pedir los tres pasos antes de liberar mis misiones. Solo para la cuenta de administrador.','Tres gradus ante missiones petere.')+'</label>';
@@ -5165,7 +5268,8 @@ tr.pl-pausada td{opacity:.55}
       (rh ? ' · '+plural(rh,'reunião','reuniões') : '')+(s.atras.length ? ' · <span class="alerta">'+plural(s.atras.length,'atrasada','atrasadas')+'</span>' : '')+'</span>';
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
-  function render(){ if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function aplicarCorApp(){ try { var pc = (prefsEu().corApp)||'lit'; document.documentElement.setAttribute('data-lit', pc==='ouro' ? 'ouro' : (liturgia(hoje).cor||'verde')); } catch(e){} }
+  function render(){ aplicarCorApp(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -6184,6 +6288,7 @@ tr.pl-pausada td{opacity:.55}
     if (tn){ var t = tagPorId(tn); if (t){ t.nome = e.target.value.trim() || 'sem nome'; salvar(); renderNav(); var pl = e.target.previousElementSibling; if (pl) pl.textContent = t.nome; } }
   });
   ajustes.addEventListener('change', function(e){
+    if (e.target.name==='cor-app'){ prefsEu().corApp = e.target.value; salvar(); aplicarCorApp(); renderAjustes(); return; }
     if (e.target.id==='aj-eu'){ eu = e.target.value; lsSet(KEY_EU, eu); renderNav(); renderPrincipal(); return; }
     var tc = e.target.getAttribute('data-tag-cor'); if (tc){ var t = tagPorId(tc); if (t){ t.cor = e.target.value; salvar(); renderNav(); renderAjustes(); } }
   });
