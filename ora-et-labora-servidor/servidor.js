@@ -508,6 +508,143 @@ app.post('/api/ia/extrair', exigir, rota(async (req, res) => {
   res.json({ transcricao: anexo, ata });
 }));
 
+/* ---------- Porta do JARVIS: o assistente do Mac lê e cuida das missões sem abrir a tela ----------
+ * Liga com a variável JARVIS_TOKEN_SHA256 no Railway: a impressão digital (SHA-256, em hex) da chave
+ * que fica só no Mac do JARVIS; assim o servidor nunca guarda a chave em si. JARVIS_TOKEN (a chave
+ * inteira, 32+ caracteres) também serve. Sem nenhuma das duas, nada disto existe.
+ * O JARVIS age como JARVIS_USUARIO (nome de alguém da equipe; padrão: o administrador).
+ * De propósito, não apaga nada e não conclui missão (concluir dá as obras e visitas da cidade no app). */
+const JARVIS_TOKEN = String(process.env.JARVIS_TOKEN || ''), JARVIS_SHA = String(process.env.JARVIS_TOKEN_SHA256 || '').trim().toLowerCase();
+function hashToken(t) { return crypto.createHash('sha256').update(String(t)).digest(); }
+const JARVIS_HASH = /^[0-9a-f]{64}$/.test(JARVIS_SHA) ? Buffer.from(JARVIS_SHA, 'hex') : JARVIS_TOKEN.length >= 32 ? hashToken(JARVIS_TOKEN) : null;
+function exigirJarvis(req, res, next) {
+  if (!JARVIS_HASH) return res.status(404).type('text').send('Página não encontrada.');
+  const m = /^Bearer (.+)$/.exec(req.get('Authorization') || '');
+  if (!m || !crypto.timingSafeEqual(hashToken(m[1]), JARVIS_HASH)) {
+    try { limitar(req); } catch (e) { return res.status(429).json({ erro: e.message }); }
+    return res.status(401).json({ erro: 'Chave do JARVIS inválida.' });
+  }
+  const alvo = normNome(process.env.JARVIS_USUARIO || '');
+  const u = (alvo && db.usuarios.find(x => normNome(x.nome) === alvo)) || db.usuarios.find(x => x.admin);
+  if (!u) return res.status(503).json({ erro: 'Ainda não há ninguém cadastrado no Ora et Labora.' });
+  req.u = u; next();
+}
+const TIPOS = ['reuniao', 'rapida', 'mensagem', 'trafego', 'complexa'];
+function nomePessoa(uid) { const p = db.usuarios.find(x => x.id === uid); return p ? p.nome : null; }
+function clientesMapa(u) { const o = {}; itensVisiveis('tags', u).forEach(t => { if (t && t.id) o[t.id] = t.nome; }); return o; }
+function acharPorNome(lista, nome, oque) {   // exato; senão, começo do nome; senão, contém (só se for único)
+  const n = normNome(nome); if (!n) return null;
+  let l = lista.filter(x => normNome(x.nome) === n);
+  if (!l.length && n.length >= 3) l = lista.filter(x => normNome(x.nome).startsWith(n));
+  if (!l.length && n.length >= 3) l = lista.filter(x => normNome(x.nome).includes(n));
+  if (l.length === 1) return l[0];
+  throw new Erro(l.length ? oque + ' "' + nome + '" é ambíguo: ' + l.map(x => x.nome).join(', ') + '.' : oque + ' "' + nome + '" não encontrado.', l.length ? 409 : 404);
+}
+function pessoaId(nome) { return acharPorNome(db.usuarios, nome, 'Pessoa').id; }
+function clientesIds(nomes, u) {
+  const tags = itensVisiveis('tags', u).filter(t => t && t.id && t.nome);
+  return (Array.isArray(nomes) ? nomes : [nomes]).filter(Boolean).slice(0, 10).map(n => acharPorNome(tags, String(n), 'Cliente').id);
+}
+function dataOk(d) { if (d === null || d === '') return null; if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d))) throw new Erro('Data no formato AAAA-MM-DD.'); return String(d); }
+function texto(v, max) { return String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b-\u001f]/g, '').trim().slice(0, max); }
+function missaoItem(mid, u) {
+  const i = db.itens['missoes|' + mid];
+  if (!i || i.apagado || (i.privado && i.dono !== u.id)) throw new Erro('Missão não encontrada.', 404);
+  return i;
+}
+function registrarHist(m, u, t) { m.historico = m.historico || []; m.historico.push({ em: new Date().toISOString(), por: u.id, t: t + ' (pelo JARVIS)' }); if (m.historico.length > 60) m.historico = m.historico.slice(-60); }
+function gravarMissao(m, i, u) { db.itens['missoes|' + m.id] = { col: 'missoes', id: m.id, dono: i ? i.dono : u.id, privado: !!m.privada, apagado: false, dados: m, seq: ++db.seq }; gravar(); }
+function resumoMissao(m, cli, hoje, completa) {
+  const r = { id: m.id, titulo: m.titulo, resp: nomePessoa(m.resp), data: m.data || null, feita: !!m.feita, atrasada: !m.feita && !!m.data && m.data < hoje,
+    peso: m.peso || 'media', tipo: m.tipo || null, clientes: (m.tags || []).map(t => cli[t]).filter(Boolean), privada: !!m.privada,
+    aprovador: m.aprovador ? nomePessoa(m.aprovador) : null, aprovacao: m.aprov ? m.aprov.estado || null : null,
+    subtarefas: (m.subs || []).length, comentarios: (m.comentarios || []).length };
+  if (!completa) { if (m.descricao) r.descricao = String(m.descricao).slice(0, 280); return r; }
+  return Object.assign(r, { descricao: m.descricao || '', feitaEm: m.feitaEm || null, criadaPor: nomePessoa(m.criadaPor), criadaEm: m.criadaEm || null,
+    subs: (m.subs || []).map(s => ({ titulo: s.titulo, resp: nomePessoa(s.resp), feita: !!s.feita })),
+    ultimosComentarios: (m.comentarios || []).slice(-10).map(c => ({ por: nomePessoa(c.por), em: c.em, texto: c.texto })),
+    historico: (m.historico || []).slice(-10).map(h => ({ por: nomePessoa(h.por), em: h.em, t: h.t })) });
+}
+const jarvis = express.Router();
+jarvis.use(exigirJarvis);
+jarvis.get('/contexto', (req, res) => {
+  const { data, hora } = agoraNoFuso();
+  res.json({ eu: req.u.nome, hoje: data, hora, equipe: db.usuarios.map(u => u.nome), clientes: Object.values(clientesMapa(req.u)).sort(), pesos: ['minima', 'leve', 'media', 'ardua', 'heroica'], tipos: TIPOS });
+});
+jarvis.get('/missoes', rota((req, res) => {
+  const q = req.query, u = req.u, hoje = agoraNoFuso().data, cli = clientesMapa(u);
+  const estado = ['abertas', 'feitas', 'todas'].includes(q.estado) ? q.estado : 'abertas';
+  const resp = q.resp ? pessoaId(q.resp) : null, cliente = q.cliente ? clientesIds(q.cliente, u)[0] : null;
+  const de = q.de ? dataOk(q.de) : null, ate = q.ate ? dataOk(q.ate) : null, busca = normNome(q.busca || '');
+  const limite = Math.max(1, Math.min(200, parseInt(q.limite, 10) || 50));
+  let l = itensVisiveis('missoes', u).filter(m => m && m.id && (estado === 'todas' || (estado === 'feitas') === !!m.feita));
+  if (resp) l = l.filter(m => m.resp === resp);
+  if (cliente) l = l.filter(m => (m.tags || []).includes(cliente));
+  if (de) l = l.filter(m => m.data && m.data >= de);
+  if (ate) l = l.filter(m => m.data && m.data <= ate);
+  if (busca) l = l.filter(m => normNome(m.titulo + ' ' + (m.descricao || '')).includes(busca));
+  l.sort((a, b) => (a.data || '9999') < (b.data || '9999') ? -1 : (a.data || '9999') > (b.data || '9999') ? 1 : 0);
+  res.json({ hoje, total: l.length, missoes: l.slice(0, limite).map(m => resumoMissao(m, cli, hoje)) });
+}));
+jarvis.get('/resumo', (req, res) => {
+  const u = req.u, hoje = agoraNoFuso().data, cli = clientesMapa(u);
+  const abertas = itensVisiveis('missoes', u).filter(m => m && !m.feita), r = m => resumoMissao(m, cli, hoje);
+  const minhas = abertas.filter(m => (m.privada ? m.dono : m.resp) === u.id);
+  res.json({ hoje, eu: u.nome,
+    hojeMinhas: minhas.filter(m => m.data === hoje).map(r),
+    atrasadasMinhas: minhas.filter(m => m.data && m.data < hoje).map(r),
+    paraEuAprovar: abertas.filter(m => !m.privada && m.aprovador === u.id && m.aprov && m.aprov.estado === 'aguardando').map(r),
+    ajustesPedidos: minhas.filter(m => m.aprov && m.aprov.estado === 'ajustes').map(r),
+    equipeAtrasadas: abertas.filter(m => !m.privada && m.data && m.data < hoje && m.resp !== u.id).map(r),
+    reunioesHoje: itensVisiveis('reunioes', u).filter(x => x.data === hoje && !x.feita).map(x => ({ titulo: x.titulo, inicio: x.inicio || '', fim: x.fim || '', local: x.local || '', pessoas: (x.pessoas || []).map(nomePessoa).filter(Boolean) })) });
+});
+jarvis.get('/missoes/:id', rota((req, res) => {
+  res.json(resumoMissao(missaoItem(req.params.id, req.u).dados, clientesMapa(req.u), agoraNoFuso().data, true));
+}));
+function aplicarCampos(m, b, u) {
+  if (b.titulo !== undefined) { m.titulo = texto(b.titulo, 200); if (!m.titulo) throw new Erro('A missão precisa de um título.'); }
+  if (b.descricao !== undefined) m.descricao = texto(b.descricao, 5000);
+  if (b.resp !== undefined) m.resp = b.resp ? pessoaId(b.resp) : u.id;
+  if (b.data !== undefined) m.data = dataOk(b.data);
+  if (b.peso !== undefined) { if (!PESOS_OK.has(b.peso)) throw new Erro('Peso: minima, leve, media, ardua ou heroica.'); m.peso = b.peso; }
+  if (b.tipo !== undefined) m.tipo = b.tipo ? texto(b.tipo, 30) : null;
+  if (b.clientes !== undefined) m.tags = clientesIds(b.clientes, u);
+  if (b.aprovador !== undefined) m.aprovador = b.aprovador ? pessoaId(b.aprovador) : null;
+}
+const PESOS_OK = new Set(['minima', 'leve', 'media', 'ardua', 'heroica']);
+jarvis.post('/missoes', rota((req, res) => {
+  const u = req.u, b = req.body || {}, agora = new Date().toISOString();
+  const m = { id: 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4), titulo: '', descricao: '', resp: u.id, data: null, peso: 'media',
+    feita: false, feitaEm: null, tags: [], anexos: [], subs: [], recorrencia: null, tipo: null, aprovador: null, aprov: null,
+    privada: !!b.privada, dono: b.privada ? u.id : null, area: null, criadaPor: u.id, criadaEm: agora };
+  aplicarCampos(m, Object.assign({ titulo: '' }, b), u);
+  if (m.privada) m.resp = u.id;
+  registrarHist(m, u, 'criou a missão');
+  gravarMissao(m, null, u);
+  res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
+}));
+jarvis.patch('/missoes/:id', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), b = req.body || {};
+  const mudou = ['titulo', 'descricao', 'resp', 'data', 'peso', 'tipo', 'clientes', 'aprovador'].filter(k => b[k] !== undefined);
+  if (!mudou.length) throw new Erro('Nada para mudar. Campos: titulo, descricao, resp, data, peso, tipo, clientes, aprovador.');
+  if (m.feita) throw new Erro('Essa missão já foi cumprida; reabra pelo app se precisar mudar.');
+  aplicarCampos(m, b, u);
+  if (m.privada) m.resp = m.dono;
+  registrarHist(m, u, 'mudou ' + mudou.join(', '));
+  gravarMissao(m, i, u);
+  res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
+}));
+jarvis.post('/missoes/:id/comentarios', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), t = texto((req.body || {}).texto, 3000);
+  if (!t) throw new Erro('Comentário vazio.');
+  const mencoes = db.usuarios.filter(p => normNome(t).includes('@' + normNome(p.nome))).map(p => p.id);
+  m.comentarios = m.comentarios || [];
+  m.comentarios.push({ id: 'c' + crypto.randomBytes(6).toString('hex'), por: u.id, em: new Date().toISOString(), texto: t, mencoes, via: 'jarvis' });
+  gravarMissao(m, i, u);
+  res.json({ ok: true, comentarios: m.comentarios.length });
+}));
+app.use('/api/jarvis', jarvis);
+
 app.use((req, res) => res.status(404).type('text').send('Página não encontrada.'));
 app.listen(PORTA, () => {
   backupDiario();

@@ -131,3 +131,13 @@ Depois abra <http://localhost:3000>.
 ## Google Drive na versão de servidor
 
 Na versão publicada pelo Claude, o botão **Do Google Drive** busca arquivos direto no seu Drive. No servidor próprio, essa busca depende da conexão do Claude, que não existe lá. Por isso, o botão vira **colar link do Drive**: abra o arquivo no Drive, copie o link e cole. O anexo fica clicável para toda a equipe, conforme as permissões do arquivo no Drive.
+
+## Porta do JARVIS (assistente do Mac)
+
+O JARVIS lê e cuida das missões direto pelo servidor, sem abrir a tela, nas rotas `/api/jarvis/...`.
+
+- A chave fica só no `.env` do JARVIS, como `ORA_TOKEN`. No Railway vai apenas a impressão digital dela, na variável `JARVIS_TOKEN_SHA256` (SHA-256 em hex; no Mac: `printf %s "CHAVE" | shasum -a 256`). Sem a variável, as rotas não existem.
+- O JARVIS age em nome do administrador. Para usar outra pessoa, crie `JARVIS_USUARIO` com o nome dela.
+- Ele pode ler missões e reuniões, criar e editar missões e comentar. Não apaga nada e não conclui missão: concluir continua no app, por causa das obras e das visitas da cidade.
+- Tudo o que ele faz fica no histórico da missão com "(pelo JARVIS)".
+- Para desligar, apague a variável `JARVIS_TOKEN_SHA256`. Para trocar a chave, mude o `ORA_TOKEN` e a impressão digital.
