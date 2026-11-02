@@ -113,8 +113,27 @@ app.use((req, res, next) => { res.set('X-Content-Type-Options', 'nosniff'); res.
 const ICONE = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1c1c1a"/><path d="M16 5v22M9 12h14" stroke="#fafaf8" stroke-width="3" stroke-linecap="round"/></svg>');
 function pagina() {
   const corpo = fs.readFileSync(path.join(__dirname, 'publico', 'index.html'), 'utf8');
-  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="' + ICONE + '"><script>window.ORA_SERVIDOR=true</script>' + corpo + '</html>';
+  const icones = fs.existsSync(path.join(__dirname, 'publico', 'icones', 'apple-touch-icon.png'))
+    ? '<link rel="icon" type="image/png" sizes="32x32" href="/icones/favicon-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/icones/favicon-64.png"><link rel="apple-touch-icon" sizes="180x180" href="/icones/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#14110D"><meta name="apple-mobile-web-app-title" content="Ora et Labora"><meta name="application-name" content="Ora et Labora"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
+    : '<link rel="icon" href="' + ICONE + '">';
+  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + icones + '<script>window.ORA_SERVIDOR=true</script>' + corpo + '</html>';
 }
+const MANIFESTO = JSON.stringify({
+  name: 'Ora et Labora', short_name: 'Ora et Labora', start_url: '/', scope: '/', display: 'standalone',
+  background_color: '#14110D', theme_color: '#14110D', lang: 'pt-BR',
+  icons: [
+    { src: '/icones/icone-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: '/icones/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    { src: '/icones/icone-192-maskable.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+    { src: '/icones/icone-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+  ]
+});
+app.get('/manifest.webmanifest', (req, res) => { res.set('Cache-Control', 'public, max-age=86400'); res.type('application/manifest+json').send(MANIFESTO); });
+app.use('/icones', express.static(path.join(__dirname, 'publico', 'icones'), { maxAge: '7d', index: false, fallthrough: false }));
+app.get(['/favicon.ico', '/apple-touch-icon.png', '/apple-touch-icon-precomposed.png'], (req, res) => {
+  res.set('Cache-Control', 'public, max-age=604800');
+  res.sendFile(path.join(__dirname, 'publico', 'icones', req.path === '/favicon.ico' ? 'favicon-64.png' : 'apple-touch-icon.png'));
+});
 const PAGINA = pagina();
 app.get('/', (req, res) => { res.set('Cache-Control', 'no-cache'); res.type('html').send(PAGINA); });
 app.get('/saude', (req, res) => res.type('text').send('ok'));
