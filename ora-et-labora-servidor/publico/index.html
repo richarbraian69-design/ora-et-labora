@@ -1330,6 +1330,19 @@ tr.pl-pausada td{opacity:.55}
 .nota-rev{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding:12px 16px;border-radius:14px;background:var(--ac-suave);margin-bottom:12px}
 .nota-rev b{font-weight:600;color:var(--ac-tx)}
 #rev-card .rot{color:var(--ac-tx)}
+
+.linha .r-titulo[data-ver-m]{cursor:pointer}
+.linha .r-titulo[data-ver-m]:hover{text-decoration:underline;text-decoration-color:var(--tx3);text-underline-offset:3px}
+.indic.aberta{background:var(--sup-2);color:var(--tx)}
+.linha > .r-ver{grid-column:2 / -1;grid-row:2}
+.linha > .r-ver ~ .r-extra{grid-row:3}
+@media (max-width:760px){.linha > .r-ver{grid-row:3}.linha > .r-ver ~ .r-extra{grid-row:4}}
+.r-ver{margin-top:10px;padding:14px 16px;border-radius:12px;background:var(--bg);display:grid;gap:12px;animation:aparecer .16s ease}
+.r-ver-txt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92rem;line-height:1.55;color:var(--tx)}
+.r-ver-txt a{color:var(--ac-tx);text-decoration:underline;text-underline-offset:2px}
+.r-ver-vazio{margin:0;font-size:.88rem;color:var(--tx3)}
+.r-ver-acoes{display:flex;align-items:center;gap:12px}
+.r-ver-acoes .btn svg{width:14px;height:14px}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -2935,10 +2948,17 @@ tr.pl-pausada td{opacity:.55}
   });
   document.addEventListener('keydown', function(e){
     if (e.key==='Escape' && editandoMissao && e.target.closest && e.target.closest('.m-painel') && !e.target.closest('.sub-editor')){ editandoMissao = null; rascunho = null; render(); return; }
-    if ((e.key==='Enter' || e.key===' ') && e.target.matches && e.target.matches('.r-titulo[data-editar-m]')){ e.preventDefault(); e.target.click(); }
+    if ((e.key==='Enter' || e.key===' ') && e.target.matches && e.target.matches('.r-titulo[data-editar-m], .r-titulo[data-ver-m]')){ e.preventDefault(); e.target.click(); }
   });
   var flut = null, flutTimer = null, flutDe = null;
   function fecharFlut(){ clearTimeout(flutTimer); flutTimer = null; flutDe = null; if (flut){ flut.remove(); flut = null; } }
+  document.addEventListener('click', function(e){
+    var v = e.target.closest('[data-ver-m]'); if (!v || selecionando || e.target.closest('a')) return;
+    var idv = v.getAttribute('data-ver-m'); if (editandoMissao===idv){ editandoMissao = null; rascunho = null; render(); return; } descAbertas[idv] = !descAbertas[idv]; if (!descAbertas[idv]) delete descAbertas[idv];
+    if (descAbertas[idv]) marcarComentVisto(idv);
+    renderListas();
+    var t = document.querySelector('.linha[data-id="'+idv+'"] .r-titulo'); if (t) t.focus({preventScroll:true});
+  });
   document.addEventListener('click', function(e){
     var b = e.target.closest('[data-desc-toggle]'); if (!b || selecionando || e.target.closest('a')) return;
     fecharFlut();
@@ -3778,7 +3798,7 @@ tr.pl-pausada td{opacity:.55}
     var p = pessoa(m.resp), subs = m.subs||[], nf = subs.filter(function(s){ return s.feita; }).length, na = (m.anexos||[]).length, ed = editandoMissao===m.id;
     var ind = (subs.length && !ed ? '<button class="indic sub-tg'+(abertas[m.id]?' aberta':'')+'" type="button" data-det="'+m.id+'" aria-expanded="'+!!abertas[m.id]+'" title="'+(abertas[m.id] ? L('Recolher sub-missões','Collapse subtasks','Contraer submisiones','Partes contrahere') : L('Expandir sub-missões','Expand subtasks','Expandir submisiones','Partes explicare'))+'"><span class="caret" aria-hidden="true">▸</span><span data-sem-tr>'+L(nf+' de '+subs.length+(subs.length===1?' sub-missão':' sub-missões'), nf+' of '+subs.length+' sub-missions', nf+' de '+subs.length+' submisiones', nf+' ex '+subs.length+' missiunculis')+'</span></button>' : '')+(na && !ed ? '<button class="indic" type="button" data-det="'+m.id+'" aria-label="'+plural(na,'anexo','anexos')+'">'+I_CLIPE+na+'</button>' : '');
     if (!ed) ind += indComent(m);
-    if (!ed && m.descricao) ind += '<button class="indic" type="button" data-editar-m="'+m.id+'" title="'+esc(L('Tem descrição · abrir a missão','Has a description · open the mission','Tiene descripción · abrir la misión','Descriptio · aperire'))+'" aria-label="'+esc(L('Ver descrição','See description','Ver descripción','Descriptionem videre'))+'">'+svgIcone('<path d="M4 6h12M4 10h12M4 14h7"/>',1.7)+'</button>';
+    if (!ed && m.descricao) ind += '<button class="indic'+(descAbertas[m.id]?' aberta':'')+'" type="button" data-ver-m="'+m.id+'" title="'+esc(L('Ver a descrição','See the description','Ver la descripción','Descriptionem videre'))+'" aria-label="'+esc(L('Ver descrição','See description','Ver descripción','Descriptionem videre'))+'">'+svgIcone('<path d="M4 6h12M4 10h12M4 14h7"/>',1.7)+'</button>';
     if (m.vemDe) ind += '<span class="st" title="'+esc(L('Veio da missão','Came from mission','Vino de la misión','Ex missione'))+'">↳ '+esc(m.vemDe)+'</span>';
     if (m.tipo && nomeTipo(m.tipo) && !agrupandoTipo && usaTipos()) ind += '<span class="st tipo">'+esc(nomeTipo(m.tipo))+'</span>';
     if (m.recorrencia) ind += '<span class="st" title="Missão recorrente">'+I_REPETE+esc(nomeRec(m.recorrencia))+'</span>';
@@ -3804,13 +3824,15 @@ tr.pl-pausada td{opacity:.55}
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
       '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+'<span class="r-nome">'+esc(String(p.nome||'').split(' ')[0])+'</span><span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
-      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo" data-editar-m="'+m.id+'" role="button" tabindex="0" title="'+L('Abrir a missão','Open the mission','Abrir la misión','Missionem aperire')+'">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+
+      '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo" data-ver-m="'+m.id+'" role="button" tabindex="0" aria-expanded="'+!!(descAbertas[m.id] && !ed)+'" title="'+L('Ver a missão','View the mission','Ver la misión','Missionem videre')+'">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+
       status+'</div>'+
       '<div class="r-acoes'+(menuM===m.id?' aberto':'')+'">'+
         (usaTipos() && !m.feita ? '<button class="icone-btn prio-btn'+(ehPrioridade(m)?' on':'')+'" type="button" data-prioridade="'+m.id+'" aria-pressed="'+ehPrioridade(m)+'" aria-label="'+L('Prioridade','Priority','Prioridad','Praecipua')+': '+esc(m.titulo)+'" title="'+(ehPrioridade(m) ? L('Tirar das prioridades','Remove from priorities','Quitar de las prioridades','Removere') : L('Marcar como prioridade de hoje','Mark as today’s priority','Marcar como prioridad de hoy','Praecipuam facere'))+'">'+I_ESTRELA+'</button>' : '')+
         '<button class="icone-btn" type="button" data-editar-m="'+m.id+'" aria-label="Editar missão: '+esc(m.titulo)+'" title="'+L('Abrir e editar','Open and edit','Abrir y editar','Aperire et emendare')+'">'+I_EDITAR+'</button>'+
         '<button class="icone-btn" type="button" data-menu-m="'+m.id+'" aria-haspopup="menu" aria-expanded="'+(menuM===m.id)+'" aria-label="'+L('Mais ações','More actions','Más acciones','Plura')+': '+esc(m.titulo)+'" title="'+L('Mais ações','More actions','Más acciones','Plura')+'">'+I_MAIS+'</button>'+
         (menuM===m.id ? htmlMenuM(m) : '')+'</div>'+
+      (descAbertas[m.id] && !ed ? '<div class="r-ver">'+(m.descricao ? '<div class="r-ver-txt">'+textoComLinks(m.descricao)+'</div>' : '<p class="r-ver-vazio">'+L('Sem descrição.','No description.','Sin descripción.','Sine descriptione.')+'</p>')+
+        '<div class="r-ver-acoes"><button class="btn btn-claro btn-p" type="button" data-editar-m="'+m.id+'">'+I_EDITAR+L('Editar','Edit','Editar','Emendare')+'</button><button class="link" type="button" data-ver-m="'+m.id+'">'+L('Fechar','Close','Cerrar','Claudere')+'</button></div></div>' : '')+
       extras(m)+'</article>';
   }
   /* ---------- Reuniões: marcar como feita e repetir ---------- */
