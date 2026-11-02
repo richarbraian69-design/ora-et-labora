@@ -1324,6 +1324,10 @@ tr.pl-pausada td{opacity:.55}
 .aj-cor input{accent-color:var(--ac)}
 .aj-cor .bolas{display:inline-flex;gap:3px}
 .aj-cor .bolas i{width:12px;height:12px;border-radius:50%;display:block}
+
+.nota-rev{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;padding:12px 16px;border-radius:14px;background:var(--ac-suave);margin-bottom:12px}
+.nota-rev b{font-weight:600;color:var(--ac-tx)}
+#rev-card .rot{color:var(--ac-tx)}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1814,7 +1818,11 @@ tr.pl-pausada td{opacity:.55}
   </form>
 </div>
 <div class="voo" id="voo" aria-hidden="true" hidden></div>
-<div class="pilha-oracao"><div class="angelus" id="horas-card" role="status" hidden></div>
+<div class="pilha-oracao"><div class="angelus" id="rev-card" role="status" hidden data-sem-tr>
+  <p class="rot">Revisão semanal</p>
+  <p id="rv-card-txt"></p>
+  <div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="rv-card-fazer">Fazer agora</button><button class="btn btn-claro btn-p" type="button" id="rv-card-depois">Hoje não</button></div>
+</div><div class="angelus" id="horas-card" role="status" hidden></div>
 <div class="angelus" id="angelus" role="status" hidden>
   <p class="rot" id="an-rot"></p>
   <p id="an-verso"></p>
@@ -4534,7 +4542,7 @@ tr.pl-pausada td{opacity:.55}
     }
     if (vista==='hoje' && !q && ritualAtivo() && prefsEu().ritualFeito===hoje && prefsEu().ritualHora) html += '<p class="dia-liberado" data-sem-tr>'+svgIcone(ICONES.cumpridas)+L('Dia liberado às ','Day unlocked at ','Día liberado a las ','Dies apertus hora ')+esc(prefsEu().ritualHora)+'.</p>';
     if (vista==='hoje' && !q){
-      if (new Date().getDay()===0 && !revisaoDaSemana(true)) html += '<p class="nota">Domingo é dia de revisão semanal.<button class="link" type="button" data-abrir-revisao>Fazer a revisão agora</button></p>';
+      if (usaRevisao() && revisaoPendente()) html += '<div class="nota-rev" data-sem-tr><span><b>'+L('Revisão semanal pendente','Weekly review pending','Revisión semanal pendiente','Recognitio hebdomadalis')+'</b> · '+esc(faixaSemana(segundaDaSemana()))+'</span><button class="btn btn-escuro btn-p" type="button" data-abrir-revisao>'+L('Fazer agora','Do it now','Hacer ahora','Nunc facere')+'</button></div>';
       var rhTodas = reunioesDoDia(hoje), rh = rhTodas.filter(function(r){ return !r.feita; }), rf = rhTodas.filter(function(r){ return r.feita; }); nReunFeitas = rf.length;
       if (rh.length) html += htmlGrupo('Reuniões de hoje', rh.length, rh.map(linhaReuniao).join(''), false, 'reunioes-de-hoje');
       if (rf.length && verReunFeitas) html += htmlGrupo('Reuniões feitas hoje', rf.length, rf.map(linhaReuniao).join(''), false, 'reunioes-feitas-hoje');
@@ -5329,7 +5337,7 @@ tr.pl-pausada td{opacity:.55}
     chegadaInfo.aprov = nv.filter(function(m){ return m.aprov && m.aprov.estado==='aguardando' && m.aprovador===eu; }).length;
     chegadaInfo.novas = nv.length - chegadaInfo.aprov;
     if (nv.length){ marcarVistas(eu, nv.map(chaveAviso)); render(); }
-    var seguir = function(){ checarAngelus(); checarHoras(); };
+    var seguir = function(){ checarAngelus(); checarHoras(); checarRevisao(); };
     if (!ofertaDoDia() && !lsGet('ora-ofdia-'+eu+'-'+hoje)) abrirOfertaDia(seguir, true); else seguir();
   }
   document.getElementById('comecar').addEventListener('click', entrar);
@@ -6326,6 +6334,15 @@ tr.pl-pausada td{opacity:.55}
   function sequencia(hid){ var d = paraData(hoje), n = 0; if (!registro(hid, iso(d))) d.setDate(d.getDate()-1); while (registro(hid, iso(d)) && n<3650){ n++; d.setDate(d.getDate()-1); } return n; }
   function segundaDaSemana(){ var d = paraData(hoje), dw = d.getDay(); return iso(mais(d, -((dw+6)%7) - (dw===1 || dw===2 ? 7 : 0))); }
   function revisaoDaSemana(soConcluida){ var s = segundaDaSemana(), r = state.revisoes.filter(function(x){ return x.dono===eu && x.semana===s; })[0] || null; return soConcluida ? (r && r.concluida ? r : null) : r; }
+  /* a revisão da semana vale de domingo a terça; nesse período, se não foi feita, ela aparece */
+  function revisaoPendente(){ var dw = paraData(hoje).getDay(); return (dw===0 || dw===1 || dw===2) && !revisaoDaSemana(true); }
+  function usaRevisao(){ return !!pessoa(eu).admin || !SERVIDOR || state.revisoes.some(function(r){ return r.dono===eu; }); }
+  function checarRevisao(){
+    var c = document.getElementById('rev-card'); if (!c) return;
+    var mostrar = logado && !app.hidden && usaRevisao() && revisaoPendente() && lsGet('ora-rev-depois-'+eu)!==hoje && veuRev.hidden;
+    if (mostrar){ document.getElementById('rv-card-txt').textContent = L('Semana de ','Week of ','Semana del ','Hebdomas ')+faixaSemana(segundaDaSemana())+'. '+L('Ainda não foi feita.','Not done yet.','Aún no se hizo.','Nondum facta.'); }
+    c.hidden = !mostrar;
+  }
   function faixaSemana(seg){
     var a = paraData(seg), b = mais(a, 6), dif = a.getMonth()!==b.getMonth();
     if (LANG==='en') return nomeMes(a.getMonth())+' '+a.getDate()+'–'+(dif ? nomeMes(b.getMonth())+' ' : '')+b.getDate();
@@ -6343,7 +6360,7 @@ tr.pl-pausada td{opacity:.55}
     var ck = function(ok){ return '<span class="ck">'+(ok ? CHECK : '')+'</span>'; };
     document.getElementById('pes-status').innerHTML =
       '<button type="button" class="os-it'+(od?' ok':'')+'" data-of-dia title="'+esc(od && od.texto ? L('Ofereceu por: ','Offered for: ','Ofrecido por: ','Oblatum pro: ')+od.texto : L('Oferecer o dia','Offer the day','Ofrecer el día','Diem offerre'))+'">'+ck(!!od)+L('Oferecimento','Offering','Ofrecimiento','Oblatio')+'</button>'+
-      '<button type="button" class="os-it'+(af.length===3?' ok':'')+'" data-rezar-angelus>'+ck(af.length===3)+L('Ângelus','Angelus','Ángelus','Angelus')+' '+[6,12,18].map(function(h){ return '<i class="'+(af.indexOf(h)>=0?'ok':'')+'">'+h+'h</i>'; }).join('')+'</button>'+
+      '<button type="button" class="os-it'+(af.indexOf(12)>=0?' ok':'')+'" data-rezar-angelus>'+ck(af.indexOf(12)>=0)+L('Ângelus','Angelus','Ángelus','Angelus')+' <i class="'+(af.indexOf(12)>=0?'ok':'')+'">12h</i></button>'+
       '<button type="button" class="os-it'+(hf===HORAS.length?' ok':'')+'" data-abrir-horas>'+ck(hf===HORAS.length)+tituloLH()+' <b>'+hf+'/'+HORAS.length+'</b></button>'+
       '<button type="button" class="os-it'+(ex?' ok':'')+'" data-exame title="'+esc(ex && ex.proposito ? L('Propósito: ','Resolution: ','Propósito: ','Propositum: ')+ex.proposito : '')+'">'+ck(!!ex)+L('Exame do dia','Daily examen','Examen del día','Examen diei')+'</button>';
     document.getElementById('pes-horas').innerHTML = htmlHoras();
@@ -6414,7 +6431,7 @@ tr.pl-pausada td{opacity:.55}
     }
     if ((el = t.closest('[data-area]'))){ areaSel = el.getAttribute('data-area') || null; renderPessoal(); return; }
     if (t.closest('[data-of-dia]')){ abrirOfertaDia(function(){ renderPessoal(); }); return; }
-    if (t.closest('[data-rezar-angelus]')){ var hr = new Date().getHours(); abrirOracaoAngelus(hr<12 ? 6 : hr<18 ? 12 : 18); return; }
+    if (t.closest('[data-rezar-angelus]')){ var hr = new Date().getHours(); abrirOracaoAngelus(12); return; }
     if (t.closest('[data-exame]')){ abrirExame(false); return; }
     if (t.closest('[data-abrir-horas]')){ var dh = document.getElementById('pes-horas-det'); dh.open = true; dh.scrollIntoView({block:'start', behavior:'smooth'}); return; }
   });
@@ -6534,6 +6551,9 @@ tr.pl-pausada td{opacity:.55}
 
   /* ---------- Revisão semanal ---------- */
   var veuRev = document.getElementById('veu-revisao'), rvPasso = 0, rvRev = null;
+  document.getElementById('rv-card-fazer').addEventListener('click', function(){ document.getElementById('rev-card').hidden = true; abrirRevisao(); });
+  document.getElementById('rv-card-depois').addEventListener('click', function(){ lsSet('ora-rev-depois-'+eu, hoje); document.getElementById('rev-card').hidden = true; });
+  setInterval(checarRevisao, 60000);
   function abrirRevisao(){
     rvRev = revisaoDaSemana(false);
     if (!rvRev){ rvRev = {id:uid(), dono:eu, semana:segundaDaSemana(), areas:{}, concluida:false, criadaEm:new Date().toISOString()}; state.revisoes.push(rvRev); }
@@ -6570,7 +6590,7 @@ tr.pl-pausada td{opacity:.55}
   document.getElementById('rv-form').addEventListener('submit', function(e){
     e.preventDefault(); guardarPasso();
     if (rvPasso===areasEu().length-1){
-      var primeira = !rvRev.concluida; rvRev.concluida = true; rvRev.concluidaEm = new Date().toISOString(); salvar(); veuRev.hidden = true; render();
+      var primeira = !rvRev.concluida; rvRev.concluida = true; setTimeout(checarRevisao, 0); rvRev.concluidaEm = new Date().toISOString(); salvar(); veuRev.hidden = true; render();
       avisar(primeira ? 'Revisão da semana concluída. +15 Prudência.' : 'Revisão atualizada.'); return;
     }
     rvPasso++; salvar(); pintarRevisao(); document.getElementById('rv-percebi').focus();
@@ -6583,7 +6603,7 @@ tr.pl-pausada td{opacity:.55}
   function checarAngelus(){
     if (!logado || app.hidden) return;
     var d = new Date(), h = d.getHours();
-    if ([6,12,18].indexOf(h)<0 || d.getMinutes()>=10) return;
+    if (h!==12 || d.getMinutes()>=10) return;
     var k = 'ora-angelus-'+eu+'-'+iso(d)+'-'+h; if (angMostrado[k] || lsGet(k)) return;
     angMostrado[k] = 1; lsSet(k, '1'); mostrarAngelus(h);
   }
@@ -6740,7 +6760,7 @@ tr.pl-pausada td{opacity:.55}
     var agora = new Date(), lista = [];
     for (var k=0;k<2;k++){
       HORAS.forEach(function(x){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(x.h,0,0,0); lista.push({t:d, nome:nomeHora(x), hora:x, h:x.h}); });
-      [6,12,18].forEach(function(h){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(h,0,0,0); lista.push({t:d, nome:L('Ângelus','Angelus','Ángelus','Angelus'), h:h}); });
+      [12].forEach(function(h){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(h,0,0,0); lista.push({t:d, nome:L('Ângelus','Angelus','Ángelus','Angelus'), h:h}); });
     }
     lista = lista.filter(function(o){ return o.t > agora; }).sort(function(a,b){ return a.t-b.t; });
     if (!lista.length) return null;
