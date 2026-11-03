@@ -1343,6 +1343,10 @@ tr.pl-pausada td{opacity:.55}
 .r-ver-vazio{margin:0;font-size:.88rem;color:var(--tx3)}
 .r-ver-acoes{display:flex;align-items:center;gap:12px}
 .r-ver-acoes .btn svg{width:14px;height:14px}
+
+.aj-editar{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;color:var(--tx2);margin-top:2px;justify-self:start}
+.aj-editar svg{width:13px;height:13px}
+.aj-editado{color:var(--tx3);font-size:.78em}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -3191,7 +3195,7 @@ tr.pl-pausada td{opacity:.55}
     if (e.target.closest('[data-ver-reun-feitas]')){ verReunFeitas = !verReunFeitas; lsSet('ora-ver-reun-feitas', verReunFeitas ? '1' : ''); render(); return; }
   });
   var vista='hoje', filtro='todos', filtroTag=null, busca='', abertas={}, editandoSub=null, movendo=null, tagueando=null, ultimaNova=null, formTags=[], reuniaoTags=[], reuniaoPessoas=[], editandoReuniao=null;
-  var pedindoAjuste=null, areaSel=null, buscaCri='';
+  var pedindoAjuste=null, editandoAjuste=null, areaSel=null, buscaCri='';
   var hoje = iso(new Date()), mesAgenda = new Date(), diaSel = hoje;
   mesAgenda.setDate(1);
   var eu = lsGet(KEY_EU); if (!state.equipe.some(function(p){ return p.id===eu; })) eu = state.equipe[0].id;
@@ -3810,7 +3814,12 @@ tr.pl-pausada td{opacity:.55}
       if (m.aprovador===eu) status += '<div class="aprov-acoes"><button class="btn btn-escuro btn-p" type="button" data-aprovar="'+m.id+'">Aprovar</button><button class="btn btn-claro btn-p" type="button" data-pedir-ajuste="'+m.id+'">Pedir ajustes</button></div>'+
         (pedindoAjuste===m.id ? '<form class="aprov-form" data-ajuste-form="'+m.id+'"><label>O que precisa ser ajustado?<textarea class="campo" name="nota" id="aj-nota-'+m.id+'" maxlength="400" required></textarea></label><div class="acoes"><button class="btn btn-escuro btn-p" type="submit">Enviar para '+esc(p.nome)+'</button><button class="btn btn-claro btn-p" type="button" data-pedir-ajuste="'+m.id+'">Cancelar</button></div></form>' : '');
     } else if (est==='ajustes'){
-      status = '<span class="st ajuste">'+I_ESCUDO+'Ajustes pedidos por '+esc(pessoa(m.aprov.por).nome)+'</span>'+(m.aprov.nota ? '<p class="nota-ajuste">'+esc(m.aprov.nota)+'</p>' : '');
+      var podeEdAj = m.aprov.por===eu || !!pessoa(eu).admin;
+      status = '<span class="st ajuste">'+I_ESCUDO+'Ajustes pedidos por '+esc(pessoa(m.aprov.por).nome)+'</span>'+
+        (editandoAjuste===m.id && podeEdAj
+          ? '<form class="aprov-form" data-ajuste-edit="'+m.id+'"><label>'+L('Editar o pedido de ajustes','Edit the change request','Editar el pedido de ajustes','Petitionem emendare')+'<textarea class="campo" name="nota" id="aj-ed-'+m.id+'" maxlength="2000" required>'+esc(m.aprov.nota||'')+'</textarea></label><div class="acoes"><button class="btn btn-escuro btn-p" type="submit">'+L('Salvar','Save','Guardar','Servare')+'</button><button class="btn btn-claro btn-p" type="button" data-editar-ajuste="'+m.id+'">'+L('Cancelar','Cancel','Cancelar','Omittere')+'</button></div></form>'
+          : (m.aprov.nota ? '<p class="nota-ajuste">'+esc(m.aprov.nota)+(m.aprov.editadoEm ? ' <small class="aj-editado">'+L('(editado)','(edited)','(editado)','(emendatum)')+'</small>' : '')+'</p>' : '')+
+            (podeEdAj ? '<button class="link aj-editar" type="button" data-editar-ajuste="'+m.id+'">'+I_EDITAR+L('Editar o pedido','Edit the request','Editar el pedido','Emendare')+'</button>' : ''));
     } else if (aprova) ind += '<span class="indic" title="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'" aria-label="Precisa da aprovação de '+esc(pessoa(m.aprovador).nome)+'">'+I_ESCUDO+'</span>';
     if (m.entrega && m.entrega.length && !est) status += htmlLinks(m.entrega, L('Entrega:','Delivery:','Entrega:','Opus:'));
     if (m.entregaComentario && !est) status += htmlComentEntrega(m.entregaComentario, m.resp);
@@ -5568,6 +5577,7 @@ tr.pl-pausada td{opacity:.55}
     if (t.closest('[data-chegou-ok]')){ chegadas = []; renderLista(); return; }
     if ((el = t.closest('[data-vista-ir]'))){ vista = el.getAttribute('data-vista-ir'); chegadas = []; render(); window.scrollTo(0,0); return; }
     if ((el = t.closest('[data-aprovar]'))){ cumprir(el.getAttribute('data-aprovar')); return; }
+    if ((el = t.closest('[data-editar-ajuste]'))){ var ea = el.getAttribute('data-editar-ajuste'); editandoAjuste = editandoAjuste===ea ? null : ea; renderLista(); var te = document.getElementById('aj-ed-'+ea); if (te){ te.focus(); te.setSelectionRange(te.value.length, te.value.length); crescerTodas && crescerTodas(); } return; }
     if ((el = t.closest('[data-pedir-ajuste]'))){ var pa = el.getAttribute('data-pedir-ajuste'); pedindoAjuste = pedindoAjuste===pa ? null : pa; renderLista(); var ta = document.getElementById('aj-nota-'+pa); if (ta) ta.focus(); return; }
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
@@ -5591,6 +5601,10 @@ tr.pl-pausada td{opacity:.55}
   listaEl.addEventListener('submit', enviarLista); listaPes.addEventListener('submit', enviarLista);
   function enviarLista(e){
     var renderLista = renderListas;
+    var fae = e.target.closest('[data-ajuste-edit]');
+    if (fae){ e.preventDefault(); var mae = achar(fae.getAttribute('data-ajuste-edit')), ne = fae.elements.nota.value.trim(); if (!mae || !ne || !mae.aprov) return;
+      if (ne!==(mae.aprov.nota||'')){ mae.aprov.nota = ne; mae.aprov.editadoEm = new Date().toISOString(); registrar(mae, 'editou o pedido de ajustes: '+ne); salvar(); }
+      editandoAjuste = null; render(); avisar(L('Pedido de ajustes atualizado.','Change request updated.','Pedido de ajustes actualizado.','Renovatum.')); return; }
     var fa = e.target.closest('[data-ajuste-form]');
     if (fa){ e.preventDefault(); var ma = achar(fa.getAttribute('data-ajuste-form')), nota = fa.elements.nota.value.trim(); if (!ma || !nota) return;
       ma.aprov = {estado:'ajustes', nota:nota, em:new Date().toISOString(), por:eu}; ma.ajustes = (ma.ajustes||0)+1; registrar(ma, 'pediu ajustes: '+nota); pedindoAjuste = null; salvar(); render();
@@ -6884,7 +6898,7 @@ tr.pl-pausada td{opacity:.55}
   }
   function seguroRenderizar(){
     var ae = document.activeElement, campo = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
-    var aberto = !form.hidden || !formR.hidden || editandoSub || pedindoAjuste || movendo || tagueando || drivePara || document.querySelector('.veu:not([hidden])');
+    var aberto = !form.hidden || !formR.hidden || editandoSub || pedindoAjuste || editandoAjuste || movendo || tagueando || drivePara || document.querySelector('.veu:not([hidden])');
     return !campo && !aberto;
   }
   function agendarRender(){ if (app.hidden){ renderAbertura(); return; } if (seguroRenderizar()){ SYNC.pendRender = false; render(); } else SYNC.pendRender = true; }
