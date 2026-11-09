@@ -1347,6 +1347,30 @@ tr.pl-pausada td{opacity:.55}
 .aj-editar{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;color:var(--tx2);margin-top:2px;justify-self:start}
 .aj-editar svg{width:13px;height:13px}
 .aj-editado{color:var(--tx3);font-size:.78em}
+
+/* ---------- Foco (90 min) ---------- */
+.foco-btn{display:inline-flex;align-items:center;gap:7px}
+.foco-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.foco-pill{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:37;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 10px;border-radius:999px;background:var(--painel);color:var(--tx);box-shadow:0 8px 30px rgba(0,0,0,.18),0 0 0 1px var(--linha);max-width:calc(100% - 32px)}
+.foco-pill[hidden]{display:none}
+.fp-anel{position:relative;width:36px;height:36px;flex:none}
+.fp-anel svg{width:36px;height:36px;display:block}
+.fp-anel .t{fill:none;stroke:var(--sup-2);stroke-width:3.5}
+.fp-anel .p{fill:none;stroke:var(--ac);stroke-width:3.5;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.fp-ic{position:absolute;inset:8px;width:20px;height:20px;fill:none;stroke:var(--ac-tx);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.fp-txt{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.fp-tempo{font-variant-numeric:tabular-nums;font-weight:600;font-size:1.05rem;letter-spacing:.01em}
+.fp-txt small{font-size:.75rem;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.fp-acoes{display:flex;align-items:center;gap:2px}
+.fp-acoes .icone-btn{width:34px;height:34px;border-radius:50%}
+.fp-acoes .btn{border-radius:999px;white-space:nowrap}
+.foco-pill[data-estado="pausa"] .fp-tempo{color:var(--tx2)}
+.foco-pill.passou{box-shadow:0 8px 30px rgba(0,0,0,.18),0 0 0 2px var(--ac)}
+.foco-pill.passou .fp-anel{animation:fp-chama 2.4s ease-in-out infinite}
+.foco-pill.passou small{color:var(--ac-tx);font-weight:600}
+@keyframes fp-chama{0%,100%{opacity:1}50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){.foco-pill.passou .fp-anel{animation:none}}
+@media (max-width:760px){.foco-pill{left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px))}.fp-txt{flex:1}.foco-btn{padding-left:10px;padding-right:10px}}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1405,6 +1429,7 @@ tr.pl-pausada td{opacity:.55}
       <div class="topo">
         <div class="topo-txt"><h2 class="saudacao" id="saudacao"></h2><p class="lit" id="lit-hoje"></p></div>
         <div class="topo-acoes">
+        <button class="btn btn-claro foco-btn" id="foco-btn" type="button" title="Começar um bloco de 90 minutos de trabalho focado" data-sem-tr><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="11" r="6.5"/><path d="M10 7.5V11l2.5 1.5M8 2.5h4"/></svg>Foco</button>
         <button class="btn btn-claro btn-fim" id="finalizar-dia" type="button" aria-pressed="false"></button>
         <div class="menu-novo">
           <button class="btn btn-escuro" id="abrir-novo" type="button" aria-haspopup="true" aria-expanded="false">
@@ -1413,6 +1438,7 @@ tr.pl-pausada td{opacity:.55}
             <svg class="seta" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
           </button>
           <div class="menu-lista" id="menu-novo" role="menu" hidden>
+            <button type="button" role="menuitem" data-novo="foco"><span id="ic-foco"></span><b>Bloco de foco</b><small>90 minutos, depois uma caminhada</small></button>
             <button type="button" role="menuitem" data-novo="captura"><span id="ic-captura"></span><b>Captura rápida</b><small>Escreva numa linha só · tecla N</small></button>
             <button type="button" role="menuitem" data-novo="missao"><span id="ic-missao"></span><b>Missão</b><small>Uma demanda com responsável e data</small></button>
             <button type="button" role="menuitem" data-novo="reuniao"><span id="ic-reuniao"></span><b>Reunião</b><small>Marcar um horário na agenda</small></button>
@@ -1837,6 +1863,7 @@ tr.pl-pausada td{opacity:.55}
   </form>
 </div>
 <div class="voo" id="voo" aria-hidden="true" hidden></div>
+<div class="foco-pill" id="foco-pill" role="timer" hidden data-sem-tr></div>
 <div class="pilha-oracao"><div class="angelus" id="rev-card" role="status" hidden data-sem-tr>
   <p class="rot">Revisão semanal</p>
   <p id="rv-card-txt"></p>
@@ -3773,6 +3800,7 @@ tr.pl-pausada td{opacity:.55}
     if (m.privada) h += it('data-levar="'+m.id+'"', svgIcone(ICONES.todas), L('Levar para as missões da equipe','Move to team missions','Llevar a las misiones del equipo','Ad sodales transferre'));
     else if (m.resp===eu) h += it('data-levar="'+m.id+'"', I_CADEADO, L('Levar para a Minha área','Move to My space','Llevar a Mi área','In Aream meam'));
     if (!m.privada) h += it('data-mover="'+m.id+'"', I_MOVER, L('Mover para… (virar sub-missão)','Move to… (make it a sub-mission)','Mover a… (convertir en submisión)','Movere ad…'));
+    if (!m.feita) h += it('data-focar-m="'+m.id+'"', svgIcone('<circle cx="10" cy="11" r="6.5"/><path d="M10 7.5V11l2.5 1.5M8 2.5h4"/>',1.6), L('Focar nesta missão (90 min)','Focus on this mission (90 min)','Enfocarse en esta misión (90 min)','Huic operi incumbere'));
     h += it('data-salvar-modelo="'+m.id+'"', svgIcone('<rect x="4" y="3.5" width="12" height="13" rx="2"/><path d="M7 7.5h6M7 10.5h6M7 13.5h3"/>',1.6), L('Salvar como modelo','Save as template','Guardar como modelo','Exemplar servare'));
     h += '<div class="card-menu-sep"></div>'+it('data-excluir="'+m.id+'"', I_LIXO, L('Excluir','Delete','Eliminar','Delere'), 'perigo');
     return '<div class="card-menu" role="menu" data-menu-de="'+m.id+'">'+h+'</div>';
@@ -4467,6 +4495,91 @@ tr.pl-pausada td{opacity:.55}
     if ((b = e.target.closest('[data-modelo-usar]'))){ e.preventDefault(); usarModelo(b.getAttribute('data-modelo-usar')); return; }
     if ((b = e.target.closest('[data-salvar-modelo]'))){ e.preventDefault(); var m = achar(b.getAttribute('data-salvar-modelo')); if (m) salvarModelo(m); return; }
   });
+  /* ==================== Trabalho focado: blocos de 90 min com caminhada ==================== */
+  var FOCO_MIN = 90, focoTick = null;
+  function focoEstado(){ return prefsEu().foco || null; }
+  function focoMs(f){ f = f || focoEstado(); if (!f) return 0; return (f.acum||0) + (f.estado==='foco' && f.inicio ? Date.now() - Date.parse(f.inicio) : 0); }
+  function focoFmt(ms){ var s = Math.max(0, Math.floor(ms/1000)), h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return (h ? h+':'+pad(m) : String(m))+':'+pad(x); }
+  function focoHoje(){ var d = prefsEu().focoDias || {}; return d[hoje] || {min:0, blocos:0}; }
+  function focoRegistrar(ms, completo){
+    var p = prefsEu(); p.focoDias = p.focoDias || {}; var d = p.focoDias[hoje] || {min:0, blocos:0};
+    d.min += Math.round(ms/60000); if (completo) d.blocos += 1; p.focoDias[hoje] = d;
+    var ks = Object.keys(p.focoDias).sort(); while (ks.length > 120){ delete p.focoDias[ks.shift()]; }
+  }
+  function focoSom(){
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 1.4, 2.8].forEach(function(t){
+        [[660,1],[1320,.35],[1980,.12]].forEach(function(f){
+          var o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = f[0];
+          g.gain.setValueAtTime(0.0001, ctx.currentTime + t); g.gain.exponentialRampToValueAtTime(0.22*f[1], ctx.currentTime + t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 2.2);
+          o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 2.3);
+        });
+      });
+      setTimeout(function(){ try { ctx.close(); } catch(e){} }, 6000);
+    } catch(e){}
+  }
+  function focoNotificar(){
+    try { if (window.Notification && Notification.permission==='granted') new Notification('Ora et Labora', {body: L('90 minutos de foco. Hora de caminhar na quadra.','90 minutes of focus. Time for a walk around the block.','90 minutos de foco. Hora de caminar.','Tempus ambulandi.'), icon: '/icones/icone-192.png', tag: 'ora-foco'}); } catch(e){}
+  }
+  function focoIniciar(missao){
+    var f = focoEstado();
+    if (f && f.estado==='foco' && missao){ f.missao = missao; salvar(); focoPintar(); return; }
+    prefsEu().foco = {estado:'foco', inicio:new Date().toISOString(), acum:0, missao:missao||null, avisado:false};
+    salvar(); focoPintar();
+    try { if (window.Notification && Notification.permission==='default') Notification.requestPermission(); } catch(e){}
+  }
+  function focoPausar(){ var f = focoEstado(); if (!f || f.estado!=='foco') return; f.acum = focoMs(f); f.estado = 'pausa'; f.inicio = null; salvar(); focoPintar(); }
+  function focoRetomar(){ var f = focoEstado(); if (!f || f.estado!=='pausa') return; f.estado = 'foco'; f.inicio = new Date().toISOString(); salvar(); focoPintar(); }
+  function focoCaminhar(){ var f = focoEstado(); if (!f) return; focoRegistrar(focoMs(f), true); prefsEu().foco = {estado:'caminhada', inicio:new Date().toISOString(), acum:0, missao:f.missao||null}; salvar(); focoPintar(); }
+  function focoEncerrar(){
+    var f = focoEstado(); if (!f) return;
+    if (f.estado!=='caminhada'){ var ms = focoMs(f); if (ms > 60000) focoRegistrar(ms, ms >= FOCO_MIN*60000); }
+    prefsEu().foco = null; salvar(); focoPintar();
+    var h = focoHoje(); if (h.min) avisar(L('Foco hoje: ','Focus today: ','Foco hoy: ','Hodie: ')+(h.min>=60 ? Math.floor(h.min/60)+'h'+(h.min%60 ? pad(h.min%60) : '') : h.min+' min')+(h.blocos ? ' · '+plural(h.blocos,'bloco completo','blocos completos') : '')+'.');
+  }
+  function focoPintar(){
+    var f = focoEstado(), pill = document.getElementById('foco-pill'), btn = document.getElementById('foco-btn');
+    if (!pill) return;
+    if (btn) btn.hidden = !!f;
+    if (!f){ pill.hidden = true; pill.removeAttribute('data-chave'); document.title = 'Ora et Labora'; clearInterval(focoTick); focoTick = null; return; }
+    pill.hidden = false; pill.setAttribute('data-estado', f.estado);
+    var cam = f.estado==='caminhada', ms = cam ? Date.now() - Date.parse(f.inicio) : focoMs(f), alvo = FOCO_MIN*60000, frac = cam ? 1 : Math.min(1, ms/alvo), passou = !cam && ms >= alvo;
+    var mi = f.missao ? achar(f.missao) : null, h = focoHoje();
+    var circ = 2*Math.PI*15, chave = [f.estado, passou, f.missao||'', mi ? mi.titulo : ''].join('|');
+    if (pill.getAttribute('data-chave')===chave){
+      var tp = pill.querySelector('.fp-tempo'), an = pill.querySelector('.fp-anel .p');
+      if (tp) tp.textContent = focoFmt(ms); if (an) an.setAttribute('stroke-dashoffset', (circ*(1-frac)).toFixed(1));
+    } else {
+    pill.setAttribute('data-chave', chave);
+    pill.innerHTML =
+      '<span class="fp-anel"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="t"/><circle cx="18" cy="18" r="15" class="p" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+(circ*(1-frac)).toFixed(1)+'" transform="rotate(-90 18 18)"/></svg>'+
+        (cam ? '<svg class="fp-ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="11" cy="3.5" r="1.6"/><path d="M9.5 7.5l-2 4 2.5 2-1 4.5M9.5 7.5l3 1.5 1.5 2.5M8 11.5l-2.5 1M11 14l2.5 3.5"/></svg>' : '')+'</span>'+
+      '<span class="fp-txt"><b class="fp-tempo">'+(cam ? focoFmt(ms) : focoFmt(ms))+'</b><small>'+
+        (cam ? L('Caminhada','Walk','Caminata','Ambulatio') : f.estado==='pausa' ? L('Pausado','Paused','En pausa','Intermissum') : passou ? L('Hora de caminhar','Time to walk','Hora de caminar','Ambula') : L('Foco · de ','Focus · of ','Foco · de ','Opus · ')+FOCO_MIN+' min')+
+        (mi && !cam ? ' · '+esc(mi.titulo.length>34 ? mi.titulo.slice(0,33)+'…' : mi.titulo) : '')+'</small></span>'+
+      '<span class="fp-acoes">'+
+        (cam ? '<button type="button" class="btn btn-escuro btn-p" data-foco="novo">'+L('Voltei, novo bloco','Back, new block','Volví, nuevo bloque','Redii')+'</button><button type="button" class="icone-btn" data-foco="fim" title="'+L('Encerrar','End','Terminar','Finire')+'" aria-label="'+L('Encerrar','End','Terminar','Finire')+'">'+svgIcone('<path d="M5 5l10 10M15 5L5 15"/>',1.8)+'</button>'
+        : passou ? '<button type="button" class="btn btn-escuro btn-p" data-foco="caminhar">'+L('Fui caminhar','Going for a walk','Fui a caminar','Ambulo')+'</button><button type="button" class="icone-btn" data-foco="fim" title="'+L('Encerrar','End','Terminar','Finire')+'" aria-label="'+L('Encerrar','End','Terminar','Finire')+'">'+svgIcone('<path d="M5 5l10 10M15 5L5 15"/>',1.8)+'</button>'
+        : (f.estado==='pausa' ? '<button type="button" class="icone-btn" data-foco="retomar" title="'+L('Continuar','Resume','Continuar','Pergere')+'" aria-label="'+L('Continuar','Resume','Continuar','Pergere')+'">'+svgIcone('<path d="M7 5l8 5-8 5z"/>',1.8)+'</button>'
+                               : '<button type="button" class="icone-btn" data-foco="pausar" title="'+L('Pausar','Pause','Pausar','Intermittere')+'" aria-label="'+L('Pausar','Pause','Pausar','Intermittere')+'">'+svgIcone('<path d="M7.5 5v10M12.5 5v10"/>',1.8)+'</button>')+
+          '<button type="button" class="icone-btn" data-foco="fim" title="'+L('Encerrar o bloco','End the block','Terminar el bloque','Finire')+'" aria-label="'+L('Encerrar o bloco','End the block','Terminar el bloque','Finire')+'">'+svgIcone('<rect x="5.5" y="5.5" width="9" height="9" rx="1.5"/>',1.8)+'</button>')+
+      '</span>';
+    }
+    pill.classList.toggle('passou', passou);
+    pill.title = h.blocos || h.min ? L('Hoje: ','Today: ','Hoy: ','Hodie: ')+h.min+' min · '+plural(h.blocos,'bloco','blocos') : '';
+    document.title = (cam ? '◦ ' : passou ? '● ' : f.estado==='pausa' ? '‖ ' : '')+focoFmt(ms)+' · Ora et Labora';
+    if (passou && !f.avisado){ f.avisado = true; salvar(); focoSom(); focoNotificar(); }
+    if (!focoTick) focoTick = setInterval(function(){ if (focoEstado()) focoPintar(); }, 1000);
+  }
+  document.getElementById('foco-btn').addEventListener('click', function(){ focoIniciar(null); });
+  document.addEventListener('click', function(e){ var b = e.target.closest('[data-focar-m]'); if (!b) return; var id = b.getAttribute('data-focar-m'); menuM = null; focoIniciar(id); renderListas(); var mm = achar(id); avisar(L('Bloco de foco começou: ','Focus block started: ','Bloque de foco iniciado: ','Coepit: ')+(mm ? mm.titulo : '')+'.'); });
+  document.getElementById('foco-pill').addEventListener('click', function(e){
+    var b = e.target.closest('[data-foco]'); if (!b) return;
+    var a = b.getAttribute('data-foco');
+    if (a==='pausar') focoPausar(); else if (a==='retomar') focoRetomar(); else if (a==='caminhar') focoCaminhar(); else if (a==='fim') focoEncerrar(); else if (a==='novo') focoIniciar((focoEstado()||{}).missao||null);
+  });
+
   /* ---------- Antes das missões (só a conta de administrador): celular, limpa nas demandas e Oração de São Francisco ---------- */
   var ORACAO_PAZ = ['Senhor, fazei de mim um instrumento de vossa paz.','Onde houver ódio, que eu leve o amor;','onde houver ofensa, que eu leve o perdão;','onde houver discórdia, que eu leve a união;','onde houver dúvida, que eu leve a fé;','onde houver erro, que eu leve a verdade;','onde houver desespero, que eu leve a esperança;','onde houver tristeza, que eu leve a alegria;','onde houver trevas, que eu leve a luz.','Ó Mestre, fazei que eu procure mais','consolar que ser consolado;','compreender que ser compreendido;','amar que ser amado.','Pois é dando que se recebe,','é perdoando que se é perdoado,','e é morrendo que se vive para a vida eterna.','Amém.'];
   var VISTAS_MISSOES = ['hoje','todas','atrasadas','proximas','cumpridas','aprovar'];
@@ -5311,7 +5424,7 @@ tr.pl-pausada td{opacity:.55}
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
   function aplicarCorApp(){ try { var pc = (prefsEu().corApp)||'lit'; document.documentElement.setAttribute('data-lit', pc==='ouro' ? 'ouro' : (liturgia(hoje).cor||'verde')); } catch(e){} }
-  function render(){ aplicarCorApp(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function render(){ aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -5424,14 +5537,14 @@ tr.pl-pausada td{opacity:.55}
   buscaIn.addEventListener('input', function(){ busca = buscaIn.value; renderLista(); });
   buscaIn.addEventListener('blur', function(){ if (!buscaIn.value) buscaCaixa.classList.remove('aberta'); });
   var btnNovo = document.getElementById('abrir-novo'), menuNovo = document.getElementById('menu-novo');
-  document.getElementById('ic-missao').innerHTML = svgIcone(ICONES.missao); document.getElementById('ic-reuniao').innerHTML = svgIcone(ICONES.reuniao); document.getElementById('ic-pessoal').innerHTML = svgIcone(ICONES.pessoal); document.getElementById('ic-gravar').innerHTML = I_REC; document.getElementById('ic-captura').innerHTML = svgIcone('<path d="M4 10h9M10 6l4 4-4 4"/><path d="M16.5 4v12"/>',1.6); document.getElementById('ic-modelo').innerHTML = svgIcone('<rect x="4" y="3.5" width="12" height="13" rx="2"/><path d="M7 7.5h6M7 10.5h6M7 13.5h3"/>',1.6); document.querySelector('[data-novo="gravar"]').hidden = !SERVIDOR;
+  document.getElementById('ic-missao').innerHTML = svgIcone(ICONES.missao); document.getElementById('ic-reuniao').innerHTML = svgIcone(ICONES.reuniao); document.getElementById('ic-pessoal').innerHTML = svgIcone(ICONES.pessoal); document.getElementById('ic-gravar').innerHTML = I_REC; document.getElementById('ic-foco').innerHTML = svgIcone('<circle cx="10" cy="11" r="6.5"/><path d="M10 7.5V11l2.5 1.5M8 2.5h4"/>',1.6); document.getElementById('ic-captura').innerHTML = svgIcone('<path d="M4 10h9M10 6l4 4-4 4"/><path d="M16.5 4v12"/>',1.6); document.getElementById('ic-modelo').innerHTML = svgIcone('<rect x="4" y="3.5" width="12" height="13" rx="2"/><path d="M7 7.5h6M7 10.5h6M7 13.5h3"/>',1.6); document.querySelector('[data-novo="gravar"]').hidden = !SERVIDOR;
   function fecharMenu(){ menuNovo.hidden = true; menuNovo.classList.remove('rodape'); btnNovo.setAttribute('aria-expanded','false'); }
   btnNovo.addEventListener('click', function(e){ e.stopPropagation(); var abre = menuNovo.hidden; menuNovo.hidden = !abre; menuNovo.classList.remove('rodape'); btnNovo.setAttribute('aria-expanded', String(abre)); if (abre) menuNovo.querySelector('button').focus(); });
   document.addEventListener('click', function(e){ if (!menuNovo.hidden && !e.target.closest('.menu-novo')) fecharMenu(); });
   menuNovo.addEventListener('click', function(e){
     var b = e.target.closest('[data-novo]'); if (!b) return; fecharMenu();
     var tp = b.getAttribute('data-novo');
-    if (tp==='missao') abrirMissao(false); else if (tp==='pessoal') abrirMissao(true); else if (tp==='gravar') gravarAgora(); else if (tp==='captura') abrirCaptura(); else if (tp==='modelo') abrirModelos(); else abrirReuniao(null, vista==='agenda' ? diaSel : hoje);
+    if (tp==='missao') abrirMissao(false); else if (tp==='pessoal') abrirMissao(true); else if (tp==='gravar') gravarAgora(); else if (tp==='captura') abrirCaptura(); else if (tp==='foco') focoIniciar(null); else if (tp==='modelo') abrirModelos(); else abrirReuniao(null, vista==='agenda' ? diaSel : hoje);
   });
 
   /* ---------- Nova missão ---------- */
