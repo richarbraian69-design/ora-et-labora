@@ -1371,6 +1371,12 @@ tr.pl-pausada td{opacity:.55}
 @keyframes fp-chama{0%,100%{opacity:1}50%{opacity:.55}}
 @media (prefers-reduced-motion: reduce){.foco-pill.passou .fp-anel{animation:none}}
 @media (max-width:760px){.foco-pill{left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px))}.fp-txt{flex:1}.foco-btn{padding-left:10px;padding-right:10px}}
+
+.hab-card .hab-lista{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:8px}
+.hab-card .hab-lista li{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hab-card .hab-lista li > span:first-child{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.hab-card .hab-bts{display:flex;gap:6px;flex:none}
+.hab-card .rot{color:var(--ac-tx)}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1864,7 +1870,7 @@ tr.pl-pausada td{opacity:.55}
 </div>
 <div class="voo" id="voo" aria-hidden="true" hidden></div>
 <div class="foco-pill" id="foco-pill" role="timer" hidden data-sem-tr></div>
-<div class="pilha-oracao"><div class="angelus" id="rev-card" role="status" hidden data-sem-tr>
+<div class="pilha-oracao"><div class="angelus hab-card" id="hab-card" role="status" hidden data-sem-tr></div><div class="angelus" id="rev-card" role="status" hidden data-sem-tr>
   <p class="rot">Revisão semanal</p>
   <p id="rv-card-txt"></p>
   <div class="acoes"><button class="btn btn-escuro btn-p" type="button" id="rv-card-fazer">Fazer agora</button><button class="btn btn-claro btn-p" type="button" id="rv-card-depois">Hoje não</button></div>
@@ -5424,7 +5430,7 @@ tr.pl-pausada td{opacity:.55}
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
   function aplicarCorApp(){ try { var pc = (prefsEu().corApp)||'lit'; document.documentElement.setAttribute('data-lit', pc==='ouro' ? 'ouro' : (liturgia(hoje).cor||'verde')); } catch(e){} }
-  function render(){ aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function render(){ aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -5484,7 +5490,7 @@ tr.pl-pausada td{opacity:.55}
     chegadaInfo.aprov = nv.filter(function(m){ return m.aprov && m.aprov.estado==='aguardando' && m.aprovador===eu; }).length;
     chegadaInfo.novas = nv.length - chegadaInfo.aprov;
     if (nv.length){ marcarVistas(eu, nv.map(chaveAviso)); render(); }
-    var seguir = function(){ checarAngelus(); checarHoras(); checarRevisao(); };
+    var seguir = function(){ checarAngelus(); checarHoras(); checarRevisao(); checarHabitos(); };
     if (!ofertaDoDia() && !lsGet('ora-ofdia-'+eu+'-'+hoje)) abrirOfertaDia(seguir, true); else seguir();
   }
   document.getElementById('comecar').addEventListener('click', entrar);
@@ -6706,6 +6712,47 @@ tr.pl-pausada td{opacity:.55}
   document.getElementById('rv-card-fazer').addEventListener('click', function(){ document.getElementById('rev-card').hidden = true; abrirRevisao(); });
   document.getElementById('rv-card-depois').addEventListener('click', function(){ lsSet('ora-rev-depois-'+eu, hoje); document.getElementById('rev-card').hidden = true; });
   setInterval(checarRevisao, 60000);
+
+  /* ---------- Lembrete dos hábitos: 8h, 12h e 18h, só se faltar algum ---------- */
+  var HAB_HORAS = [8, 12, 18];
+  function habPendentes(){ return state.habitos.filter(function(h){ return h.dono===eu && !registro(h.id, hoje); }); }
+  function habSlot(){ var hr = new Date().getHours(), sl = null; HAB_HORAS.forEach(function(x){ if (hr>=x) sl = x; }); return sl; }
+  function checarHabitos(){
+    var c = document.getElementById('hab-card'); if (!c) return;
+    var sl = habSlot(), pend = (logado && !app.hidden && sl!==null) ? habPendentes() : [], chave = hoje+'|'+sl;
+    var mostrar = pend.length>0 && lsGet('ora-hab-lemb-'+eu)!==chave;
+    if (!mostrar){ c.hidden = true; return; }
+    if (lsGet('ora-hab-notif-'+eu)!==chave){
+      lsSet('ora-hab-notif-'+eu, chave);
+      try { if (window.Notification && Notification.permission==='granted' && document.hidden) new Notification('Ora et Labora', {body: L('Já fez seus hábitos de hoje? Falta confirmar: ','Done your habits today? Still to confirm: ','¿Ya hiciste tus hábitos? Falta: ','Consuetudines: ')+pend.map(function(h){ return h.nome; }).join(', '), icon:'/icones/icone-192.png', tag:'ora-habitos'}); } catch(e){}
+    }
+    var sig = pend.map(function(h){ return h.id; }).join(',')+'|'+chave;
+    if (c.getAttribute('data-sig')!==sig){
+      c.setAttribute('data-sig', sig);
+      c.innerHTML = '<p class="rot">'+L('Hábitos de hoje','Today\'s habits','Hábitos de hoy','Consuetudines')+' · '+sl+'h</p>'+
+        '<p>'+(pend.length===1 ? L('Já fez este hoje?','Done this one today?','¿Ya hiciste este hoy?','Fecistine?') : L('Já fez estes hoje? É só confirmar.','Done these today? Just confirm.','¿Ya hiciste estos hoy? Solo confirma.','Fecistine?'))+'</p>'+
+        '<ul class="hab-lista">'+pend.map(function(h){
+          return '<li><span>'+esc(h.nome)+'</span><span class="hab-bts"><button type="button" class="btn btn-escuro btn-p" data-hab-fiz="'+h.id+'" data-tipo="completo">'+L('Fiz','Done','Hecho','Feci')+'</button>'+
+            (h.minimo ? '<button type="button" class="btn btn-claro btn-p" data-hab-fiz="'+h.id+'" data-tipo="minimo" title="'+esc(h.minimo)+'">'+L('Mínimo','Minimum','Mínimo','Minimum')+'</button>' : '')+'</span></li>';
+        }).join('')+'</ul>'+
+        '<div class="acoes"><button type="button" class="btn btn-claro btn-p" data-hab-depois>'+L('Ainda não','Not yet','Todavía no','Nondum')+'</button></div>';
+    }
+    c.hidden = false;
+  }
+  document.getElementById('hab-card').addEventListener('click', function(e){
+    var b = e.target.closest('[data-hab-fiz]');
+    try { if (window.Notification && Notification.permission==='default') Notification.requestPermission(); } catch(er){}
+    if (b){
+      var hid = b.getAttribute('data-hab-fiz'), tipo = b.getAttribute('data-tipo');
+      if (!registro(hid, hoje)) state.registros.push({id:hid+'|'+hoje, hab:hid, dono:eu, data:hoje, tipo:tipo, em:new Date().toISOString()});
+      salvar(); if (vista==='pessoal') renderPessoal();
+      if (!habPendentes().length){ document.getElementById('hab-card').hidden = true; avisar(L('Hábitos de hoje confirmados. Deo gratias.','Today\'s habits confirmed. Deo gratias.','Hábitos de hoy confirmados. Deo gratias.','Deo gratias.')); }
+      else { checarHabitos(); avisar(tipo==='minimo' ? L('O mínimo também conta.','The minimum counts too.','El mínimo también cuenta.','Minimum quoque valet.') : L('Hábito cumprido.','Habit done.','Hábito cumplido.','Factum.')); }
+      return;
+    }
+    if (e.target.closest('[data-hab-depois]')){ lsSet('ora-hab-lemb-'+eu, hoje+'|'+habSlot()); document.getElementById('hab-card').hidden = true; }
+  });
+  setInterval(checarHabitos, 30000);
   function abrirRevisao(){
     rvRev = revisaoDaSemana(false);
     if (!rvRev){ rvRev = {id:uid(), dono:eu, semana:segundaDaSemana(), areas:{}, concluida:false, criadaEm:new Date().toISOString()}; state.revisoes.push(rvRev); }
