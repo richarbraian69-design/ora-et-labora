@@ -1382,6 +1382,20 @@ tr.pl-pausada td{opacity:.55}
 .hab-card .hab-lista li > span:first-child{font-weight:500;min-width:0;overflow-wrap:anywhere}
 .hab-card .hab-bts{display:flex;gap:6px;flex:none}
 .hab-card .rot{color:var(--ac-tx)}
+
+.santos-card{display:grid;gap:12px;padding:18px 20px}
+.santos-card .sc-tit{margin:0;font-family:var(--f-serif);font-size:1.25rem}
+.santos-card .sc-vazio{margin:0;font-size:.85rem;color:var(--tx2);line-height:1.5}
+.sc-it{display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px;align-items:start}
+.sc-av{position:relative;width:38px;height:38px;border-radius:50%;background:var(--sup);display:grid;place-items:center;margin-top:2px}
+.sc-av::before{content:"";position:absolute;top:-3px;left:50%;width:22px;height:7px;margin-left:-11px;border:2px solid var(--ouro, #d9a21b);border-radius:50%;opacity:.85}
+.sc-av i{width:20px;height:20px;border-radius:50% 50% 40% 40%;display:block;margin-top:6px}
+.sc-txt{display:grid;gap:2px;min-width:0}
+.sc-txt b{font-weight:600;font-size:.92rem}
+.sc-sub{font-size:.76rem;color:var(--tx3)}
+.sc-fala{margin:4px 0 0;font-family:var(--f-serif);font-size:1.02rem;line-height:1.3;color:var(--tx)}
+.ab-janela{width:120px;height:140px;color:var(--tx)}
+.sub-xp{display:none}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1475,13 +1489,7 @@ tr.pl-pausada td{opacity:.55}
 
       <aside class="lado" aria-label="Resumo">
         <div class="lado-resumo"><div class="contador" id="contador" data-sem-tr hidden></div><div class="numeros" id="numeros"></div></div>
-        <div class="cidade-card">
-          <div class="cid-topo"><p class="cid-tit" id="cid-tit"></p><span class="cid-n" id="cid-n"></span></div>
-          <div class="cid-arte abre" id="cid-arte" role="button" tabindex="0" aria-label="Ver a casa de perto"></div>
-          <div id="cid-visita"></div>
-          <div class="alegria" id="alegria"></div>
-          <p class="cid-prox" id="cid-prox"></p>
-        </div>
+        <div class="cidade-card santos-card" id="santos-card" data-sem-tr></div>
       </aside>
 
       <div class="vista">
@@ -1493,14 +1501,14 @@ tr.pl-pausada td{opacity:.55}
             <label class="so-trab">Responsável<select class="campo" id="f-resp" name="resp"></select></label>
             <label class="so-pes" hidden>Área da vida<select class="campo" id="f-area"></select></label>
             <label>Data<input class="campo" id="f-data" name="data" type="date"></label>
-            <label>XP<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
+            <label>Peso<select class="campo" id="f-peso" name="peso" data-sem-tr></select></label>
             <label id="f-tipo-l">Tipo<select class="campo" id="f-tipo" data-sem-tr></select></label>
             <label>Repetir<select class="campo" id="f-rec"></select></label>
             <label class="so-trab">Aprovação<select class="campo" id="f-aprov"></select></label>
             <div class="largo rotulo so-trab">Cliente<div id="f-tags"></div></div>
           </div>
           <details class="det-extra f-mais" id="f-mais">
-            <summary id="f-mais-sum">Mais opções · XP, repetição, aprovação, sub-missões e anexos</summary>
+            <summary id="f-mais-sum">Mais opções · peso, repetição, aprovação, sub-missões e anexos</summary>
             <div class="campos">
             <label class="check largo"><input type="checkbox" id="f-pessoal"> Missão pessoal — só eu vejo, fica na minha área privada</label>
             <label class="largo">Sub-missões<textarea class="campo" id="f-subs" name="subs" placeholder="Uma por linha (opcional)"></textarea></label>
@@ -1603,7 +1611,7 @@ tr.pl-pausada td{opacity:.55}
             </form>
           </div>
           <details class="painel det-sec" id="pes-rev-det" data-lembrar><summary><span class="det-sec-tit">Revisão semanal</span></summary><div class="det-sec-acoes"><button class="btn btn-claro btn-p" type="button" data-abrir-revisao id="rev-btn"></button></div><div class="rev-hist" id="pes-revisoes"></div></details>
-          <details class="painel det-sec" id="pes-vt-det" data-lembrar><summary><span class="det-sec-tit">Suas virtudes</span><span class="nota" id="vt-total"></span></summary><ul class="virtudes" id="pes-virtudes"></ul></details>
+          <details class="painel det-sec" id="pes-vt-det" data-lembrar hidden><summary><span class="det-sec-tit">Suas virtudes</span><span class="nota" id="vt-total"></span></summary><ul class="virtudes" id="pes-virtudes"></ul></details>
           <div id="zap-bloco" hidden>
           <div class="barra-lista"><h3 class="rotulo-vista">Resumo diário no WhatsApp</h3></div>
           <div class="painel">
@@ -2229,7 +2237,7 @@ tr.pl-pausada td{opacity:.55}
   var PESOS = { minima:{xp:5}, leve:{xp:10}, media:{xp:25}, ardua:{xp:50}, heroica:{xp:100} };
   var PESOS_ORDEM = ['minima','leve','media','ardua','heroica'];
   function nomePeso(k){ return ({minima:L('Mínima','Minimal','Mínima','Minima'), leve:L('Leve','Light','Ligera','Levis'), media:L('Média','Medium','Media','Media'), ardua:L('Árdua','Hard','Ardua','Ardua'), heroica:L('Heroica','Heroic','Heroica','Heroica')})[k] || k; }
-  function opcoesPeso(sel, vazio){ return (vazio ? '<option value="">—</option>' : '')+PESOS_ORDEM.map(function(k){ return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+nomePeso(k)+' · '+PESOS[k].xp+' XP</option>'; }).join(''); }
+  function opcoesPeso(sel, vazio){ return (vazio ? '<option value="">—</option>' : '')+PESOS_ORDEM.map(function(k){ return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+nomePeso(k)+'</option>'; }).join(''); }
   var NIVEIS = [ {min:0,nome:'Aprendiz'}, {min:100,nome:'Pedreiro'}, {min:250,nome:'Canteiro'}, {min:500,nome:'Mestre de obras'}, {min:1000,nome:'Arquiteto'} ];
   var CORES = ['var(--p1)','var(--p2)','var(--p3)','var(--p4)'];
   var TAG_CORES = [ ['azul','#2f7fe6','Azul'], ['laranja','#e2742c','Laranja'], ['verde','#2b9a5a','Verde'], ['roxo','#7a5af5','Roxo'], ['rosa','#d6336c','Rosa'],
@@ -3064,7 +3072,7 @@ tr.pl-pausada td{opacity:.55}
   };
   var VISTAS = [ ['hoje','Hoje','Missões de hoje'], ['todas','Todas as missões','Todas as missões'], ['atrasadas','Atrasadas','Atrasadas'],
     ['proximas','Próximos dias','Próximos dias'], ['cumpridas','Cumpridas','Cumpridas'], ['aprovar','Para aprovar','Aprovações'], ['agenda','Agenda','Agenda'], ['reunioes','Reuniões','Histórico de reuniões'],
-    ['criativos','Criativos','Controle de copies das Dras'], ['cidade','Sítio','Sítio'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
+    ['criativos','Criativos','Controle de copies das Dras'], ['pessoal','Minha área','Minha área'], ['ajustes','Ajustes','Ajustes'] ];
   var I_REPETE = svgIcone('<path d="M4 8.5A6 6 0 0 1 15 6.2M16 11.5A6 6 0 0 1 5 13.8"/><path d="M15.5 3v3.4h-3.4M4.5 17v-3.4h3.4"/>',1.6);
   var I_ESCUDO = svgIcone(ICONES.aprovar,1.6), I_CADEADO = svgIcone(ICONES.pessoal,1.6);
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
@@ -3830,6 +3838,23 @@ tr.pl-pausada td{opacity:.55}
     var ate = new Date(state.visita.ate);
     return h + '<p class="visita"><span class="halo"></span><span><b>'+esc(tr(v.nome))+'</b> '+L('está visitando. Fica até as ','is visiting until ','está de visita hasta las ','visitat usque ad horam ')+pad(ate.getHours())+':'+pad(ate.getMinutes())+'.</span></p>';
   }
+  function nomeSantoHoje(x){
+    if (x.id!=='nossa-senhora') return x.nome; var ltv = liturgia(hoje);
+    var nm = hoje.slice(5)==='12-08' ? 'Nossa Senhora da Imaculada Conceição' : ltv.fes && /^(Nossa Senhora|Santa Maria)/.test(ltv.fes.nome) ? ltv.fes.nome.split(',')[0] : '';
+    return nm || x.nome;
+  }
+  function htmlSantosCard(){
+    var l = santosPresentes(), fd = santosDoDia(hoje).map(function(x){ return x.id; }), ltv = liturgia(hoje);
+    var h = '<p class="sc-tit">'+L('Santos de hoje','Saints today','Santos de hoy','Sancti hodie')+'</p>';
+    if (!l.length) return h + '<p class="sc-vazio">'+(ltv.fes ? esc(ltv.fes.nome)+'. ' : '')+L('Os santos aparecem no dia deles e, de vez em quando, visitam quando alguém cumpre uma missão.','Saints show up on their feast days and sometimes visit when someone completes a mission.','Los santos aparecen en su día y, a veces, visitan cuando alguien cumple una misión.','Sancti in festis suis adveniunt.')+'</p>';
+    return h + l.map(function(x){
+      var nf = (x.falas||[]).length, k = 0; for (var i=0;i<(hoje+x.id).length;i++) k = (k*31 + (hoje+x.id).charCodeAt(i)) % 9973;
+      var fala = nf ? x.falas[k % nf] : '', dia = fd.indexOf(x.id)>=0, sub;
+      if (dia) sub = hoje.slice(5)==='11-01' ? L('Todos os Santos','All Saints','Todos los Santos','Omnes Sancti') : L('Hoje é dia de festa','Feast day today','Hoy es su fiesta','Hodie festum');
+      else { var ate = new Date(state.visita.ate); sub = L('Visitando até as ','Visiting until ','De visita hasta las ','Visitat usque ad ')+pad(ate.getHours())+':'+pad(ate.getMinutes()); }
+      return '<div class="sc-it"><span class="sc-av" aria-hidden="true"><i style="background:'+esc(x.habito||'#6e5034')+';box-shadow:inset 0 -6px 0 '+esc(x.faixa||x.habito||'#6e5034')+'"></i></span><div class="sc-txt"><b>'+esc(tr(nomeSantoHoje(x)))+'</b><span class="sc-sub">'+esc(sub)+'</span>'+(fala ? '<p class="sc-fala">“'+esc(tr(fala))+'”</p>' : '')+'</div></div>';
+    }).join('');
+  }
   function renderLado(){
     var s = separar(doFiltro()), rh = reunioesDoDia(hoje).length;
     var totDia = s.hoje.length + s.atras.length + s.feitasHoje.length, fracDia = totDia ? s.feitasHoje.length/totDia : 0, circDia = 2*Math.PI*24;
@@ -3839,16 +3864,7 @@ tr.pl-pausada td{opacity:.55}
       '<div class="num'+(s.atras.length?' alerta':'')+'"><b>'+s.atras.length+'</b><span>'+(s.atras.length===1?'atrasada':'atrasadas')+'</span></div>'+
       '<div class="num"><b>'+rh+'</b><span>'+(rh===1?'reunião hoje':'reuniões hoje')+'</span></div>'+
       '<div class="num"><b>'+s.feitasHoje.length+'</b><span>'+(s.feitasHoje.length===1?'cumprida hoje':'cumpridas hoje')+'</span></div>';
-    var n = state.obras;
-    felicidadeAtual = felicidade();
-    document.getElementById('cid-tit').innerHTML = seuEstagio(n, true);
-    document.getElementById('cid-n').textContent = plural(n+1,'melhoria','melhorias');
-    document.getElementById('cid-visita').innerHTML = htmlVisita();
-    document.getElementById('alegria').innerHTML = htmlAlegria(felicidadeAtual);
-    document.getElementById('cid-prox').innerHTML = '<span data-sem-tr>'+L('Faltam '+faltaMelhoria()+' XP para: ', faltaMelhoria()+' XP to go: ', 'Faltan '+faltaMelhoria()+' XP para: ', 'Desunt '+faltaMelhoria()+' XP: ')+'<b>+ '+esc(tr(proximaPeca(n)))+'</b></span>';
-    var chaveCard = n+'|'+santosPresentes().map(function(x){ return x.id; }).join(',');
-    if (cidadeN.card!==chaveCard){ cidadeN.card = chaveCard; montarMundo(document.getElementById('cid-arte'), n, 5.5, 'card'); var l = document.createElement('span'); l.className='cid-lupa'; l.textContent='Ver de perto'; document.getElementById('cid-arte').appendChild(l); }
-    var sv = document.querySelector('#cid-arte svg'); if (sv) sv.classList.toggle('luzes', !!exameDeHoje());
+    document.getElementById('santos-card').innerHTML = htmlSantosCard();
   }
 
   /* ---------- Lista ---------- */
@@ -3866,7 +3882,7 @@ tr.pl-pausada td{opacity:.55}
         '<label>Descrição<textarea class="campo" id="se-d-'+s.id+'" name="descricao" placeholder="Detalhes desta etapa.">'+esc(s.descricao||'')+'</textarea></label>'+
         '<div class="campos-sub"><label>Responsável<select class="campo" id="se-r-'+s.id+'" name="resp">'+opcoesPessoas(s.resp||m.resp)+'</select></label>'+
         '<label>Data<input class="campo" id="se-a-'+s.id+'" name="data" type="date" value="'+esc(s.data||'')+'"></label>'+
-        '<label>XP<select class="campo" id="se-p-'+s.id+'" name="peso" data-sem-tr>'+opcoesPeso(PESOS[s.peso] ? s.peso : 'minima')+'</select></label></div>'+
+        '<label>Peso<select class="campo" id="se-p-'+s.id+'" name="peso" data-sem-tr>'+opcoesPeso(PESOS[s.peso] ? s.peso : 'minima')+'</select></label></div>'+
         seletorTags('s:'+k, s.tags, 'Cliente')+'<div class="det-bloco"><p class="det-tit">Anexos</p>'+htmlAnexos(s.anexos, 's:'+k, true)+'</div>'+
         '<div class="acoes"><button class="btn btn-escuro" type="submit">Salvar</button><button class="btn btn-claro" type="button" data-sub-cancelar>Cancelar</button><button class="link" type="button" data-sub-promover="'+k+'">Tornar missão</button></div></form></li>';
     }
@@ -3909,7 +3925,7 @@ tr.pl-pausada td{opacity:.55}
       '<label>Descrição<textarea class="campo" name="descricao" rows="4" placeholder="Detalhes, links, combinados…">'+esc(rv('descricao', m.descricao||''))+'</textarea></label>'+
       '<div class="campos">'+(m.privada ? '' : '<label>Responsável<select class="campo" name="resp">'+opcoesPessoas(rv('resp', m.resp))+'</select></label>')+
         '<label>Data<input class="campo" name="data" type="date" value="'+esc(rv('data', m.data||''))+'"></label>'+
-        '<label>XP<select class="campo" name="peso" data-sem-tr>'+opcoesPeso(rv('peso', m.peso||'media'))+'</select></label>'+
+        '<label>Peso<select class="campo" name="peso" data-sem-tr>'+opcoesPeso(rv('peso', m.peso||'media'))+'</select></label>'+
         (usaTipos() ? '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(rv('tipo', m.tipo||''))+'</select></label>' : '')+
         '<label>Repetir<select class="campo" name="recorrencia">'+opcoesRec(rv('recorrencia', m.recorrencia||''))+'</select></label>'+
         '<label>'+L('Onde fica','Where it lives','Dónde queda','Ubi est')+'<select class="campo" name="espaco">'+areaOps+'</select></label>'+
@@ -4013,7 +4029,7 @@ tr.pl-pausada td{opacity:.55}
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
-      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '<span class="xp">'+PESOS[m.peso].xp+' XP</span>' : av(m.resp)+'<span class="r-nome">'+esc(String(p.nome||'').split(' ')[0])+'</span><span class="xp">'+PESOS[m.peso].xp+' XP</span>')+'</span></div>'+
+      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '' : av(m.resp)+'<span class="r-nome">'+esc(String(p.nome||'').split(' ')[0])+'</span>')+'</span></div>'+
       '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo" data-ver-m="'+m.id+'" role="button" tabindex="0" aria-expanded="'+!!(descAbertas[m.id] && !ed)+'" title="'+L('Ver a missão','View the mission','Ver la misión','Missionem videre')+'">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+
       status+'</div>'+
       '<div class="r-acoes'+(menuM===m.id?' aberto':'')+'">'+
@@ -4385,7 +4401,7 @@ tr.pl-pausada td{opacity:.55}
   function pintarModelos(){
     var q = norm(document.getElementById('md-busca').value), l = state.modelos.filter(function(md){ return !q || norm(md.nome+' '+md.titulo).indexOf(q)>=0; });
     document.getElementById('md-lista').innerHTML = l.length ? l.map(function(md){
-      return '<button type="button" class="md-it" data-modelo-usar="'+md.id+'"><b>'+esc(md.nome)+'</b><span>'+plural((md.subs||[]).length,'sub-missão','sub-missões')+' · '+nomePeso(md.peso)+' · '+PESOS[md.peso||'media'].xp+' XP'+(md.tipo && usaTipos() ? ' · '+esc(nomeTipo(md.tipo)) : '')+(md.recorrencia ? ' · '+esc(nomeRec(md.recorrencia)) : '')+'</span></button>';
+      return '<button type="button" class="md-it" data-modelo-usar="'+md.id+'"><b>'+esc(md.nome)+'</b><span>'+plural((md.subs||[]).length,'sub-missão','sub-missões')+' · '+nomePeso(md.peso)+(md.tipo && usaTipos() ? ' · '+esc(nomeTipo(md.tipo)) : '')+(md.recorrencia ? ' · '+esc(nomeRec(md.recorrencia)) : '')+'</span></button>';
     }).join('') : '<div class="md-vazio"><p>'+(state.modelos.length ? L('Nenhum modelo com esse nome.','No template with that name.','Ningún modelo con ese nombre.','Nullum.') : L('Ainda não há modelos. Para criar um, abra o menu “…” de uma missão e escolha “Salvar como modelo”.','No templates yet. To create one, open a mission’s “…” menu and choose “Save as template”.','Aún no hay modelos. Abre el menú “…” de una misión y elige “Guardar como modelo”.','Nulla exemplaria.'))+'</p>'+(state.modelos.length ? '' : '<button class="btn btn-claro btn-p" type="button" data-modelos-exemplo>'+L('Criar 3 modelos de exemplo','Create 3 sample templates','Crear 3 modelos de ejemplo','Tria exempla')+'</button>')+'</div>';
   }
   function usarModelo(id){
@@ -4468,7 +4484,7 @@ tr.pl-pausada td{opacity:.55}
     var c = function(txt, padrao){ return '<span class="cap-chip'+(padrao?' padrao':'')+'">'+txt+'</span>'; };
     var resp = r.pessoal ? eu : (r.resp || (filtro!=='todos' ? filtro : eu)), data = r.data===undefined ? hoje : r.data;
     var h = c(r.pessoal ? L('Pessoal','Personal','Personal','Privata') : av(resp)+esc(pessoa(resp).nome), !r.resp && !r.pessoal)+c(svgIcone(ICONES.agenda)+esc(data ? (data===hoje ? L('Hoje','Today','Hoy','Hodie') : data===dia(1) ? L('Amanhã','Tomorrow','Mañana','Cras') : dataCurta(data)) : L('Sem data','No date','Sin fecha','Sine die')), r.data===undefined);
-    h += c(esc(nomePeso(r.peso||'media'))+' · '+PESOS[r.peso||'media'].xp+' XP', !r.peso);
+    h += c(esc(nomePeso(r.peso||'media')), !r.peso);
     if (r.tipo && usaTipos()) h += c(esc(nomeTipo(r.tipo)));
     if (r.rec) h += c(I_REPETE+esc(nomeRec(r.rec)));
     if (r.aprov) h += c(I_ESCUDO+L('Aprovação de ','Approval by ','Aprobación de ','Approbatio: ')+esc(pessoa(r.aprov).nome));
@@ -4490,9 +4506,9 @@ tr.pl-pausada td{opacity:.55}
     veuCap = document.getElementById('veu-cap');
     document.getElementById('cap-rot').textContent = L('Captura rápida','Quick capture','Captura rápida','Captura celeris');
     document.getElementById('cap-in').placeholder = L('Ex.: Roteiro VSL #dra. cindy sexta @fuca !árdua','E.g.: VSL script #client friday @name !hard','Ej.: Guion VSL #cliente viernes @nombre !ardua','Ex.: …');
-    document.getElementById('cap-dica').innerHTML = L('<b>@nome</b> responsável · <b>+nome</b> aprovação · <b>#cliente</b> · <b>amanhã, sexta, 15/11, em 3 dias, sem data</b> · <b>!leve !média !árdua !heroica</b> ou <b>50xp</b>'+(usaTipos() ? ' · <b>!rápida !mensagem !tráfego !complexa</b>' : '')+' · <b>toda segunda, todo mês</b> · <b>!pessoal</b>. Uma missão por linha. Enter cria, Shift+Enter pula linha.',
-      '<b>@name</b> owner · <b>+name</b> approval · <b>#client</b> · <b>tomorrow, friday (in Portuguese), 15/11, sem data</b> · <b>!leve !média !árdua</b> or <b>50xp</b> · one mission per line. Enter creates.',
-      '<b>@nombre</b> responsable · <b>+nombre</b> aprobación · <b>#cliente</b> · fechas en portugués · <b>!leve !média !árdua</b> o <b>50xp</b> · una misión por línea. Enter crea.',
+    document.getElementById('cap-dica').innerHTML = L('<b>@nome</b> responsável · <b>+nome</b> aprovação · <b>#cliente</b> · <b>amanhã, sexta, 15/11, em 3 dias, sem data</b> · <b>!leve !média !árdua !heroica</b>'+(usaTipos() ? ' · <b>!rápida !mensagem !tráfego !complexa</b>' : '')+' · <b>toda segunda, todo mês</b> · <b>!pessoal</b>. Uma missão por linha. Enter cria, Shift+Enter pula linha.',
+      '<b>@name</b> owner · <b>+name</b> approval · <b>#client</b> · <b>tomorrow, friday (in Portuguese), 15/11, sem data</b> · <b>!leve !média !árdua</b>  · one mission per line. Enter creates.',
+      '<b>@nombre</b> responsable · <b>+nombre</b> aprobación · <b>#cliente</b> · fechas en portugués · <b>!leve !média !árdua</b>  · una misión por línea. Enter crea.',
       '@nomen · +nomen · #cliens · Enter.');
     document.getElementById('cap-cancelar').textContent = L('Cancelar','Cancel','Cancelar','Omittere');
     document.getElementById('cap-form').textContent = L('Abrir no formulário completo','Open the full form','Abrir el formulario completo','Formam plenam aperire');
@@ -4560,7 +4576,7 @@ tr.pl-pausada td{opacity:.55}
       '<div class="qd-pe">'+(m.privada ? '<span class="st priv">'+I_CADEADO+'</span>' : av(m.resp)+'<span class="qd-nome">'+esc(p.nome)+'</span>')+atraso+
         (subs.length ? '<span class="qd-mini" title="'+esc(L('Sub-missões','Sub-missions','Submisiones','Partes'))+'">'+I_RAMO+nf+'/'+subs.length+'</span>' : '')+
         ((m.comentarios||[]).length ? '<span class="qd-mini'+(comentNovos(m).length?' novo':'')+'">'+I_BALAO+(m.comentarios||[]).length+'</span>' : '')+
-        '<span class="xp">'+PESOS[m.peso||'media'].xp+' XP</span></div></div>';
+        '</div></div>';
   }
   function renderQuadro(vis){
     var abertas = vis.filter(function(m){ return !m.feita; });
@@ -5523,7 +5539,7 @@ tr.pl-pausada td{opacity:.55}
     var amd = document.getElementById('aj-modelos'), amdF = amd.contains(document.activeElement);
     if (!amdF) amd.innerHTML = '<p class="det-tit">'+L('Modelos de missão','Mission templates','Modelos de misión','Exemplaria')+'</p>'+
       (state.modelos.length ? state.modelos.map(function(md){
-        return '<div class="linha-modelo"><input class="campo" data-modelo-nome="'+md.id+'" value="'+esc(md.nome)+'" maxlength="60" aria-label="'+esc(L('Nome do modelo','Template name','Nombre del modelo','Nomen'))+'"><small>'+plural((md.subs||[]).length,'sub-missão','sub-missões')+' · '+PESOS[md.peso||'media'].xp+' XP</small>'+
+        return '<div class="linha-modelo"><input class="campo" data-modelo-nome="'+md.id+'" value="'+esc(md.nome)+'" maxlength="60" aria-label="'+esc(L('Nome do modelo','Template name','Nombre del modelo','Nomen'))+'"><small>'+plural((md.subs||[]).length,'sub-missão','sub-missões')+'</small>'+
           '<button class="btn btn-claro btn-p" type="button" data-modelo-usar="'+md.id+'">'+L('Usar','Use','Usar','Uti')+'</button><button class="icone-btn" type="button" data-modelo-apagar="'+md.id+'" aria-label="'+esc(L('Apagar modelo','Delete template','Borrar modelo','Delere'))+'" title="'+esc(L('Apagar','Delete','Borrar','Delere'))+'">'+I_LIXO+'</button></div>';
       }).join('') : '<p class="sub-dica" style="padding:0">'+L('Nenhum modelo ainda. No menu “…” de qualquer missão, escolha “Salvar como modelo”.','No templates yet. In any mission’s “…” menu, choose “Save as template”.','Aún no hay modelos. En el menú “…” de una misión, elige “Guardar como modelo”.','Nulla exemplaria.')+'</p><div><button class="btn btn-claro btn-p" type="button" data-modelos-exemplo>'+L('Criar 3 modelos de exemplo','Create 3 sample templates','Crear 3 modelos de ejemplo','Tria exempla')+'</button></div>')+
       '<p class="nota">'+L('Os modelos valem para toda a equipe. Para usar: Novo → A partir de um modelo.','Templates are shared with the whole team. To use: New → From a template.','Los modelos son de todo el equipo. Para usar: Nuevo → Desde un modelo.','Exemplaria communia sunt.')+'</p>';
@@ -5577,13 +5593,13 @@ tr.pl-pausada td{opacity:.55}
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
   function aplicarCorApp(){ try { var pc = (prefsEu().corApp)||'lit'; document.documentElement.setAttribute('data-lit', pc==='ouro' ? 'ouro' : (liturgia(hoje).cor||'verde')); } catch(e){} }
-  function render(){ aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function render(){ if (vista==='cidade') vista = 'hoje'; aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
   function montarAbertura(){
     var n = state.obras, nEl = 1 + n, passo = Math.max(6, Math.min(85, Math.round(1800/nEl)));
-    document.getElementById('ab-arte').innerHTML = cidadeSVG(n, 12, {classe:'montar', rotulo:seuEstagio(n)+L(' se montando peça a peça',' being built piece by piece',' armándose pieza a pieza',' paulatim aedificatur')});
+    document.getElementById('ab-arte').innerHTML = '<svg class="ab-janela" viewBox="0 0 120 140" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Ora et Labora"><path d="M22 128V64C22 40 38 22 60 8C82 22 98 40 98 64V128" stroke-width="4"/><path d="M31 128V66C31 47 43 33 60 21C77 33 89 47 89 66V128" stroke-width="1.4" opacity=".5"/><path d="M60 46V104M47 62H73" stroke-width="5"/><path d="M12 130H108" stroke-width="4"/></svg>';
     abertura.style.setProperty('--atraso', (Math.min(2.2, nEl*passo/1000) + .7).toFixed(2)+'s');
   }
   function vistasDe(id){ try { var v = JSON.parse(lsGet('ora-vistas-'+id)||'null'); return Array.isArray(v) ? v : null; } catch(e){ return null; } }
@@ -5848,7 +5864,7 @@ tr.pl-pausada td{opacity:.55}
     if ((el = t.closest('[data-det]'))){ var id = el.getAttribute('data-det'); abertas[id] = !abertas[id]; renderLista(); return; }
     if ((el = t.closest('[data-taguear]'))){ var tg = 'm:'+el.getAttribute('data-taguear'); tagueando = tagueando===tg ? null : tg; renderLista(); return; }
     if ((el = t.closest('[data-sub-marcar]'))){ var k = el.getAttribute('data-sub-marcar'), r = acharSub(k); if (r){
-        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; if (!r.m.privada){ if (r.s.feita){ r.s.cidadeXp = xpSub(r.s); somarCidade(r.s.cidadeXp); } else if (r.s.cidadeXp){ somarCidade(-r.s.cidadeXp); delete r.s.cidadeXp; } } salvar(); render(); if (r.s.feita) avisar('+'+xpSub(r.s)+' XP · '+L('sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
+        var marcarSub = function(){ r.s.feita = !r.s.feita; r.s.feitaEm = r.s.feita ? new Date().toISOString() : null; if (!r.m.privada){ if (r.s.feita){ r.s.cidadeXp = xpSub(r.s); somarCidade(r.s.cidadeXp); } else if (r.s.cidadeXp){ somarCidade(-r.s.cidadeXp); delete r.s.cidadeXp; } } salvar(); render(); if (r.s.feita) avisar(L('Sub-missão cumprida','subtask done','submisión cumplida','pars perfecta')+': “'+r.s.titulo+'”.'); };
         if (!r.s.feita && !(r.m.privada && r.m.dono!==eu) && pedeOferta({peso:PESOS[r.s.peso] ? r.s.peso : 'minima', oferecida:r.s.oferecida})){ abrirOferta({id:'s:'+k, titulo:r.s.titulo, sub:true}, function(){ r.s.oferecida = true; marcarSub(); }); return; }
         marcarSub(); var f = document.querySelector('[data-sub-marcar="'+k+'"]'); if (f) f.focus(); } return; }
     if ((el = t.closest('[data-sub-editar]'))){ var ke = el.getAttribute('data-sub-editar'), re = acharSub(ke); if (re){ editandoSub = ke; renderLista(); var ti = document.getElementById('se-t-'+re.s.id); if (ti){ ti.focus(); ti.select(); } } return; }
@@ -5894,7 +5910,7 @@ tr.pl-pausada td{opacity:.55}
       if (velho.desc!==(mm.descricao||'')) mud.push('editou a descrição');
       if (velho.data!==(mm.data||null)) mud.push('mudou a data de '+dataCurta(velho.data)+' para '+dataCurta(mm.data));
       if (velho.resp!==mm.resp) mud.push('passou de '+pessoa(velho.resp).nome+' para '+pessoa(mm.resp).nome);
-      if (velho.peso!==mm.peso) mud.push('mudou o XP para '+nomePeso(mm.peso));
+      if (velho.peso!==mm.peso) mud.push('mudou o peso para '+nomePeso(mm.peso));
       if (velho.tipo!==(mm.tipo||null) && usaTipos()) mud.push('mudou o tipo para '+(nomeTipo(mm.tipo)||'sem tipo'));
       if (velho.rec!==(mm.recorrencia||null)) mud.push(mm.recorrencia ? 'passou a repetir: '+nomeRec(mm.recorrencia) : 'deixou de repetir');
       if (velho.aprov!==(mm.aprovador||null)) mud.push(mm.aprovador ? 'pediu a aprovação de '+pessoa(mm.aprovador).nome : 'tirou a aprovação');
@@ -6032,7 +6048,7 @@ tr.pl-pausada td{opacity:.55}
     Array.prototype.forEach.call(rap, function(b, i){ b.textContent = rt[i]; });
     document.getElementById('massa-tags-b').textContent = L('Clientes','Clients','Clientes','Clientes')+' ▾';
     document.getElementById('massa-mais-b').textContent = L('Mais','More','Más','Plura')+' ▾';
-    document.getElementById('massa-l-peso').textContent = 'XP';
+    document.getElementById('massa-l-peso').textContent = L('Peso','Weight','Peso','Pondus');
     document.getElementById('massa-peso').innerHTML = opcoesPeso('', true);
     document.getElementById('massa-l-tipo').textContent = L('Tipo','Type','Tipo','Genus');
     document.getElementById('massa-tipo').innerHTML = opcoesTipo('', true);
@@ -6084,7 +6100,7 @@ tr.pl-pausada td{opacity:.55}
   });
   document.getElementById('massa-peso').addEventListener('change', function(){
     var v = this.value; if (!v) return;
-    fecharPops(); emMassa(function(m){ if (m.peso===v) return false; m.peso = v; }, L('XP trocado em {n} missões.','XP changed on {n} missions.','XP cambiado en {n} misiones.','XP mutatum in {n} missionibus.'), function(sb){ if (sb.peso===v) return false; sb.peso = v; });
+    fecharPops(); emMassa(function(m){ if (m.peso===v) return false; m.peso = v; }, L('Peso trocado em {n} missões.','Weight changed on {n} missions.','Peso cambiado en {n} misiones.','Pondus mutatum in {n} missionibus.'), function(sb){ if (sb.peso===v) return false; sb.peso = v; });
   });
   document.getElementById('massa-data-b').addEventListener('click', function(){ var p = document.getElementById('massa-data-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; });
   document.getElementById('massa-tags-b').addEventListener('click', function(){ var p = document.getElementById('massa-tags-pop'), ab = p.hidden; fecharPops(); p.hidden = !ab; if (ab) renderPopTags(); });
@@ -6404,31 +6420,23 @@ tr.pl-pausada td{opacity:.55}
     /* o dia inteiro cumprido? (só conta para quem é o dono da missão) */
     var restam = state.missoes.filter(function(x){ return meuMissao(x) && !x.feita && x.data && x.data<=hoje && !(x.aprov && x.aprov.estado==='aguardando'); }).length;
     var diaCompleto = meuMissao(m) && !restam && !exameDeHoje();
-    var marco = ganhoObras>0 || antes!==depois || !!novoSanto || diaCompleto;
+    var marco = !!novoSanto || diaCompleto;
     if (!marco){
       pendente = null; render();
       var partes = [aprovou ? L('Missão aprovada','Mission approved','Misión aprobada','Missio probata') : m.privada ? L('Missão pessoal cumprida','Personal mission done','Misión personal cumplida','Missio privata perfecta') : L('Missão cumprida','Mission done','Misión cumplida','Missio perfecta')];
-      partes.push('+'+xpG+' XP'+(p.id===eu ? '' : ' '+L('para ','for ','para ','')+p.nome));
-      if (!m.privada) partes.push(L('faltam '+faltaMelhoria()+' XP para ', faltaMelhoria()+' XP to ', 'faltan '+faltaMelhoria()+' XP para ', 'desunt '+faltaMelhoria()+' XP: ')+tr(proximaPeca(n)));
+      if (p.id!==eu) partes.push(L('de ','by ','de ','a ')+p.nome);
       if (rec) partes.push(L('repete ','repeats ','se repite ','iteratur ')+fmt(paraData(rec.data), {day:'numeric',month:'short'}));
       avisar(partes.join(' · '), null, function(){ desfazerConclusao(m, snap); });
       return;
     }
     var k; do { k = Math.floor(Math.random()*CIT_FE.length); } while (k===ultimaFe && CIT_FE.length>1); ultimaFe = k;
     var ga = document.getElementById('g-arte');
-    ga.hidden = !!m.privada;
-    if (!m.privada) ga.innerHTML = cidadeSVG(n, 8, ganhoObras ? {nova:n-1, rotulo:'A cidade com a melhoria nova'} : {rotulo:'A cidade'});
-    document.getElementById('g-cidade').innerHTML = m.privada ? 'Uma missão pessoal, longe dos olhos da equipe e perto do coração de Deus.' :
-      '<span data-sem-tr>'+seuEstagio(n)+L(' ganhou ',' gained ',' ganó ',' accepit ')+'<strong>'+esc(tr(peca ? peca.nome : 'uma melhoria'))+'</strong>.'+(felizDepois>felizAntes ? L(' Os moradores ficaram mais felizes.',' The residents got happier.',' Los habitantes quedaron más felices.',' Incolae laetiores facti sunt.') : '')+
-      (estagio(n)!==estagio(n-1) ? ' <strong>'+L('Agora é '+umEstagio(estagio(n))+'!','It is now '+umEstagio(estagio(n))+'!','¡Ahora es '+umEstagio(estagio(n))+'!','Iam '+umEstagio(estagio(n))+' est!')+'</strong>' : '')+'</span>';
-    if (!m.privada && !ganhoObras){
-      document.getElementById('g-cidade').innerHTML = '<span data-sem-tr>'+L('<strong>+'+m.cidadeXp+' XP</strong> para a cidade. Faltam '+faltaMelhoria()+' XP para a próxima melhoria: ', '<strong>+'+m.cidadeXp+' XP</strong> for the city. '+faltaMelhoria()+' XP to go until the next improvement: ', '<strong>+'+m.cidadeXp+' XP</strong> para la ciudad. Faltan '+faltaMelhoria()+' XP para la próxima mejora: ', '<strong>+'+m.cidadeXp+' XP</strong> urbi. Desunt '+faltaMelhoria()+' XP ad proximum incrementum: ')+'<strong>'+esc(tr(proximaPeca(n)))+'</strong>.</span>';
-    } else if (ganhoObras > 1){
-      document.getElementById('g-cidade').innerHTML += ' <span data-sem-tr>'+L('Foram <strong>'+ganhoObras+' melhorias</strong> de uma vez.', '<strong>'+ganhoObras+' improvements</strong> at once.', 'Fueron <strong>'+ganhoObras+' mejoras</strong> de una vez.', '<strong>'+ganhoObras+' incrementa</strong> simul.')+'</span>';
-    }
+    ga.hidden = true;
+    if (false) ga.innerHTML = cidadeSVG(n, 8, ganhoObras ? {nova:n-1, rotulo:'A cidade com a melhoria nova'} : {rotulo:'A cidade'});
+    var gcid = document.getElementById('g-cidade'); gcid.innerHTML = m.privada ? L('Uma missão pessoal, longe dos olhos da equipe e perto do coração de Deus.','A personal mission, far from the team’s eyes and close to God’s heart.','Una misión personal, lejos de los ojos del equipo y cerca del corazón de Dios.','Missio privata.') : ''; gcid.hidden = !m.privada;
     var gv = document.getElementById('g-visita');
     gv.hidden = !novoSanto && !rec;
-    gv.innerHTML = novoSanto ? '<span class="halo"></span><span data-sem-tr><b>'+L('Uma visita!','A visit!','¡Una visita!','Visitatio!')+'</b> '+esc(tr(novoSanto.nome))+L(' chegou para passar um tempo com os moradores.',' came to spend some time with the residents.',' llegó para pasar un tiempo con los habitantes.',' venit ut paulisper cum incolis maneat.')+'</span>' :
+    gv.innerHTML = novoSanto ? '<span class="halo"></span><span data-sem-tr><b>'+L('Uma visita!','A visit!','¡Una visita!','Visitatio!')+'</b> '+esc(tr(novoSanto.nome))+L(' veio visitar a equipe.',' came to visit the team.',' vino a visitar al equipo.',' venit ad visitandum.')+(novoSanto.falas && novoSanto.falas.length ? ' <i>“'+esc(tr(novoSanto.falas[Math.floor(Math.random()*novoSanto.falas.length)]))+'”</i>' : '')+'</span>' :
       rec ? I_REPETE+'<span>Missão recorrente. Próxima vez: <b>'+esc(dataLonga(rec.data))+'</b>.</span>' : '';
     document.getElementById('g-rot').textContent = diaCompleto ? L('Todas as missões de hoje cumpridas','All of today’s missions are done','Todas las misiones de hoy cumplidas','Omnes missiones hodiernae perfectae') : aprovou ? 'Missão aprovada' : m.privada ? 'Missão pessoal cumprida' : 'Missão cumprida';
     document.getElementById('g-titulo').textContent = m.titulo;
@@ -6524,7 +6532,7 @@ tr.pl-pausada td{opacity:.55}
   })();
   function fecharZoom(){ veuZoom.hidden = true; document.getElementById('z-arte').innerHTML = ''; zoomMundo = null; }
   ['cid-arte','cg-arte'].forEach(function(id){
-    var c = document.getElementById(id);
+    var c = document.getElementById(id); if (!c) return;
     c.addEventListener('click', abrirZoom);
     c.addEventListener('keydown', function(e){ if (e.key==='Enter' || e.key===' '){ e.preventDefault(); abrirZoom(); } });
   });
