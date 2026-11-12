@@ -1396,6 +1396,29 @@ tr.pl-pausada td{opacity:.55}
 .sc-fala{margin:4px 0 0;font-family:var(--f-serif);font-size:1.02rem;line-height:1.3;color:var(--tx)}
 .ab-janela{width:120px;height:140px;color:var(--tx)}
 .sub-xp{display:none}
+
+.pausa-card{max-width:440px;text-align:center;justify-items:center;position:relative}
+.pausa-card h2{margin:0}
+.pausa-card .rot{margin:0;color:var(--ac-tx)}
+.pz-min{position:absolute;top:12px;right:12px}
+.pz-tempo{margin:4px 0 0;font-variant-numeric:tabular-nums;font-size:3.4rem;font-weight:500;letter-spacing:-.02em;line-height:1}
+.pz-sub{margin:0;color:var(--tx2);font-size:.92rem;max-width:34ch}
+.pz-lista{display:grid;gap:10px;width:100%;text-align:left;margin-top:6px}
+.pz-ck{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:var(--sup);cursor:pointer;transition:background .15s}
+.pz-ck input{position:absolute;opacity:0;pointer-events:none}
+.pz-box{width:24px;height:24px;flex:none;border-radius:7px;border:2px solid var(--tx3);display:grid;place-items:center;color:transparent;transition:all .15s}
+.pz-box svg{width:14px;height:14px}
+.pz-ck.ok .pz-box{background:var(--ac);border-color:var(--ac);color:var(--ac-sobre)}
+.pz-ck.ok b{text-decoration:line-through;text-decoration-color:var(--tx3);color:var(--tx2)}
+.pz-ck span:last-child{display:grid;gap:2px}
+.pz-ck b{font-weight:600}
+.pz-ck small{font-size:.78rem;color:var(--tx2)}
+.pz-ck:has(input:focus-visible){outline:2px solid var(--ac);outline-offset:2px}
+.pz-acoes{justify-content:center;width:100%}
+.pz-falta{margin:-4px 0 0;font-size:.8rem;color:var(--tx3)}
+.pz-hoje{margin:0;font-size:.78rem;color:var(--tx3)}
+.fp-txt[data-foco="abrir"]{cursor:pointer}
+body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1883,6 +1906,7 @@ tr.pl-pausada td{opacity:.55}
 </div>
 <div class="voo" id="voo" aria-hidden="true" hidden></div>
 <div class="foco-pill" id="foco-pill" role="timer" hidden data-sem-tr></div>
+<div class="veu" id="veu-pausa" hidden><div class="cartao pausa-card" role="dialog" aria-modal="true" aria-labelledby="pz-tit" id="pz-card" data-sem-tr></div></div>
 <div class="pilha-oracao"><div class="angelus hab-card" id="hab-card" role="status" hidden data-sem-tr></div><div class="angelus" id="rev-card" role="status" hidden data-sem-tr>
   <p class="rot">Revisão semanal</p>
   <p id="rv-card-txt"></p>
@@ -4700,7 +4724,39 @@ tr.pl-pausada td{opacity:.55}
   }
   function focoPausar(){ var f = focoEstado(); if (!f || f.estado!=='foco') return; f.acum = focoMs(f); f.estado = 'pausa'; f.inicio = null; salvar(); focoPintar(); }
   function focoRetomar(){ var f = focoEstado(); if (!f || f.estado!=='pausa') return; f.estado = 'foco'; f.inicio = new Date().toISOString(); salvar(); focoPintar(); }
-  function focoCaminhar(){ var f = focoEstado(); if (!f) return; focoRegistrar(focoMs(f), true); prefsEu().foco = {estado:'caminhada', inicio:new Date().toISOString(), acum:0, missao:f.missao||null}; salvar(); focoPintar(); }
+  function focoCaminhar(){ var f = focoEstado(); if (!f) return; if (f.estado!=='caminhada'){ var ms = focoMs(f); if (ms > 60000) focoRegistrar(ms, ms >= FOCO_MIN*60000); } prefsEu().foco = {estado:'caminhada', inicio:new Date().toISOString(), acum:0, missao:f.missao||null, checks:{}}; salvar(); focoPintar(); }
+  function focoCheck(k, v){
+    var f = focoEstado(); if (!f || f.estado!=='caminhada') return; f.checks = f.checks || {};
+    var p = prefsEu(); p.focoDias = p.focoDias || {}; var d = p.focoDias[hoje] || {min:0, blocos:0};
+    if (v && !f.checks[k]){ if (k==='whats'){ d.whats = (d.whats||0)+1; p.ultimoWhats = new Date().toISOString(); } else d.caminhadas = (d.caminhadas||0)+1; }
+    if (!v && f.checks[k]){ if (k==='whats') d.whats = Math.max(0,(d.whats||0)-1); else d.caminhadas = Math.max(0,(d.caminhadas||0)-1); }
+    f.checks[k] = !!v; p.focoDias[hoje] = d; salvar(); focoPintar();
+  }
+  function quandoHM(iso){ if (!iso) return ''; var d = new Date(iso), min = Math.round((Date.now()-d)/60000); return pad(d.getHours())+':'+pad(d.getMinutes())+' ('+(min<60 ? 'há '+min+' min' : 'há '+Math.floor(min/60)+'h'+(min%60 ? pad(min%60) : ''))+')'; }
+  function pausaPintar(f, ms, passou){
+    var veu = document.getElementById('veu-pausa'), card = document.getElementById('pz-card'); if (!veu) return;
+    var cam = f && f.estado==='caminhada', abEl = document.getElementById('abertura'), mostrar = f && !f.minimizado && (cam || passou) && logado && !app.hidden && !(abEl && !abEl.hidden);
+    if (!mostrar){ if (!veu.hidden){ veu.hidden = true; card.removeAttribute('data-chave'); } return; }
+    var ck = f.checks || {}, chave = [f.estado, passou, !!ck.caminhar, !!ck.whats].join('|');
+    if (card.getAttribute('data-chave')===chave && !veu.hidden){ var t = card.querySelector('.pz-tempo'); if (t) t.textContent = focoFmt(ms); return; }
+    card.setAttribute('data-chave', chave); veu.hidden = false;
+    var h = focoHoje(), uw = prefsEu().ultimoWhats, fec = '<button type="button" class="icone-btn pz-min" data-pz="min" title="Minimizar" aria-label="Minimizar">'+svgIcone('<path d="M5 10h10"/>',1.8)+'</button>';
+    if (!cam){
+      card.innerHTML = fec+'<p class="rot">'+L('Bloco de foco','Focus block','Bloque de foco','Opus')+'</p><h2 id="pz-tit">'+FOCO_MIN+' '+L('minutos. Hora de <em>parar</em>.','minutes. Time to <em>stop</em>.','minutos. Hora de <em>parar</em>.','minuta. <em>Siste</em>.')+'</h2>'+
+        '<p class="pz-tempo" aria-live="off">'+focoFmt(ms)+'</p><p class="pz-sub">'+L('Levante, caminhe na quadra e responda o WhatsApp das doutoras.','Stand up, walk around the block and answer the doctors on WhatsApp.','Levántate, camina la cuadra y responde el WhatsApp de las doctoras.','Surge et ambula.')+'</p>'+
+        '<div class="acoes pz-acoes"><button type="button" class="btn btn-escuro" data-pz="parar">'+L('Parar agora','Stop now','Parar ahora','Siste')+'</button><button type="button" class="btn btn-claro" data-pz="min">'+L('Só terminar isto','Just finish this','Solo terminar esto','Paulum')+'</button></div>';
+      return;
+    }
+    var item = function(k, rot, sub){ return '<label class="pz-ck'+(ck[k]?' ok':'')+'"><input type="checkbox" data-pz-ck="'+k+'"'+(ck[k]?' checked':'')+'><span class="pz-box" aria-hidden="true">'+CHECK+'</span><span><b>'+rot+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+'</span></label>'; };
+    var falta = [!ck.caminhar ? L('caminhar','walk','caminar','ambulare') : '', !ck.whats ? L('responder o WhatsApp','answer WhatsApp','responder el WhatsApp','respondere') : ''].filter(Boolean);
+    card.innerHTML = fec+'<p class="rot">'+L('Pausa','Break','Pausa','Intermissio')+'</p><h2 id="pz-tit">'+L('Antes de voltar ao <em>foco</em>','Before going back to <em>focus</em>','Antes de volver al <em>foco</em>','Ante <em>opus</em>')+'</h2>'+
+      '<p class="pz-tempo" aria-live="off">'+focoFmt(ms)+'</p>'+
+      '<div class="pz-lista">'+item('caminhar', L('Caminhar na quadra','Walk around the block','Caminar la cuadra','Ambulare'), '')+
+        item('whats', L('Responder o WhatsApp das doutoras','Answer the doctors on WhatsApp','Responder el WhatsApp de las doctoras','Respondere'), uw && !ck.whats ? L('Última vez: ','Last time: ','Última vez: ','Ultimo: ')+quandoHM(uw) : L('A cada 2 horas, em toda pausa','Every 2 hours, every break','Cada 2 horas, en cada pausa','Singulis horis binis'))+'</div>'+
+      '<div class="acoes pz-acoes"><button type="button" class="btn btn-escuro" data-pz="voltar">'+(falta.length ? L('Voltar mesmo assim','Go back anyway','Volver igual','Redire') : L('Voltar ao foco','Back to focus','Volver al foco','Ad opus'))+'</button><button type="button" class="btn btn-claro" data-pz="fim">'+L('Encerrar por hoje','Done for today','Terminar por hoy','Finis')+'</button></div>'+
+      (falta.length ? '<p class="pz-falta">'+L('Falta: ','Still to do: ','Falta: ','Restat: ')+falta.join(L(' e ',' and ',' y ',' et '))+'</p>' : '')+
+      '<p class="pz-hoje">'+L('Hoje: ','Today: ','Hoy: ','Hodie: ')+(h.min>=60 ? Math.floor(h.min/60)+'h'+(h.min%60 ? pad(h.min%60) : '') : h.min+' min')+L(' de foco',' of focus',' de foco','')+(h.whats ? ' · '+L('WhatsApp ','WhatsApp ','WhatsApp ','WhatsApp ')+h.whats+'x' : '')+(h.caminhadas ? ' · '+plural(h.caminhadas, L('caminhada','walk','caminata','ambulatio'), L('caminhadas','walks','caminatas','ambulationes')) : '')+'</p>';
+  }
   function focoEncerrar(){
     var f = focoEstado(); if (!f) return;
     if (f.estado!=='caminhada'){ var ms = focoMs(f); if (ms > 60000) focoRegistrar(ms, ms >= FOCO_MIN*60000); }
@@ -4711,7 +4767,7 @@ tr.pl-pausada td{opacity:.55}
     var f = focoEstado(), pill = document.getElementById('foco-pill'), btn = document.getElementById('foco-btn');
     if (!pill) return;
     if (btn) btn.hidden = !!f;
-    if (!f){ pill.hidden = true; pill.removeAttribute('data-chave'); document.title = 'Ora et Labora'; clearInterval(focoTick); focoTick = null; return; }
+    if (!f){ pill.hidden = true; pill.removeAttribute('data-chave'); pausaPintar(null); document.title = 'Ora et Labora'; clearInterval(focoTick); focoTick = null; return; }
     pill.hidden = false; pill.setAttribute('data-estado', f.estado);
     var cam = f.estado==='caminhada', ms = cam ? Date.now() - Date.parse(f.inicio) : focoMs(f), alvo = FOCO_MIN*60000, frac = cam ? 1 : Math.min(1, ms/alvo), passou = !cam && ms >= alvo;
     var mi = f.missao ? achar(f.missao) : null, h = focoHoje();
@@ -4724,7 +4780,7 @@ tr.pl-pausada td{opacity:.55}
     pill.innerHTML =
       '<span class="fp-anel"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="t"/><circle cx="18" cy="18" r="15" class="p" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+(circ*(1-frac)).toFixed(1)+'" transform="rotate(-90 18 18)"/></svg>'+
         (cam ? '<svg class="fp-ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="11" cy="3.5" r="1.6"/><path d="M9.5 7.5l-2 4 2.5 2-1 4.5M9.5 7.5l3 1.5 1.5 2.5M8 11.5l-2.5 1M11 14l2.5 3.5"/></svg>' : '')+'</span>'+
-      '<span class="fp-txt"><b class="fp-tempo">'+(cam ? focoFmt(ms) : focoFmt(ms))+'</b><small>'+
+      '<span class="fp-txt" data-foco="abrir"><b class="fp-tempo">'+(cam ? focoFmt(ms) : focoFmt(ms))+'</b><small>'+
         (cam ? L('Caminhada','Walk','Caminata','Ambulatio') : f.estado==='pausa' ? L('Pausado','Paused','En pausa','Intermissum') : passou ? L('Hora de caminhar','Time to walk','Hora de caminar','Ambula') : L('Foco · de ','Focus · of ','Foco · de ','Opus · ')+FOCO_MIN+' min')+
         (mi && !cam ? ' · '+esc(mi.titulo.length>34 ? mi.titulo.slice(0,33)+'…' : mi.titulo) : '')+'</small></span>'+
       '<span class="fp-acoes">'+
@@ -4732,13 +4788,14 @@ tr.pl-pausada td{opacity:.55}
         : passou ? '<button type="button" class="btn btn-escuro btn-p" data-foco="caminhar">'+L('Fui caminhar','Going for a walk','Fui a caminar','Ambulo')+'</button><button type="button" class="icone-btn" data-foco="fim" title="'+L('Encerrar','End','Terminar','Finire')+'" aria-label="'+L('Encerrar','End','Terminar','Finire')+'">'+svgIcone('<path d="M5 5l10 10M15 5L5 15"/>',1.8)+'</button>'
         : (f.estado==='pausa' ? '<button type="button" class="icone-btn" data-foco="retomar" title="'+L('Continuar','Resume','Continuar','Pergere')+'" aria-label="'+L('Continuar','Resume','Continuar','Pergere')+'">'+svgIcone('<path d="M7 5l8 5-8 5z"/>',1.8)+'</button>'
                                : '<button type="button" class="icone-btn" data-foco="pausar" title="'+L('Pausar','Pause','Pausar','Intermittere')+'" aria-label="'+L('Pausar','Pause','Pausar','Intermittere')+'">'+svgIcone('<path d="M7.5 5v10M12.5 5v10"/>',1.8)+'</button>')+
-          '<button type="button" class="icone-btn" data-foco="fim" title="'+L('Encerrar o bloco','End the block','Terminar el bloque','Finire')+'" aria-label="'+L('Encerrar o bloco','End the block','Terminar el bloque','Finire')+'">'+svgIcone('<rect x="5.5" y="5.5" width="9" height="9" rx="1.5"/>',1.8)+'</button>')+
+          '<button type="button" class="icone-btn" data-foco="parar" title="'+L('Parar e fazer a pausa','Stop and take the break','Parar y hacer la pausa','Siste')+'" aria-label="'+L('Parar e fazer a pausa','Stop and take the break','Parar y hacer la pausa','Siste')+'">'+svgIcone('<rect x="5.5" y="5.5" width="9" height="9" rx="1.5"/>',1.8)+'</button>')+
       '</span>';
     }
     pill.classList.toggle('passou', passou);
     pill.title = h.blocos || h.min ? L('Hoje: ','Today: ','Hoy: ','Hodie: ')+h.min+' min · '+plural(h.blocos,'bloco','blocos') : '';
     document.title = (cam ? '◦ ' : passou ? '● ' : f.estado==='pausa' ? '‖ ' : '')+focoFmt(ms)+' · Ora et Labora';
-    if (passou && !f.avisado){ f.avisado = true; salvar(); focoSom(); focoNotificar(); }
+    if (passou && !f.avisado){ f.avisado = true; f.minimizado = false; salvar(); focoSom(); focoNotificar(); }
+    pausaPintar(f, ms, passou);
     if (!focoTick) focoTick = setInterval(function(){ if (focoEstado()) focoPintar(); }, 1000);
   }
   document.getElementById('foco-btn').addEventListener('click', function(){ focoIniciar(null); });
@@ -4746,8 +4803,21 @@ tr.pl-pausada td{opacity:.55}
   document.getElementById('foco-pill').addEventListener('click', function(e){
     var b = e.target.closest('[data-foco]'); if (!b) return;
     var a = b.getAttribute('data-foco');
-    if (a==='pausar') focoPausar(); else if (a==='retomar') focoRetomar(); else if (a==='caminhar') focoCaminhar(); else if (a==='fim') focoEncerrar(); else if (a==='novo') focoIniciar((focoEstado()||{}).missao||null);
+    var fe = focoEstado();
+    if (a==='pausar') focoPausar(); else if (a==='retomar') focoRetomar(); else if (a==='caminhar') focoCaminhar(); else if (a==='parar') focoCaminhar(); else if (a==='fim') focoEncerrar(); else if (a==='novo') focoIniciar((fe||{}).missao||null);
+    else if (a==='abrir' && fe){ fe.minimizado = false; salvar(); focoPintar(); }
   });
+  document.getElementById('veu-pausa').addEventListener('click', function(e){
+    var b = e.target.closest('[data-pz]'), f = focoEstado();
+    if (!b){ if (e.target.id==='veu-pausa' && f){ f.minimizado = true; salvar(); focoPintar(); } return; }
+    var a = b.getAttribute('data-pz');
+    if (a==='min' && f){ f.minimizado = true; salvar(); focoPintar(); }
+    else if (a==='parar') focoCaminhar();
+    else if (a==='voltar') focoIniciar((f||{}).missao||null);
+    else if (a==='fim') focoEncerrar();
+  });
+  document.getElementById('veu-pausa').addEventListener('change', function(e){ var k = e.target.getAttribute('data-pz-ck'); if (k) focoCheck(k, e.target.checked); });
+  document.addEventListener('keydown', function(e){ if (e.key!=='Escape') return; var v = document.getElementById('veu-pausa'), f = focoEstado(); if (v && !v.hidden && f){ f.minimizado = true; salvar(); focoPintar(); } });
 
   /* ---------- Antes das missões (só a conta de administrador): celular, limpa nas demandas e Oração de São Francisco ---------- */
   var ORACAO_PAZ = ['Senhor, fazei de mim um instrumento de vossa paz.','Onde houver ódio, que eu leve o amor;','onde houver ofensa, que eu leve o perdão;','onde houver discórdia, que eu leve a união;','onde houver dúvida, que eu leve a fé;','onde houver erro, que eu leve a verdade;','onde houver desespero, que eu leve a esperança;','onde houver tristeza, que eu leve a alegria;','onde houver trevas, que eu leve a luz.','Ó Mestre, fazei que eu procure mais','consolar que ser consolado;','compreender que ser compreendido;','amar que ser amado.','Pois é dando que se recebe,','é perdoando que se é perdoado,','e é morrendo que se vive para a vida eterna.','Amém.'];
