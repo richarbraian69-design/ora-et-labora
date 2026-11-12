@@ -1113,8 +1113,13 @@ span.circ.espera{cursor:default}
 .coment-ind svg{width:14px;height:14px}
 .coment-ind.novo{color:var(--espera-tx);font-weight:700}
 .coment-ind.novo::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--ouro);margin-left:2px}
-.nota-coment{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid rgba(217,162,27,.35);background:rgba(217,162,27,.08);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.88rem}
-.nota-coment button.link{font-size:.85rem}
+.nota-coment{display:flex;gap:12px;align-items:flex-start;border:0;background:var(--ac-suave);border-radius:14px;padding:12px 16px;margin-bottom:12px;font-size:.88rem}
+.nota-coment > svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--ac-tx)}
+.nota-coment .nc-l{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.nota-coment .nc-l > span{color:var(--tx2);font-size:.82rem}
+.nota-coment button.link{font-size:.88rem;text-align:left;color:var(--tx);text-decoration:none}
+.nota-coment button.link:hover{text-decoration:underline}
+.nota-coment button.link b{color:var(--ac-tx)}
 /* ---------- Quadro (colunas por data) ---------- */
 .quadro{display:flex;gap:12px;overflow-x:auto;align-items:flex-start;padding:2px 2px 14px;min-height:300px}
 .qd-col{flex:0 0 268px;background:rgba(127,127,127,.06);border:1px solid var(--linha);border-radius:12px;display:flex;flex-direction:column;max-height:calc(100vh - 230px);transition:border-color .15s, background .15s}
