@@ -4070,7 +4070,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
       (m.privada ? '' : '<button class="alca" type="button" draggable="true" data-alca="'+m.id+'" aria-label="Arrastar para outra missão" title="Arraste e solte sobre outra missão para torná-la sub-missão">'+ALCA+'</button>')+
       circ+
       (selecionando ? '<button class="sel-box'+(selecao[m.id]?' on':'')+'" type="button" data-sel="'+m.id+'" aria-pressed="'+!!selecao[m.id]+'" aria-label="'+L('Selecionar','Select','Seleccionar','Eligere')+': '+esc(m.titulo)+'">'+CHECK+'</button>' : '')+
-      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? '' : av(m.resp)+'<span class="r-nome">'+esc(String(p.nome||'').split(' ')[0])+'</span>')+'</span></div>'+
+      '<div class="r-info">'+(m.feita ? rotuloPrazo(m) : '<button class="prazo-btn" type="button" data-mudar-data="'+m.id+'" title="'+L('Mudar a data','Change the date','Cambiar la fecha','Diem mutare')+'">'+rotuloPrazo(m)+I_CAL.replace('<svg ','<svg class="cal-ic" ')+'</button>')+'<span class="r-resp">'+(m.privada ? (ehPrioridade(m) ? '<span class="st priv" title="'+L('Missão pessoal (só você vê)','Personal mission (only you see)','Misión personal','Missio privata')+'">'+I_CADEADO+'</span>' : '') : av(m.resp)+'<span class="r-nome">'+esc(String(p.nome||'').split(' ')[0])+'</span>')+'</span></div>'+
       '<div class="r-cnt"><div class="r-linha-tit"><h4 class="r-titulo" data-ver-m="'+m.id+'" role="button" tabindex="0" aria-expanded="'+!!(descAbertas[m.id] && !ed)+'" title="'+L('Ver a missão','View the mission','Ver la misión','Missionem videre')+'">'+esc(m.titulo)+'</h4>'+pilulas(m.tags)+ind+'</div>'+
       status+'</div>'+
       '<div class="r-acoes'+(menuM===m.id?' aberto':'')+'">'+
@@ -4909,11 +4909,12 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     else if (vista==='hoje'){
       var am = ap.minhas.filter(function(m){ return vis.indexOf(m)>=0; }), fora = function(l){ return l.filter(function(m){ return am.indexOf(m)<0; }); };
       agrupandoTipo = porTipo && !q && usaTipos();
-      var prios = usaTipos() && !q ? doFiltro().filter(ehPrioridade).sort(function(a,b){ return prioridades().indexOf(a.id)-prioridades().indexOf(b.id); }) : [];
+      var verPes = (filtro==='todos' || filtro===eu) && !filtroTag;
+      var prios = usaTipos() && !q ? doFiltro().concat(verPes ? minhasPessoais() : []).filter(ehPrioridade).sort(function(a,b){ return prioridades().indexOf(a.id)-prioridades().indexOf(b.id); }) : [];
       var foraP = function(l){ return l.filter(function(m){ return prios.indexOf(m)<0; }); };
       s.atras = foraP(s.atras); s.hoje = foraP(s.hoje);
-      var pesHoje = (filtro==='todos' || filtro===eu) && !filtroTag ? minhasPessoais().filter(function(m){
-        if (m.feita || !m.data || m.data>hoje) return false;
+      var pesHoje = verPes ? minhasPessoais().filter(function(m){
+        if (m.feita || !m.data || m.data>hoje || prios.indexOf(m)>=0) return false;
         if (!q) return true;
         return (m.titulo+' '+(m.descricao||'')+' '+(m.area||'')).toLowerCase().indexOf(q)>=0;
       }).sort(porData) : [];
