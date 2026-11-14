@@ -1419,6 +1419,23 @@ tr.pl-pausada td{opacity:.55}
 .pz-hoje{margin:0;font-size:.78rem;color:var(--tx3)}
 .fp-txt[data-foco="abrir"]{cursor:pointer}
 body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
+
+.hb-quando{all:unset;cursor:pointer;font-size:.8rem;color:var(--tx2);text-decoration:underline dotted;text-underline-offset:3px;justify-self:start}
+.hb-quando:hover,.hb-quando[aria-expanded="true"]{color:var(--ac-tx)}
+.hb-quando:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:3px}
+.hb-dias-ed{display:grid;gap:6px;margin-top:6px}
+.hb-dias-ed small,.hb-nova-dias small{font-size:.76rem;color:var(--tx3)}
+.hb-semana{display:inline-flex;gap:4px;flex-wrap:wrap}
+.hb-semana button{width:30px;height:30px;border-radius:50%;border:1px solid var(--linha);background:transparent;color:var(--tx3);font:inherit;font-size:.78rem;font-weight:600;cursor:pointer;padding:0}
+.hb-semana button[aria-pressed="true"]{background:var(--ac-suave);border-color:transparent;color:var(--ac-tx)}
+.hb-semana button:hover{border-color:var(--tx3)}
+.hb-dias i.f{background:transparent;box-shadow:inset 0 0 0 1px var(--sup-2)}
+.habito.folga .hb-info b{color:var(--tx2)}
+.hb-folga{font-size:.82rem;color:var(--tx3)}
+.hb-nova-dias{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-basis:100%}
+.hb-nd-rot{font-size:.82rem;color:var(--tx2)}
+.hb-form{flex-wrap:wrap}
+@media (max-width:600px){.hb-semana{gap:2px;flex-wrap:nowrap}.hb-semana button{width:24px;height:24px;font-size:.7rem}}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1626,7 +1643,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
           <div class="lista" id="lista-pessoal"></div>
           <div class="barra-lista"><h3 class="rotulo-vista">Hábitos</h3><span class="nota">Fazer o mínimo também conta.</span></div>
           <div class="painel"><div class="habitos" id="pes-habitos"></div>
-            <form class="form-linha" id="hb-form" autocomplete="off">
+            <form class="form-linha hb-form" id="hb-form" autocomplete="off">
               <input class="campo" id="hb-nome" maxlength="60" placeholder="Novo hábito (ex.: Ler)" aria-label="Novo hábito" required>
               <input class="campo" id="hb-min" maxlength="80" placeholder="Versão mínima (ex.: 1 página)" aria-label="Versão mínima">
               <select class="campo" id="hb-area" aria-label="Área da vida"></select>
@@ -6714,7 +6731,29 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   function angelusFeitos(){ return state.oferecimentos.filter(function(o){ return o.dono===eu && o.tipo==='angelus' && o.data===hoje; }).map(function(o){ return o.hora; }); }
   function exameDeHoje(){ return state.exames.filter(function(e){ return e.dono===eu && e.data===hoje; })[0] || null; }
   function registro(hid, d){ for (var i=0;i<state.registros.length;i++){ var r = state.registros[i]; if (r.hab===hid && r.data===d) return r; } return null; }
-  function sequencia(hid){ var d = paraData(hoje), n = 0; if (!registro(hid, iso(d))) d.setDate(d.getDate()-1); while (registro(hid, iso(d)) && n<3650){ n++; d.setDate(d.getDate()-1); } return n; }
+  var DIAS_SEM_CURTO = ['D','S','T','Q','Q','S','S'], DIAS_SEM_NOME = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  function habPorId(hid){ return state.habitos.filter(function(h){ return h.id===hid; })[0] || null; }
+  function habFolga(h, ds){ return !!h && (h.folga||[]).indexOf(paraData(ds).getDay())>=0; }
+  /* dias de folga do hábito não contam nem quebram a sequência; se fizer mesmo assim, conta */
+  function sequencia(hid){
+    var h = habPorId(hid), d = paraData(hoje), n = 0, k = 0;
+    if (!registro(hid, iso(d))) d.setDate(d.getDate()-1);
+    while (k<3650){ k++; var ds = iso(d);
+      if (registro(hid, ds)) n++; else if (!habFolga(h, ds)) break;
+      d.setDate(d.getDate()-1);
+      if (h && (h.folga||[]).length>=7) break;
+    }
+    return n;
+  }
+  function resumoFolga(h){
+    var f = h.folga||[]; if (!f.length) return L('Todos os dias','Every day','Todos los días','Cotidie');
+    var on = [0,1,2,3,4,5,6].filter(function(d){ return f.indexOf(d)<0; });
+    if (!on.length) return L('Sem dias marcados','No days set','Sin días','Nullus dies');
+    if (on.join()==='1,2,3,4,5') return L('Segunda a sexta','Weekdays','Lunes a viernes','Feriis');
+    if (on.join()==='1,2,3,4,5,6') return L('Segunda a sábado','Mon to Sat','Lunes a sábado','Praeter dominicam');
+    return on.map(function(d){ return DIAS_SEM_NOME[d].slice(0,3); }).join(', ');
+  }
+  function chipsDias(attr, folga, pref){ pref = pref||''; return '<span class="hb-semana" role="group" aria-label="Dias em que o hábito vale">'+[1,2,3,4,5,6,0].map(function(d){ var on = (folga||[]).indexOf(d)<0; return '<button type="button" '+attr+'="'+pref+d+'" aria-pressed="'+on+'" title="'+DIAS_SEM_NOME[d]+(on ? ': vale' : ': folga')+'">'+DIAS_SEM_CURTO[d]+'</button>'; }).join('')+'</span>'; }
   function segundaDaSemana(){ var d = paraData(hoje), dw = d.getDay(); return iso(mais(d, -((dw+6)%7) - (dw===1 || dw===2 ? 7 : 0))); }
   function revisaoDaSemana(soConcluida){ var s = segundaDaSemana(), r = state.revisoes.filter(function(x){ return x.dono===eu && x.semana===s; })[0] || null; return soConcluida ? (r && r.concluida ? r : null) : r; }
   /* a revisão da semana vale de domingo a terça; nesse período, se não foi feita, ela aparece */
@@ -6749,12 +6788,17 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     document.getElementById('pes-horas').innerHTML = htmlHoras();
     var hs = state.habitos.filter(function(h){ return h.dono===eu; });
     document.getElementById('pes-habitos').innerHTML = hs.length ? hs.map(function(h){
-      var r = registro(h.id, hoje), seq = sequencia(h.id), dias = '';
-      for (var i=6;i>=0;i--){ var rr = registro(h.id, dia(-i)); dias += '<i class="'+(rr ? (rr.tipo==='minimo'?'m':'c') : '')+'" title="'+esc(dataLonga(dia(-i)))+'"></i>'; }
-      return '<div class="habito"><div class="hb-info"><b>'+esc(h.nome)+'</b><span>'+(h.minimo ? 'Mínimo: '+esc(h.minimo) : 'Sem versão mínima')+(h.area ? ' · '+esc(h.area) : '')+'</span>'+(seq ? '<span class="hb-seq">'+plural(seq,'dia seguido','dias seguidos')+'</span>' : '')+'</div>'+
+      var r = registro(h.id, hoje), seq = sequencia(h.id), dias = '', folgaHoje = habFolga(h, hoje), abertoDias = hbDiasAberto===h.id;
+      for (var i=6;i>=0;i--){ var rr = registro(h.id, dia(-i)), fg = !rr && habFolga(h, dia(-i)); dias += '<i class="'+(rr ? (rr.tipo==='minimo'?'m':'c') : fg ? 'f' : '')+'" title="'+esc(dataLonga(dia(-i)))+(fg ? ' · folga' : '')+'"></i>'; }
+      return '<div class="habito'+(folgaHoje && !r ? ' folga' : '')+'"><div class="hb-info"><b>'+esc(h.nome)+'</b><span>'+(h.minimo ? 'Mínimo: '+esc(h.minimo) : 'Sem versão mínima')+(h.area ? ' · '+esc(h.area) : '')+'</span>'+
+        '<button type="button" class="hb-quando" data-hb-dias="'+h.id+'" aria-expanded="'+abertoDias+'">'+esc(resumoFolga(h))+'</button>'+
+        (seq ? '<span class="hb-seq">'+plural(seq,'dia seguido','dias seguidos')+'</span>' : '')+
+        (abertoDias ? '<div class="hb-dias-ed">'+chipsDias('data-hb-dia', h.folga, h.id+'|')+'<small>'+L('Toque nos dias em que ele não precisa ser feito. Nesses dias a sequência não quebra.','Tap the days it is not needed. On those days the streak does not break.','Toca los días en que no hace falta. Esos días la racha no se rompe.','Dies vacationis.')+'</small></div>' : '')+
+        '</div>'+
         '<div class="hb-dias" aria-label="Últimos 7 dias">'+dias+'</div><div class="hb-acoes">'+
         (r ? '<span class="hb-feito">'+CHECK+(r.tipo==='minimo' ? 'Fiz o mínimo' : 'Feito hoje')+'</span><button class="link" type="button" data-hb-desfazer="'+h.id+'">desfazer</button>'
-           : '<button class="btn btn-escuro btn-p" type="button" data-hb="'+h.id+'" data-tipo="completo">Fiz</button>'+(h.minimo ? '<button class="btn btn-claro btn-p" type="button" data-hb="'+h.id+'" data-tipo="minimo">Fiz o mínimo</button>' : ''))+
+           : (folgaHoje ? '<span class="hb-folga">'+L('Folga hoje','Day off','Día libre','Vacatio')+'</span><button class="link" type="button" data-hb="'+h.id+'" data-tipo="completo">'+L('fiz mesmo assim','did it anyway','lo hice igual','tamen feci')+'</button>'
+              : '<button class="btn btn-escuro btn-p" type="button" data-hb="'+h.id+'" data-tipo="completo">Fiz</button>'+(h.minimo ? '<button class="btn btn-claro btn-p" type="button" data-hb="'+h.id+'" data-tipo="minimo">Fiz o mínimo</button>' : '')))+
         '<button class="icone-btn" type="button" data-hb-del="'+h.id+'" aria-label="Apagar hábito '+esc(h.nome)+'" title="Apagar">'+I_LIXO+'</button></div></div>';
     }).join('') : '<p class="vazio">Nenhum hábito ainda. Comece pequeno: o mínimo feito hoje vale mais que o máximo planejado para amanhã.</p>';
     var areas = areasEu();
@@ -6802,7 +6846,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     if ((el = t.closest('[data-hb]'))){
       var hid = el.getAttribute('data-hb'); if (registro(hid, hoje)) return;
       state.registros.push({id:hid+'|'+hoje, hab:hid, dono:eu, data:hoje, tipo:el.getAttribute('data-tipo'), em:new Date().toISOString()});
-      salvar(); renderPessoal(); avisar(el.getAttribute('data-tipo')==='minimo' ? 'O mínimo também conta. +4 Constância.' : 'Hábito cumprido. +6 Constância.'); return;
+      salvar(); renderPessoal(); avisar(el.getAttribute('data-tipo')==='minimo' ? 'O mínimo também conta.' : 'Hábito cumprido.'); return;
     }
     if ((el = t.closest('[data-hb-desfazer]'))){ var h2 = el.getAttribute('data-hb-desfazer'); state.registros = state.registros.filter(function(r){ return !(r.hab===h2 && r.data===hoje); }); salvar(); renderPessoal(); return; }
     if ((el = t.closest('[data-hb-del]'))){
@@ -6823,10 +6867,27 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     if (lsGet('ora-det-'+d.id)==='1') d.open = true;
     d.addEventListener('toggle', function(){ lsSet('ora-det-'+d.id, d.open ? '1' : ''); });
   });
+  var hbDiasAberto = null, hbNovaFolga = [];
+  (function(){
+    var f = document.getElementById('hb-form'), box = document.createElement('div'); box.className = 'hb-nova-dias largo'; box.id = 'hb-nova-dias'; box.setAttribute('data-sem-tr','');
+    f.appendChild(box);
+    var pintar = function(){ box.innerHTML = '<span class="hb-nd-rot">'+L('Vale em','Applies on','Vale en','Valet')+'</span>'+chipsDias('data-hb-nd', hbNovaFolga)+'<small>'+L('Desmarque os dias de folga','Unmark the days off','Desmarca los días libres','')+'</small>'; };
+    pintar();
+    box.addEventListener('click', function(e){ var b = e.target.closest('[data-hb-nd]'); if (!b) return; var d = +b.getAttribute('data-hb-nd'), i = hbNovaFolga.indexOf(d); if (i>=0) hbNovaFolga.splice(i,1); else hbNovaFolga.push(d); pintar(); });
+    f.addEventListener('reset', function(){ setTimeout(pintar, 0); });
+  })();
+  document.getElementById('pes-habitos').addEventListener('click', function(e){
+    var b = e.target.closest('[data-hb-dias]');
+    if (b){ var id = b.getAttribute('data-hb-dias'); hbDiasAberto = hbDiasAberto===id ? null : id; renderPessoal(); return; }
+    var c = e.target.closest('[data-hb-dia]'); if (!c) return;
+    var pz = c.getAttribute('data-hb-dia').split('|'), h = habPorId(pz[0]), d = +pz[1]; if (!h) return;
+    h.folga = (h.folga||[]).slice(); var i = h.folga.indexOf(d); if (i>=0) h.folga.splice(i,1); else h.folga.push(d);
+    salvar(); renderPessoal();
+  });
   document.getElementById('hb-form').addEventListener('submit', function(e){
     e.preventDefault(); var n = document.getElementById('hb-nome').value.trim(); if (!n) return;
-    state.habitos.push({id:'h'+uid(), dono:eu, nome:n, minimo:document.getElementById('hb-min').value.trim(), area:document.getElementById('hb-area').value, criadoEm:new Date().toISOString()});
-    salvar(); this.reset(); renderPessoal(); document.getElementById('hb-nome').focus();
+    state.habitos.push({id:'h'+uid(), dono:eu, nome:n, minimo:document.getElementById('hb-min').value.trim(), area:document.getElementById('hb-area').value, folga:hbNovaFolga.slice(), criadoEm:new Date().toISOString()});
+    hbNovaFolga = []; salvar(); this.reset(); renderPessoal(); document.getElementById('hb-nome').focus();
   });
   document.getElementById('areas-in').addEventListener('change', function(e){
     var l = e.target.value.split(',').map(function(x){ return x.trim(); }).filter(Boolean).slice(0,12);
@@ -6940,7 +7001,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 
   /* ---------- Lembrete dos hábitos: 8h, 12h e 18h, só se faltar algum ---------- */
   var HAB_HORAS = [8, 12, 18];
-  function habPendentes(){ return state.habitos.filter(function(h){ return h.dono===eu && !registro(h.id, hoje); }); }
+  function habPendentes(){ return state.habitos.filter(function(h){ return h.dono===eu && !registro(h.id, hoje) && !habFolga(h, hoje); }); }
   function habSlot(){ var hr = new Date().getHours(), sl = null; HAB_HORAS.forEach(function(x){ if (hr>=x) sl = x; }); return sl; }
   function checarHabitos(){
     var c = document.getElementById('hab-card'); if (!c) return;
