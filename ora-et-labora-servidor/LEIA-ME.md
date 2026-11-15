@@ -138,6 +138,6 @@ O JARVIS lê e cuida das missões direto pelo servidor, sem abrir a tela, nas ro
 
 - A chave fica só no `.env` do JARVIS, como `ORA_TOKEN`. No Railway vai apenas a impressão digital dela, na variável `JARVIS_TOKEN_SHA256` (SHA-256 em hex; no Mac: `printf %s "CHAVE" | shasum -a 256`). Sem a variável, as rotas não existem.
 - O JARVIS age em nome do administrador. Para usar outra pessoa, crie `JARVIS_USUARIO` com o nome dela.
-- Ele pode ler missões e reuniões, criar e editar missões e comentar. Não apaga nada e não conclui missão: concluir continua no app, por causa das obras e das visitas da cidade.
+- Ele pode ler missões e reuniões; criar e editar missões e comentar; criar, remarcar e marcar como feita uma reunião da agenda; concluir e reabrir missão (com o mesmo fluxo da tela: aprovação, subtarefas e a próxima repetição); pedir ajustes numa entrega; criar, editar e marcar subtarefas. Não apaga nada: apagar missão ou reunião continua só no app.
 - Tudo o que ele faz fica no histórico da missão com "(pelo JARVIS)".
 - Para desligar, apague a variável `JARVIS_TOKEN_SHA256`. Para trocar a chave, mude o `ORA_TOKEN` e a impressão digital.

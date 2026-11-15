@@ -615,7 +615,7 @@ jarvis.get('/resumo', (req, res) => {
     paraEuAprovar: abertas.filter(m => !m.privada && m.aprovador === u.id && m.aprov && m.aprov.estado === 'aguardando').map(r),
     ajustesPedidos: minhas.filter(m => m.aprov && m.aprov.estado === 'ajustes').map(r),
     equipeAtrasadas: abertas.filter(m => !m.privada && m.data && m.data < hoje && m.resp !== u.id).map(r),
-    reunioesHoje: itensVisiveis('reunioes', u).filter(x => x.data === hoje && !x.feita).map(x => ({ titulo: x.titulo, inicio: x.inicio || '', fim: x.fim || '', local: x.local || '', pessoas: (x.pessoas || []).map(nomePessoa).filter(Boolean) })) });
+    reunioesHoje: itensVisiveis('reunioes', u).filter(x => x && x.data === hoje && !x.feita).sort((a, b) => (a.inicio || '') < (b.inicio || '') ? -1 : 1).map(x => resumoReuniao(x, cli)) });
 });
 jarvis.get('/missoes/:id', rota((req, res) => {
   res.json(resumoMissao(missaoItem(req.params.id, req.u).dados, clientesMapa(req.u), agoraNoFuso().data, true));
@@ -661,6 +661,191 @@ jarvis.post('/missoes/:id/comentarios', rota((req, res) => {
   m.comentarios.push({ id: 'c' + crypto.randomBytes(6).toString('hex'), por: u.id, em: new Date().toISOString(), texto: t, mencoes, via: 'jarvis' });
   gravarMissao(m, i, u);
   res.json({ ok: true, comentarios: m.comentarios.length });
+}));
+/* ── Reuniões, concluir e subtarefas pelo JARVIS (15/11/2026). Fazem o mesmo que a tela:
+   recorrência, aprovação e histórico. Apagar continua só no app. ── */
+function resumoReuniao(r, cli) {
+  return { id: r.id, titulo: r.titulo, data: r.data, inicio: r.inicio || '', fim: r.fim || '', local: r.local || '', descricao: r.descricao ? String(r.descricao).slice(0, 280) : '',
+    pessoas: (r.pessoas || []).map(nomePessoa).filter(Boolean), clientes: (r.tags || []).map(t => cli[t]).filter(Boolean), feita: !!r.feita, repete: r.recorrencia || null };
+}
+function horaOk(h, campo) { if (h === null || h === '') return ''; if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(h))) throw new Erro(campo + ' no formato HH:MM.'); return String(h); }
+function reuniaoItem(rid) {
+  const i = db.itens['reunioes|' + rid];
+  if (!i || i.apagado || !i.dados) throw new Erro('Reunião não encontrada.', 404);
+  return i;
+}
+function gravarReuniao(r, i, u) { db.itens['reunioes|' + r.id] = { col: 'reunioes', id: r.id, dono: i ? i.dono : u.id, privado: false, apagado: false, dados: r, seq: ++db.seq }; gravar(); }
+function camposReuniao(r, b, u) {
+  if (b.titulo !== undefined) { r.titulo = texto(b.titulo, 200); if (!r.titulo) throw new Erro('A reunião precisa de um título.'); }
+  if (b.data !== undefined) { r.data = dataOk(b.data); if (!r.data) throw new Erro('A reunião precisa de uma data.'); }
+  if (b.inicio !== undefined) { r.inicio = horaOk(b.inicio, 'Início'); if (!r.inicio) throw new Erro('A reunião precisa de um horário de início.'); }
+  if (b.fim !== undefined) r.fim = horaOk(b.fim, 'Fim');
+  if (r.fim && r.fim <= r.inicio) throw new Erro('O fim precisa ser depois do início.');
+  if (b.local !== undefined) r.local = texto(b.local, 200);
+  if (b.descricao !== undefined) r.descricao = texto(b.descricao, 5000);
+  if (b.pessoas !== undefined) { const l = (Array.isArray(b.pessoas) ? b.pessoas : [b.pessoas]).filter(Boolean).slice(0, 30).map(n => pessoaId(String(n))); r.pessoas = l.length ? Array.from(new Set(l)) : [u.id]; }
+  if (b.clientes !== undefined) r.tags = clientesIds(b.clientes, u);
+}
+jarvis.get('/reunioes', rota((req, res) => {
+  const q = req.query, u = req.u, hoje = agoraNoFuso().data, cli = clientesMapa(u);
+  const de = q.de ? dataOk(q.de) : hoje, ate = q.ate ? dataOk(q.ate) : null, busca = normNome(q.busca || '');
+  const cliente = q.cliente ? clientesIds(q.cliente, u)[0] : null, pessoa = q.pessoa ? pessoaId(q.pessoa) : null;
+  const limite = Math.max(1, Math.min(200, parseInt(q.limite, 10) || 60));
+  let l = itensVisiveis('reunioes', u).filter(r => r && r.id && r.data && r.data >= de && (!ate || r.data <= ate));
+  if (q.feitas !== '1') l = l.filter(r => !r.feita);
+  if (cliente) l = l.filter(r => (r.tags || []).includes(cliente));
+  if (pessoa) l = l.filter(r => (r.pessoas || []).includes(pessoa));
+  if (busca) l = l.filter(r => normNome(r.titulo + ' ' + (r.descricao || '') + ' ' + (r.local || '')).includes(busca));
+  l.sort((a, b) => (a.data + (a.inicio || '')) < (b.data + (b.inicio || '')) ? -1 : 1);
+  res.json({ hoje, total: l.length, reunioes: l.slice(0, limite).map(r => resumoReuniao(r, cli)) });
+}));
+jarvis.post('/reunioes', rota((req, res) => {
+  const u = req.u, b = req.body || {};
+  const r = { id: 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4), exemplo: false, criadaPor: u.id, feita: false,
+    titulo: '', data: null, inicio: '', fim: '', pessoas: [u.id], local: '', descricao: '', tags: [], recorrencia: null };
+  camposReuniao(r, Object.assign({ titulo: '', data: null, inicio: '' }, b), u);
+  gravarReuniao(r, null, u);
+  res.json(resumoReuniao(r, clientesMapa(u)));
+}));
+jarvis.patch('/reunioes/:id', rota((req, res) => {
+  const u = req.u, i = reuniaoItem(req.params.id), r = JSON.parse(JSON.stringify(i.dados)), b = req.body || {};
+  const campos = ['titulo', 'data', 'inicio', 'fim', 'local', 'descricao', 'pessoas', 'clientes'];
+  const mudou = campos.filter(k => b[k] !== undefined);
+  if (!mudou.length && b.feita === undefined) throw new Erro('Nada para mudar. Campos: ' + campos.join(', ') + ', feita.');
+  camposReuniao(r, b, u);
+  if (b.feita !== undefined) { r.feita = !!b.feita; r.feitaEm = r.feita ? new Date().toISOString() : null; r.feitaPor = r.feita ? u.id : null; }
+  gravarReuniao(r, i, u);   // a próxima de uma reunião que se repete a tela cria sozinha, como faz quando é marcada lá
+  res.json(resumoReuniao(r, clientesMapa(u)));
+}));
+
+/* recorrência das missões: a mesma conta da tela (passoRec/proximaData) */
+function lerRec(rec) {
+  const p = String(rec || '').split(':'); if (p[0] !== 'cada') return null;
+  const n = Math.max(1, Math.min(99, parseInt(p[1], 10) || 1)), un = p[2];
+  if (!['dia', 'semana', 'mes', 'ano'].includes(un)) return null;
+  const dias = (p[3] || '').split(',').filter(x => x !== '').map(Number).filter(x => x >= 0 && x <= 6);
+  return { n, u: un, dias: un === 'semana' ? dias : [] };
+}
+function diasNoMes(d) { return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate(); }
+function passoRec(d, rec, dd) {
+  const mais = n => d.setUTCDate(d.getUTCDate() + n);
+  if (rec === 'diaria') mais(1);
+  else if (rec === 'uteis') { do { mais(1); } while (d.getUTCDay() === 0 || d.getUTCDay() === 6); }
+  else if (rec === 'semanal') mais(7);
+  else if (rec === 'quinzenal') mais(14);
+  else if (rec === 'mensal') { d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + 1); d.setUTCDate(Math.min(dd, diasNoMes(d))); }
+  else {
+    const c = lerRec(rec); if (!c) return false;
+    if (c.u === 'dia') mais(c.n);
+    else if (c.u === 'semana' && !c.dias.length) mais(7 * c.n);
+    else if (c.u === 'semana') {
+      for (let k = 0; k < 8; k++) {
+        mais(1);
+        if (d.getUTCDay() === 1 && c.n > 1) mais(7 * (c.n - 1));
+        if (c.dias.includes(d.getUTCDay())) break;
+      }
+    }
+    else if (c.u === 'mes') { d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + c.n); d.setUTCDate(Math.min(dd, diasNoMes(d))); }
+    else if (c.u === 'ano') { const mo = d.getUTCMonth(); d.setUTCDate(1); d.setUTCFullYear(d.getUTCFullYear() + c.n); d.setUTCMonth(mo); d.setUTCDate(Math.min(dd, diasNoMes(d))); }
+    else return false;
+  }
+  return true;
+}
+function proximaData(base, rec, hoje) {
+  if (!rec) return null;
+  const b = new Date((base || hoje) + 'T00:00:00Z'), d = new Date(b), h = new Date(hoje + 'T00:00:00Z'), dd = b.getUTCDate();
+  let guarda = 0;
+  do { if (!passoRec(d, rec, dd)) return null; } while (d <= h && ++guarda < 3000);
+  return d.toISOString().slice(0, 10);
+}
+function missaoNova(dados) { return Object.assign({ id: 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4) }, dados); }
+function precisaAprovacao(m) { return !!(m.aprovador && !m.privada && m.aprovador !== m.resp); }
+jarvis.post('/missoes/:id/concluir', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), b = req.body || {}, hoje = agoraNoFuso().data;
+  if (m.feita) throw new Erro('Essa missão já foi cumprida.', 409);
+  const links = (Array.isArray(b.links) ? b.links : b.links ? [b.links] : []).map(x => texto(x, 600)).filter(x => /^https?:\/\//i.test(x)).slice(0, 10);
+  const comentario = texto(b.comentario, 3000);
+  if (precisaAprovacao(m) && u.id !== m.aprovador) {
+    // a tela faz o mesmo: quem precisa de aprovação envia, e a missão é cumprida quando for aprovada
+    if (m.aprov && m.aprov.estado === 'aguardando') throw new Erro('Já está aguardando a aprovação de ' + nomePessoa(m.aprovador) + '.', 409);
+    m.aprov = { estado: 'aguardando', em: new Date().toISOString(), por: u.id, links }; if (comentario) m.aprov.comentario = comentario;
+    registrarHist(m, u, 'enviou para a aprovação de ' + nomePessoa(m.aprovador));
+    gravarMissao(m, i, u);
+    return res.json({ enviadaParaAprovacao: true, aprovador: nomePessoa(m.aprovador), missao: resumoMissao(m, clientesMapa(u), hoje) });
+  }
+  const aprovou = precisaAprovacao(m) && u.id === m.aprovador;
+  (m.subs || []).forEach(s => { s.feita = true; });
+  m.feita = true; m.feitaEm = new Date().toISOString();
+  if (!m.privada) m.cidadeXp = 0;   // a cidade saiu do app; 0 faz o "voltar a fazer" da tela não descontar nada
+  registrarHist(m, u, aprovou ? 'aprovou a entrega' : 'cumpriu a missão');
+  if (aprovou) { if (m.aprov && m.aprov.links && m.aprov.links.length) m.entrega = m.aprov.links.slice(); if (m.aprov && m.aprov.comentario) m.entregaComentario = m.aprov.comentario; m.aprovadaPor = u.id; m.aprov = null; }
+  else if (links.length) { m.entrega = links; if (comentario) m.entregaComentario = comentario; }
+  gravarMissao(m, i, u);
+  let proxima = null;
+  const nd = m.recorrencia ? proximaData(m.data, m.recorrencia, hoje) : null;
+  if (nd) {
+    const c = missaoNova({ titulo: m.titulo, descricao: m.descricao || '', resp: m.resp, data: nd, peso: m.peso, feita: false, feitaEm: null, exemplo: !!m.exemplo, tags: (m.tags || []).slice(), anexos: [],
+      subs: (m.subs || []).map(s => ({ id: 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4), titulo: s.titulo, descricao: s.descricao || '', resp: s.resp, data: null, feita: false, tags: (s.tags || []).slice(), anexos: [] })),
+      recorrencia: m.recorrencia, tipo: m.tipo || null, aprovador: m.aprovador || null, aprov: null, privada: !!m.privada, dono: m.dono || null, area: m.area || null,
+      criadaPor: m.criadaPor || u.id, criadaEm: new Date().toISOString(), origem: m.origem || m.id });
+    gravarMissao(c, i.privado ? { dono: i.dono } : null, u);
+    proxima = { id: c.id, data: nd };
+  }
+  res.json({ cumprida: true, aprovou, proxima, missao: resumoMissao(m, clientesMapa(u), hoje) });
+}));
+jarvis.post('/missoes/:id/reabrir', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), hoje = agoraNoFuso().data;
+  if (!m.feita) throw new Erro('Essa missão não está cumprida.');
+  const quando = m.feitaEm || '';
+  m.feita = false; m.feitaEm = null; m.oferecida = false; delete m.cidadeXp;
+  if (m.aprovadaPor) delete m.aprovadaPor;
+  if (m.aprov && m.aprov.estado !== 'ajustes') m.aprov = null;
+  registrarHist(m, u, 'voltou a missão para fazer');
+  gravarMissao(m, i, u);
+  let removida = null;
+  if (m.recorrencia) {   // a repetição criada quando ela foi cumprida some, como na tela (senão a próxima fica duplicada)
+    const raiz = m.origem || m.id;
+    const filhas = itensVisiveis('missoes', u).filter(x => x && x.id !== m.id && !x.feita && x.origem === raiz && (!quando || (x.criadaEm || '') >= quando))
+      .sort((a, b) => (a.criadaEm || '') < (b.criadaEm || '') ? 1 : -1);
+    if (filhas[0]) { const k = 'missoes|' + filhas[0].id, f = db.itens[k]; db.itens[k] = { col: 'missoes', id: f.id, dono: f.dono, privado: f.privado, apagado: true, dados: null, seq: ++db.seq }; removida = filhas[0].id; gravar(); }
+  }
+  res.json({ reaberta: true, repeticaoRemovida: removida, missao: resumoMissao(m, clientesMapa(u), hoje) });
+}));
+jarvis.post('/missoes/:id/ajustes', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), nota = texto((req.body || {}).nota, 3000);
+  if (!nota) throw new Erro('Diga o que precisa ajustar.');
+  if (!(m.aprov && m.aprov.estado === 'aguardando') || m.aprovador !== u.id) throw new Erro('Essa missão não está esperando a sua aprovação.', 409);
+  m.aprov = { estado: 'ajustes', nota, em: new Date().toISOString(), por: u.id }; m.ajustes = (m.ajustes || 0) + 1;
+  registrarHist(m, u, 'pediu ajustes: ' + nota);
+  gravarMissao(m, i, u);
+  res.json({ ok: true, missao: resumoMissao(m, clientesMapa(u), agoraNoFuso().data) });
+}));
+/* subtarefas: criar, editar, marcar e desmarcar (o índice é a posição na lista, começando em 1) */
+jarvis.post('/missoes/:id/subtarefas', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), b = req.body || {};
+  if (m.feita) throw new Erro('Essa missão já foi cumprida; reabra antes de mexer nas subtarefas.');
+  const titulos = (Array.isArray(b.titulos) ? b.titulos : [b.titulo]).map(t => texto(t, 200)).filter(Boolean).slice(0, 30);
+  if (!titulos.length) throw new Erro('A subtarefa precisa de um título.');
+  const resp = b.resp ? pessoaId(b.resp) : m.resp || u.id;
+  m.subs = m.subs || [];
+  titulos.forEach(t => m.subs.push({ id: 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4), titulo: t, descricao: '', resp, data: null, feita: false, tags: [], anexos: [] }));
+  registrarHist(m, u, titulos.length > 1 ? 'criou ' + titulos.length + ' subtarefas' : 'criou a subtarefa "' + titulos[0] + '"');
+  gravarMissao(m, i, u);
+  res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
+}));
+jarvis.patch('/missoes/:id/subtarefas/:n', rota((req, res) => {
+  const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), b = req.body || {};
+  const n = parseInt(req.params.n, 10), s = (m.subs || [])[n - 1];
+  if (!s) throw new Erro('Subtarefa ' + req.params.n + ' não existe (a missão tem ' + (m.subs || []).length + ').', 404);
+  if (m.feita) throw new Erro('Essa missão já foi cumprida; reabra antes de mexer nas subtarefas.');
+  const mudou = [];
+  if (b.titulo !== undefined) { s.titulo = texto(b.titulo, 200); if (!s.titulo) throw new Erro('A subtarefa precisa de um título.'); mudou.push('título'); }
+  if (b.resp !== undefined) { s.resp = b.resp ? pessoaId(b.resp) : m.resp; mudou.push('responsável'); }
+  if (b.feita !== undefined) { s.feita = !!b.feita; s.feitaEm = s.feita ? new Date().toISOString() : null; s.cidadeXp = 0; mudou.push(s.feita ? 'cumpriu' : 'reabriu'); }
+  if (!mudou.length) throw new Erro('Nada para mudar. Campos: titulo, resp, feita.');
+  registrarHist(m, u, 'subtarefa "' + s.titulo + '": ' + mudou.join(', '));
+  gravarMissao(m, i, u);
+  res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
 }));
 app.use('/api/jarvis', jarvis);
 
