@@ -1436,6 +1436,29 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 .hb-nd-rot{font-size:.82rem;color:var(--tx2)}
 .hb-form{flex-wrap:wrap}
 @media (max-width:600px){.hb-semana{gap:2px;flex-wrap:nowrap}.hb-semana button{width:24px;height:24px;font-size:.7rem}}
+
+.rotina-agora{display:grid;gap:10px;padding:12px 16px;border-radius:14px;background:var(--sup);border:1px solid var(--linha);margin-bottom:12px}
+.ra-linha{display:flex;align-items:center;gap:8px 22px;flex-wrap:wrap}
+.ra-ag,.ra-prox{display:grid;gap:1px;min-width:0}
+.ra-rot{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:600}
+.ra-ag b{font-weight:600;font-size:1rem;color:var(--ac-tx)}
+.ra-prox span:last-child{color:var(--tx2);font-size:.9rem}
+.ra-prox time,.ra-dia time{font-variant-numeric:tabular-nums;color:var(--tx3)}
+.rotina-agora .acoes{margin-left:auto;display:flex;gap:10px;align-items:center}
+.ra-dia{list-style:none;margin:0;padding:8px 0 0;border-top:1px solid var(--linha);display:grid;gap:2px}
+.ra-dia li{display:grid;grid-template-columns:52px 1fr;gap:8px;padding:4px 8px;border-radius:8px;font-size:.88rem}
+.ra-dia li.passou{color:var(--tx3)}
+.ra-dia li.atual{background:var(--ac-suave);color:var(--ac-tx);font-weight:600}
+.ra-dia li.atual time{color:inherit}
+.rot-ed{display:grid;gap:10px;padding:0 18px 16px}
+.rot-ed .nota{margin:0}
+.rot-ed textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;line-height:1.5;resize:vertical;width:100%}
+.rot-pe{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fim-lista{list-style:none;margin:2px 0 0;padding:0;width:100%;display:grid;gap:6px;text-align:left}
+.fim-lista li{padding:10px 14px;border-radius:12px;background:var(--sup);font-size:.92rem}
+.fim-rec{color:var(--tx3);margin-right:8px}
+.fim-lista .fim-mais{background:transparent;color:var(--tx3);padding:2px 14px}
+@media (max-width:600px){.rotina-agora .acoes{margin-left:0;width:100%}}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1650,6 +1673,13 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
               <button class="btn btn-claro btn-p" type="submit">Criar hábito</button>
             </form>
           </div>
+          <details class="painel det-sec" id="pes-rotina-det" data-lembrar><summary><span class="det-sec-tit">Rotina da semana</span></summary>
+            <div class="rot-ed">
+              <p class="nota">Escreva o nome do dia (ou dias, como “Terça a sexta”) e, embaixo, um horário por linha. Na tela Hoje aparece o que fazer agora e o que vem depois. Uma linha “Encerrar expediente” abre o aviso de parar naquele horário.</p>
+              <textarea class="campo" id="rot-txt" rows="14" spellcheck="false" placeholder="Segunda&#10;04:30 Trinca da manhã&#10;08:00 Trabalho&#10;12:00 Almoço e oração&#10;17:30 Encerrar expediente&#10;&#10;Terça a sexta&#10;08:00 Trabalho&#10;16:30 Encerrar expediente&#10;16:30 Estudo"></textarea>
+              <div class="rot-pe"><small id="rot-resumo" class="nota"></small><button class="btn btn-escuro btn-p" type="button" id="rot-salvar">Salvar rotina</button></div>
+            </div>
+          </details>
           <details class="painel det-sec" id="pes-rev-det" data-lembrar><summary><span class="det-sec-tit">Revisão semanal</span></summary><div class="det-sec-acoes"><button class="btn btn-claro btn-p" type="button" data-abrir-revisao id="rev-btn"></button></div><div class="rev-hist" id="pes-revisoes"></div></details>
           <details class="painel det-sec" id="pes-vt-det" data-lembrar hidden><summary><span class="det-sec-tit">Suas virtudes</span><span class="nota" id="vt-total"></span></summary><ul class="virtudes" id="pes-virtudes"></ul></details>
           <div id="zap-bloco" hidden>
@@ -1923,6 +1953,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 </div>
 <div class="voo" id="voo" aria-hidden="true" hidden></div>
 <div class="foco-pill" id="foco-pill" role="timer" hidden data-sem-tr></div>
+<div class="veu" id="veu-fim" hidden><div class="cartao pausa-card fim-card" role="dialog" aria-modal="true" aria-labelledby="fim-tit" id="fim-card" data-sem-tr></div></div>
 <div class="veu" id="veu-pausa" hidden><div class="cartao pausa-card" role="dialog" aria-modal="true" aria-labelledby="pz-tit" id="pz-card" data-sem-tr></div></div>
 <div class="pilha-oracao"><div class="angelus hab-card" id="hab-card" role="status" hidden data-sem-tr></div><div class="angelus" id="rev-card" role="status" hidden data-sem-tr>
   <p class="rot">Revisão semanal</p>
@@ -4946,6 +4977,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     }
     if (vista==='hoje' && !q && ritualAtivo() && prefsEu().ritualFeito===hoje && prefsEu().ritualHora) html += '<p class="dia-liberado" data-sem-tr>'+svgIcone(ICONES.cumpridas)+L('Dia liberado às ','Day unlocked at ','Día liberado a las ','Dies apertus hora ')+esc(prefsEu().ritualHora)+'.</p>';
     if (vista==='hoje' && !q){
+      html += htmlRotinaAgora();
       if (usaRevisao() && revisaoPendente()) html += '<div class="nota-rev" data-sem-tr><span><b>'+L('Revisão semanal pendente','Weekly review pending','Revisión semanal pendiente','Recognitio hebdomadalis')+'</b> · '+esc(faixaSemana(segundaDaSemana()))+'</span><button class="btn btn-escuro btn-p" type="button" data-abrir-revisao>'+L('Fazer agora','Do it now','Hacer ahora','Nunc facere')+'</button></div>';
       var rhTodas = reunioesDoDia(hoje), rh = rhTodas.filter(function(r){ return !r.feita; }), rf = rhTodas.filter(function(r){ return r.feita; }); nReunFeitas = rf.length;
       if (rh.length) html += htmlGrupo('Reuniões de hoje', rh.length, rh.map(linhaReuniao).join(''), false, 'reunioes-de-hoje');
@@ -5681,7 +5713,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
   function aplicarCorApp(){ try { var pc = (prefsEu().corApp)||'lit'; document.documentElement.setAttribute('data-lit', pc==='ouro' ? 'ouro' : (liturgia(hoje).cor||'verde')); } catch(e){} }
-  function render(){ if (vista==='cidade') vista = 'hoje'; aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function render(){ if (vista==='cidade') vista = 'hoje'; aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); if (typeof rotinaEditorPintar==='function' && eu){ rotinaEditorPintar(); encPintar(); } setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -6758,7 +6790,108 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   function segundaDaSemana(){ var d = paraData(hoje), dw = d.getDay(); return iso(mais(d, -((dw+6)%7) - (dw===1 || dw===2 ? 7 : 0))); }
   function revisaoDaSemana(soConcluida){ var s = segundaDaSemana(), r = state.revisoes.filter(function(x){ return x.dono===eu && x.semana===s; })[0] || null; return soConcluida ? (r && r.concluida ? r : null) : r; }
   /* a revisão da semana vale de domingo a terça; nesse período, se não foi feita, ela aparece */
-  function revisaoPendente(){ var dw = paraData(hoje).getDay(); return (dw===0 || dw===1 || dw===2) && !revisaoDaSemana(true); }
+  function revisaoPendente(){ var dw = paraData(hoje).getDay(); return (dw===0 || dw===1 || dw===2 || (dw===6 && new Date().getHours()>=10)) && !revisaoDaSemana(true); }
+
+  /* ---------- Rotina da semana: o que fazer agora, encerramento do expediente ---------- */
+  var DIAS3 = ['dom','seg','ter','qua','qui','sex','sab'], rotinaVerDia = false, rotChave = null, encAdiado = 0;
+  function semAcento(x){ return String(x).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+  function rotinaParse(txt){
+    var dias = [[],[],[],[],[],[],[]], atuais = null;
+    String(txt||'').split(/\r?\n/).forEach(function(lin){
+      var l = lin.trim(); if (!l) return;
+      var m = l.match(/^(\d{1,2})(?:[:h]\s?(\d{2})|h)?\s*[-–·]?\s*(.+)$/i);
+      if (m && +m[1]<24){ if (atuais){ var min = (+m[1])*60 + (+(m[2]||0)); atuais.forEach(function(d){ dias[d].push({min:min, t:m[3].trim()}); }); } return; }
+      var ws = semAcento(l).match(/[a-z]+/g) || []; if (!ws.length || DIAS3.indexOf(ws[0].slice(0,3))<0) return;
+      var sel = [], ult = -1, faixa = false;
+      ws.forEach(function(w){
+        if (w==='a' || w==='ate'){ faixa = true; return; }
+        var i = w.length>=3 ? DIAS3.indexOf(w.slice(0,3)) : -1; if (i<0) return;
+        if (faixa && ult>=0){ for (var k=(ult+1)%7; k!==i; k=(k+1)%7) sel.push(k); }
+        sel.push(i); ult = i; faixa = false;
+      });
+      atuais = sel.filter(function(x, j){ return sel.indexOf(x)===j; });
+    });
+    dias.forEach(function(d){ d.forEach(function(b, j){ b.o = j; }); d.sort(function(a,b){ return a.min-b.min || a.o-b.o; }); });
+    return dias;
+  }
+  function ehEncerrar(t){ return /^(encerrar|fim d[oe]|parar o)\s+(o\s+)?(expediente|trabalho)/i.test(semAcento(t)); }
+  function rotinaHoje(){ var t = prefsEu().rotina; if (!t) return []; return rotinaParse(t)[paraData(hoje).getDay()]; }
+  function minAgora(){ var d = new Date(); return d.getHours()*60 + d.getMinutes(); }
+  function hmMin(m){ return pad(Math.floor(m/60))+':'+pad(m%60); }
+  function rotinaAgora(){
+    var bl = rotinaHoje().filter(function(b){ return !ehEncerrar(b.t); }), n = minAgora(), cur = null, prox = null;
+    bl.forEach(function(b){ if (b.min<=n) cur = b; else if (!prox) prox = b; });
+    return {bl:bl, cur:cur, prox:prox};
+  }
+  function htmlRotinaAgora(){
+    var r = rotinaAgora(); if (!r.bl.length) return '';
+    var acao = '';
+    if (r.cur && /pend[eê]ncia/i.test(r.cur.t)) acao = '<button class="btn btn-claro btn-p" type="button" data-vista-ir="atrasadas">'+L('Ver atrasadas','See overdue','Ver atrasadas','Videre')+'</button>';
+    else if (r.cur && /revis|organiza/i.test(r.cur.t) && usaRevisao() && revisaoPendente()) acao = '<button class="btn btn-claro btn-p" type="button" data-abrir-revisao>'+L('Fazer a revisão','Do the review','Hacer la revisión','Recognoscere')+'</button>';
+    var lista = rotinaVerDia ? '<ol class="ra-dia">'+r.bl.map(function(b){ return '<li class="'+(b===r.cur ? 'atual' : (r.cur && b.min<r.cur.min) || (r.cur && b.min===r.cur.min && b!==r.cur) ? 'passou' : '')+'"><time>'+hmMin(b.min)+'</time><span>'+esc(b.t)+'</span></li>'; }).join('')+'</ol>' : '';
+    return '<div class="rotina-agora" id="rotina-agora" data-sem-tr>'+
+      '<div class="ra-linha">'+
+        (r.cur ? '<div class="ra-ag"><span class="ra-rot">'+L('Agora','Now','Ahora','Nunc')+'</span><b>'+esc(r.cur.t)+'</b></div>' : '<div class="ra-ag"><span class="ra-rot">'+L('Agora','Now','Ahora','Nunc')+'</span><b>'+L('Livre','Free','Libre','Vacat')+'</b></div>')+
+        (r.prox ? '<div class="ra-prox"><span class="ra-rot">'+L('Depois','Next','Después','Deinde')+'</span><span><time>'+hmMin(r.prox.min)+'</time> '+esc(r.prox.t)+'</span></div>' : '')+
+        '<span class="acoes">'+acao+'<button class="link" type="button" data-rotina-dia aria-expanded="'+rotinaVerDia+'">'+(rotinaVerDia ? L('fechar','close','cerrar','claudere') : L('ver o dia','see the day','ver el día','diem videre'))+'</button></span>'+
+      '</div>'+lista+'</div>';
+  }
+  document.addEventListener('click', function(e){
+    if (e.target.closest('[data-rotina-dia]')){ rotinaVerDia = !rotinaVerDia; var el = document.getElementById('rotina-agora'); if (el) el.outerHTML = htmlRotinaAgora(); return; }
+    var f = e.target.closest('[data-fim]'); if (!f) return;
+    var k = f.getAttribute('data-fim');
+    if (k==='mais'){ encAdiado = Date.now() + 15*60000; encPintar(); return; }
+    if (k==='amanha'){
+      var antes = JSON.stringify(state.missoes), am = dia(1), n = 0;
+      abertasHoje().forEach(function(m){ if (m.rec) return; m.data = am; registrar(m, 'mudou a data para '+dataCurta(am)); n++; });
+      salvar(); render(); avisar(n ? plural(n, 'missão passou para amanhã', 'missões passaram para amanhã')+'.' : L('Nada para passar.','Nothing to move.','Nada que pasar.','Nihil.'), antes); encPintar(); return;
+    }
+    if (k==='ok'){ prefsEu().encerrado = hoje; if (focoEstado()) focoEncerrar(); salvar(); encPintar(); avisar(L('Expediente encerrado. Bom descanso.','Work is done for today. Rest well.','Jornada cerrada. Buen descanso.','Opus finitum.')); }
+  });
+  function abertasHoje(){ return state.missoes.filter(function(m){ return !m.feita && m.data===hoje && (m.privada ? m.dono===eu : m.resp===eu); }); }
+  function encBloco(){ var bl = rotinaHoje().filter(function(b){ return ehEncerrar(b.t); }); return bl.length ? bl[bl.length-1] : null; }
+  function encPintar(){
+    var veu = document.getElementById('veu-fim'), card = document.getElementById('fim-card'); if (!veu) return;
+    var b = encBloco(), n = minAgora(), abEl = document.getElementById('abertura');
+    var mostrar = b && logado && !app.hidden && !(abEl && !abEl.hidden) && n>=b.min && n<b.min+240 && prefsEu().encerrado!==hoje && Date.now()>encAdiado;
+    if (!mostrar){ veu.hidden = true; card.removeAttribute('data-chave'); return; }
+    var ab = abertasHoje(), movem = ab.filter(function(m){ return !m.rec; }).length, depois = rotinaAgora(), chave = hoje+'|'+ab.length+'|'+movem;
+    if (!veu.hidden && card.getAttribute('data-chave')===chave) return;
+    card.setAttribute('data-chave', chave); veu.hidden = false;
+    var seg = rotinaHoje().filter(function(x){ return !ehEncerrar(x.t) && x.min>=b.min; })[0];
+    card.innerHTML = '<p class="rot">'+L('Expediente','Workday','Jornada','Opus')+'</p><h2 id="fim-tit">'+L('Hora de <em>parar</em>.','Time to <em>stop</em>.','Hora de <em>parar</em>.','<em>Siste</em>.')+'</h2>'+
+      '<p class="pz-sub">'+L('São ','It is ','Son las ','Hora ')+hmMin(b.min)+'. '+(ab.length ? L('Ficou aberto hoje:','Still open today:','Quedó abierto hoy:','Restant:') : L('Nada ficou aberto hoje.','Nothing left open today.','Nada quedó abierto hoy.','Nihil restat.'))+'</p>'+
+      (ab.length ? '<ul class="fim-lista">'+ab.slice(0,6).map(function(m){ return '<li>'+(m.rec ? '<span class="fim-rec" title="'+L('Repete; fica onde está','Repeats; stays','Se repite','')+'">↻</span>' : '')+esc(m.titulo)+'</li>'; }).join('')+(ab.length>6 ? '<li class="fim-mais">+ '+(ab.length-6)+'</li>' : '')+'</ul>' : '')+
+      '<div class="acoes pz-acoes">'+(movem ? '<button type="button" class="btn btn-claro" data-fim="amanha">'+(movem===1 ? L('Passar para amanhã','Move to tomorrow','Pasar a mañana','Cras') : L('Passar as '+movem+' para amanhã','Move '+movem+' to tomorrow','Pasar las '+movem+' a mañana','Cras'))+'</button>' : '')+
+        '<button type="button" class="btn btn-escuro" data-fim="ok">'+L('Encerrar o expediente','End the workday','Cerrar la jornada','Finis')+'</button></div>'+
+      '<p class="pz-hoje">'+(seg ? L('Depois: ','Next: ','Después: ','Deinde: ')+hmMin(seg.min)+' · '+esc(seg.t)+' · ' : '')+'<button type="button" class="link" data-fim="mais">'+L('mais 15 min','15 more min','15 min más','')+'</button></p>';
+  }
+  function rotinaTick(){
+    if (!eu || !logado) return;
+    var r = rotinaAgora(), k = r.cur ? hoje+'|'+r.cur.min+'|'+r.cur.t : hoje+'|-';
+    if (rotChave!==null && k!==rotChave && r.cur && !app.hidden) avisar(L('Agora: ','Now: ','Ahora: ','Nunc: ')+r.cur.t);
+    if (k!==rotChave){ rotChave = k; var el = document.getElementById('rotina-agora'); if (el) el.outerHTML = htmlRotinaAgora(); }
+    encPintar();
+  }
+  setInterval(rotinaTick, 20000);
+  function rotinaEditorPintar(){
+    var ta = document.getElementById('rot-txt'); if (!ta || document.activeElement===ta) return;
+    ta.value = prefsEu().rotina || ''; rotinaResumo();
+  }
+  function rotinaResumo(){
+    var el = document.getElementById('rot-resumo'), ta = document.getElementById('rot-txt'); if (!el || !ta) return;
+    var d = rotinaParse(ta.value), nomes = ['dom','seg','ter','qua','qui','sex','sáb'];
+    el.textContent = d.some(function(x){ return x.length; }) ? [1,2,3,4,5,6,0].map(function(i){ var e = d[i].filter(function(b){ return ehEncerrar(b.t); })[0]; return nomes[i]+' '+d[i].filter(function(b){ return !ehEncerrar(b.t); }).length+(e ? ' (para '+hmMin(e.min)+')' : ''); }).join(' · ') : L('Nenhum horário reconhecido ainda.','No times recognised yet.','Ningún horario aún.','Nihil.');
+  }
+  (function(){
+    var ta = document.getElementById('rot-txt'), bt = document.getElementById('rot-salvar'), det = document.getElementById('pes-rotina-det'); if (!ta) return;
+    ta.addEventListener('input', rotinaResumo);
+    det.addEventListener('toggle', rotinaEditorPintar);
+    bt.addEventListener('click', function(){
+      prefsEu().rotina = ta.value.trim(); salvar(); rotChave = null; render();
+      var h = rotinaHoje().length; avisar(L('Rotina salva.','Routine saved.','Rutina guardada.','Servatum.')+(h ? ' '+L('Hoje: ','Today: ','Hoy: ','Hodie: ')+plural(h,'horário','horários')+'.' : ''));
+    });
+  })();
   function usaRevisao(){ return !!pessoa(eu).admin || !SERVIDOR || state.revisoes.some(function(r){ return r.dono===eu; }); }
   function checarRevisao(){
     var c = document.getElementById('rev-card'); if (!c) return;
