@@ -577,7 +577,7 @@ function resumoMissao(m, cli, hoje, completa) {
   const r = { id: m.id, titulo: m.titulo, resp: nomePessoa(m.resp), data: m.data || null, feita: !!m.feita, atrasada: !m.feita && !!m.data && m.data < hoje,
     peso: m.peso || 'media', tipo: m.tipo || null, clientes: (m.tags || []).map(t => cli[t]).filter(Boolean), privada: !!m.privada,
     aprovador: m.aprovador ? nomePessoa(m.aprovador) : null, aprovacao: m.aprov ? m.aprov.estado || null : null,
-    subtarefas: (m.subs || []).length, comentarios: (m.comentarios || []).length };
+    subtarefas: (m.subs || []).length, comentarios: (m.comentarios || []).length, repete: m.recorrencia || null };
   if (!completa) { if (m.descricao) r.descricao = String(m.descricao).slice(0, 280); return r; }
   return Object.assign(r, { descricao: m.descricao || '', feitaEm: m.feitaEm || null, criadaPor: nomePessoa(m.criadaPor), criadaEm: m.criadaEm || null,
     subs: (m.subs || []).map(s => ({ titulo: s.titulo, resp: nomePessoa(s.resp), feita: !!s.feita })),
@@ -606,6 +606,7 @@ jarvis.get('/missoes', rota((req, res) => {
   res.json({ hoje, total: l.length, missoes: l.slice(0, limite).map(m => resumoMissao(m, cli, hoje)) });
 }));
 jarvis.get('/resumo', (req, res) => {
+  manterSeries();
   const u = req.u, hoje = agoraNoFuso().data, cli = clientesMapa(u);
   const abertas = itensVisiveis('missoes', u).filter(m => m && !m.feita), r = m => resumoMissao(m, cli, hoje);
   const minhas = abertas.filter(m => (m.privada ? m.dono : m.resp) === u.id);
@@ -629,6 +630,7 @@ function aplicarCampos(m, b, u) {
   if (b.tipo !== undefined) m.tipo = b.tipo ? texto(b.tipo, 30) : null;
   if (b.clientes !== undefined) m.tags = clientesIds(b.clientes, u);
   if (b.aprovador !== undefined) m.aprovador = b.aprovador ? pessoaId(b.aprovador) : null;
+  if (b.recorrencia !== undefined) m.recorrencia = recOk(b.recorrencia);
 }
 const PESOS_OK = new Set(['minima', 'leve', 'media', 'ardua', 'heroica']);
 jarvis.post('/missoes', rota((req, res) => {
@@ -644,8 +646,9 @@ jarvis.post('/missoes', rota((req, res) => {
 }));
 jarvis.patch('/missoes/:id', rota((req, res) => {
   const u = req.u, i = missaoItem(req.params.id, u), m = JSON.parse(JSON.stringify(i.dados)), b = req.body || {};
-  const mudou = ['titulo', 'descricao', 'resp', 'data', 'peso', 'tipo', 'clientes', 'aprovador'].filter(k => b[k] !== undefined);
-  if (!mudou.length) throw new Erro('Nada para mudar. Campos: titulo, descricao, resp, data, peso, tipo, clientes, aprovador.');
+  const mudou = ['titulo', 'descricao', 'resp', 'data', 'peso', 'tipo', 'clientes', 'aprovador', 'recorrencia'].filter(k => b[k] !== undefined);
+  if (!mudou.length) throw new Erro('Nada para mudar. Campos: titulo, descricao, resp, data, peso, tipo, clientes, aprovador, recorrencia.');
+  if (b.recorrencia !== undefined && b.recorrencia && !m.data && b.data === undefined) throw new Erro('Missão que se repete precisa de data.');
   if (m.feita) throw new Erro('Essa missão já foi cumprida; reabra pelo app se precisar mudar.');
   aplicarCampos(m, b, u);
   if (m.privada) m.resp = m.dono;
@@ -664,8 +667,8 @@ jarvis.post('/missoes/:id/comentarios', rota((req, res) => {
 }));
 /* ── Reuniões, concluir e subtarefas pelo JARVIS (15/11/2026). Fazem o mesmo que a tela:
    recorrência, aprovação e histórico. Apagar continua só no app. ── */
-function resumoReuniao(r, cli) {
-  return { id: r.id, titulo: r.titulo, data: r.data, inicio: r.inicio || '', fim: r.fim || '', local: r.local || '', descricao: r.descricao ? String(r.descricao).slice(0, 280) : '',
+function resumoReuniao(r, cli, prevista) {
+  return { id: r.id, prevista: !!prevista, titulo: r.titulo, data: r.data, inicio: r.inicio || '', fim: r.fim || '', local: r.local || '', descricao: r.descricao ? String(r.descricao).slice(0, 280) : '',
     pessoas: (r.pessoas || []).map(nomePessoa).filter(Boolean), clientes: (r.tags || []).map(t => cli[t]).filter(Boolean), feita: !!r.feita, repete: r.recorrencia || null };
 }
 function horaOk(h, campo) { if (h === null || h === '') return ''; if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(h))) throw new Erro(campo + ' no formato HH:MM.'); return String(h); }
@@ -685,19 +688,82 @@ function camposReuniao(r, b, u) {
   if (b.descricao !== undefined) r.descricao = texto(b.descricao, 5000);
   if (b.pessoas !== undefined) { const l = (Array.isArray(b.pessoas) ? b.pessoas : [b.pessoas]).filter(Boolean).slice(0, 30).map(n => pessoaId(String(n))); r.pessoas = l.length ? Array.from(new Set(l)) : [u.id]; }
   if (b.clientes !== undefined) r.tags = clientesIds(b.clientes, u);
+  if (b.recorrencia !== undefined) { r.recorrencia = recOk(b.recorrencia); if (r.recorrencia && !r.serie) r.serie = r.id; }
+}
+/* repetição: os mesmos valores da tela (Não se repete, Todo dia, Dias úteis, Toda semana, Quinzenal,
+   Todo mês, e o personalizado "cada:N:dia|semana|mes|ano[:dias da semana 0-6]") */
+const REC_NOMES = { 'diaria': 'diaria', 'todo dia': 'diaria', 'todos os dias': 'diaria', 'uteis': 'uteis', 'dias uteis': 'uteis',
+  'semanal': 'semanal', 'toda semana': 'semanal', 'quinzenal': 'quinzenal', 'mensal': 'mensal', 'todo mes': 'mensal' };
+function recOk(v) {
+  if (v === null || v === undefined || v === '' || v === false || normNome(v) === 'nao se repete') return null;
+  const n = normNome(v);
+  if (REC_NOMES[n]) return REC_NOMES[n];
+  if (lerRec(n)) return n;
+  throw new Erro('Repetição: diaria, uteis, semanal, quinzenal, mensal, ou "cada:N:dia|semana|mes|ano" (semana pode ter os dias: cada:1:semana:1,3 = segunda e quarta).');
+}
+function proximaReuniaoData(base, rec, minimo) {
+  const d = new Date(base + 'T00:00:00Z'), dd = d.getUTCDate(), lim = new Date(minimo + 'T00:00:00Z');
+  let g = 0;
+  do { if (!passoRec(d, rec, dd)) return null; } while (d < lim && ++g < 3000);
+  return d.toISOString().slice(0, 10);
+}
+function maisDias(ds, n) { const d = new Date(ds + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function ultimasDasSeries() {
+  const series = {};
+  for (const k in db.itens) {
+    const i = db.itens[k];
+    if (i.col !== 'reunioes' || i.apagado || !i.dados || !i.dados.serie) continue;
+    const u = series[i.dados.serie];
+    if (!u || i.dados.data > u.dados.data) series[i.dados.serie] = i;
+  }
+  return series;
+}
+/* o mesmo que a tela faz ao abrir (manterSeriesReunioes): a reunião que se repete ganha a próxima
+   quando a última já passou ou foi feita. O id é o mesmo que a tela daria, então não duplica. */
+function manterSeries() {
+  const hoje = agoraNoFuso().data, series = ultimasDasSeries();
+  let criou = false;
+  for (const k in series) {
+    const i = series[k], u = i.dados;
+    if (!u.recorrencia || (u.data >= hoje && !u.feita)) continue;
+    const nd = proximaReuniaoData(u.data, u.recorrencia, u.data < hoje ? hoje : maisDias(hoje, 1)); if (!nd) continue;
+    const nid = 'r' + k + '@' + nd; if (db.itens['reunioes|' + nid]) continue;
+    const r = { id: nid, serie: k, titulo: u.titulo, data: nd, inicio: u.inicio, fim: u.fim || '', pessoas: (u.pessoas || []).slice(), local: u.local || '',
+      descricao: u.descricao || '', tags: (u.tags || []).slice(), recorrencia: u.recorrencia, exemplo: !!u.exemplo, criadaPor: u.criadaPor, feita: false };
+    db.itens['reunioes|' + nid] = { col: 'reunioes', id: nid, dono: i.dono, privado: false, apagado: false, dados: r, seq: ++db.seq };
+    criou = true;
+  }
+  if (criou) gravar();
+}
+/* as próximas vezes de cada série até `ate`, que ainda não existem como reunião (como a agenda da tela mostra) */
+function previstasAte(de, ate, u) {
+  const hoje = agoraNoFuso().data, out = [], series = ultimasDasSeries(), reais = new Set(itensVisiveis('reunioes', u).map(r => r && r.data + '|' + normNome(r.titulo)));
+  for (const k in series) {
+    const x = series[k].dados; if (!x.recorrencia) continue;
+    const d = new Date(x.data + 'T00:00:00Z'), dd = d.getUTCDate();
+    let g = 0;
+    while (passoRec(d, x.recorrencia, dd) && ++g < 400) {
+      const ds = d.toISOString().slice(0, 10); if (ds > ate) break;
+      if (ds >= hoje && ds >= de && !reais.has(ds + '|' + normNome(x.titulo)) && !db.itens['reunioes|r' + k + '@' + ds]) out.push(Object.assign({}, x, { id: 'r' + k + '@' + ds, data: ds, feita: false }));
+    }
+  }
+  return out;
 }
 jarvis.get('/reunioes', rota((req, res) => {
   const q = req.query, u = req.u, hoje = agoraNoFuso().data, cli = clientesMapa(u);
   const de = q.de ? dataOk(q.de) : hoje, ate = q.ate ? dataOk(q.ate) : null, busca = normNome(q.busca || '');
   const cliente = q.cliente ? clientesIds(q.cliente, u)[0] : null, pessoa = q.pessoa ? pessoaId(q.pessoa) : null;
   const limite = Math.max(1, Math.min(200, parseInt(q.limite, 10) || 60));
+  manterSeries();
+  const prev = new Set();
   let l = itensVisiveis('reunioes', u).filter(r => r && r.id && r.data && r.data >= de && (!ate || r.data <= ate));
+  previstasAte(de, ate || maisDias(de, 60), u).forEach(r => { prev.add(r.id); l.push(r); });
   if (q.feitas !== '1') l = l.filter(r => !r.feita);
   if (cliente) l = l.filter(r => (r.tags || []).includes(cliente));
   if (pessoa) l = l.filter(r => (r.pessoas || []).includes(pessoa));
   if (busca) l = l.filter(r => normNome(r.titulo + ' ' + (r.descricao || '') + ' ' + (r.local || '')).includes(busca));
   l.sort((a, b) => (a.data + (a.inicio || '')) < (b.data + (b.inicio || '')) ? -1 : 1);
-  res.json({ hoje, total: l.length, reunioes: l.slice(0, limite).map(r => resumoReuniao(r, cli)) });
+  res.json({ hoje, total: l.length, reunioes: l.slice(0, limite).map(r => resumoReuniao(r, cli, prev.has(r.id))) });
 }));
 jarvis.post('/reunioes', rota((req, res) => {
   const u = req.u, b = req.body || {};
@@ -708,14 +774,44 @@ jarvis.post('/reunioes', rota((req, res) => {
   res.json(resumoReuniao(r, clientesMapa(u)));
 }));
 jarvis.patch('/reunioes/:id', rota((req, res) => {
-  const u = req.u, i = reuniaoItem(req.params.id), r = JSON.parse(JSON.stringify(i.dados)), b = req.body || {};
-  const campos = ['titulo', 'data', 'inicio', 'fim', 'local', 'descricao', 'pessoas', 'clientes'];
+  const u = req.u, b = req.body || {};
+  manterSeries();
+  if (!db.itens['reunioes|' + req.params.id]) {
+    const p = previstasAte('0000-00-00', maisDias(agoraNoFuso().data, 400), u).find(x => x.id === req.params.id);
+    if (p) { const base = ultimasDasSeries()[p.serie]; db.itens['reunioes|' + p.id] = { col: 'reunioes', id: p.id, dono: base ? base.dono : u.id, privado: false, apagado: false, dados: p, seq: ++db.seq }; }
+  }
+  const i = reuniaoItem(req.params.id), orig = i.dados, r = JSON.parse(JSON.stringify(orig));
+  const campos = ['titulo', 'data', 'inicio', 'fim', 'local', 'descricao', 'pessoas', 'clientes', 'recorrencia'];
   const mudou = campos.filter(k => b[k] !== undefined);
-  if (!mudou.length && b.feita === undefined) throw new Erro('Nada para mudar. Campos: ' + campos.join(', ') + ', feita.');
+  if (!mudou.length && b.feita === undefined) throw new Erro('Nada para mudar. Campos: ' + campos.join(', ') + ', feita, toda_serie.');
+  const hoje = agoraNoFuso().data, cli = clientesMapa(u);
   camposReuniao(r, b, u);
   if (b.feita !== undefined) { r.feita = !!b.feita; r.feitaEm = r.feita ? new Date().toISOString() : null; r.feitaPor = r.feita ? u.id : null; }
+  let outras = 0, avulsa = false;
+  if (orig.serie && orig.recorrencia && b.toda_serie) {
+    // muda a série toda: as próximas vezes que já existem recebem o mesmo (menos a data e o "feita")
+    const comum = Object.assign({}, b); delete comum.data; delete comum.feita; delete comum.toda_serie;
+    for (const k in db.itens) {
+      const x = db.itens[k];
+      if (x.col !== 'reunioes' || x.apagado || !x.dados || x.id === r.id || x.dados.serie !== orig.serie || x.dados.feita || x.dados.data < hoje) continue;
+      const y = JSON.parse(JSON.stringify(x.dados)); camposReuniao(y, comum, u); gravarReuniao(y, x, u); outras++;
+    }
+  } else if (orig.serie && orig.recorrencia && b.data !== undefined && r.data !== orig.data) {
+    // remarcar UMA vez de uma reunião que se repete: a série segue no dia de sempre e esta vira avulsa
+    const ult = ultimasDasSeries()[orig.serie];
+    if (ult && ult.id === orig.id) {
+      let nd = proximaReuniaoData(orig.data, orig.recorrencia, maisDias(orig.data, 1)), g = 0;
+      while (nd && db.itens['reunioes|r' + orig.serie + '@' + nd] && ++g < 20) nd = proximaReuniaoData(nd, orig.recorrencia, maisDias(nd, 1));
+      const nid = nd && 'r' + orig.serie + '@' + nd;
+      if (nid && !db.itens['reunioes|' + nid]) {
+        const n = Object.assign(JSON.parse(JSON.stringify(orig)), { id: nid, data: nd, feita: false, feitaEm: null, feitaPor: null });
+        db.itens['reunioes|' + nid] = { col: 'reunioes', id: nid, dono: i.dono, privado: false, apagado: false, dados: n, seq: ++db.seq };
+      }
+    }
+    delete r.serie; r.recorrencia = null; avulsa = true;
+  }
   gravarReuniao(r, i, u);   // a próxima de uma reunião que se repete a tela cria sozinha, como faz quando é marcada lá
-  res.json(resumoReuniao(r, clientesMapa(u)));
+  res.json(Object.assign(resumoReuniao(r, cli), { avulsa, outrasDaSerie: outras }));
 }));
 
 /* recorrência das missões: a mesma conta da tela (passoRec/proximaData) */
