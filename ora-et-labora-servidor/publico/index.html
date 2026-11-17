@@ -1386,14 +1386,28 @@ tr.pl-pausada td{opacity:.55}
 .santos-card{display:grid;gap:12px;padding:18px 20px}
 .santos-card .sc-tit{margin:0;font-family:var(--f-serif);font-size:1.25rem}
 .santos-card .sc-vazio{margin:0;font-size:.85rem;color:var(--tx2);line-height:1.5}
-.sc-it{display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px;align-items:start}
-.sc-av{position:relative;width:38px;height:38px;border-radius:50%;background:var(--sup);display:grid;place-items:center;margin-top:2px}
-.sc-av::before{content:"";position:absolute;top:-3px;left:50%;width:22px;height:7px;margin-left:-11px;border:2px solid var(--ouro, #d9a21b);border-radius:50%;opacity:.85}
-.sc-av i{width:20px;height:20px;border-radius:50% 50% 40% 40%;display:block;margin-top:6px}
-.sc-txt{display:grid;gap:2px;min-width:0}
-.sc-txt b{font-weight:600;font-size:.92rem}
-.sc-sub{font-size:.76rem;color:var(--tx3)}
-.sc-fala{margin:4px 0 0;font-family:var(--f-serif);font-size:1.02rem;line-height:1.3;color:var(--tx)}
+.sc-it{display:grid;gap:4px;min-width:0}
+.sc-cab{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sc-cab b{font-weight:600;font-size:.92rem}
+.sc-sub{font-size:.74rem;color:var(--tx3)}
+.sc-vida{margin:0;font-size:.82rem;line-height:1.5;color:var(--tx2)}
+.sc-it + .sc-it{padding-top:12px;border-top:1px solid var(--linha)}
+.sc-palco{position:relative;height:88px;margin:2px -6px 0;border-radius:12px;overflow:visible;background:linear-gradient(to bottom, transparent 0, transparent 60%, var(--sup) 100%)}
+.sc-chao{position:absolute;left:6px;right:6px;bottom:7px;height:1px;background:var(--linha)}
+.sc-and{position:absolute;left:0;bottom:8px;width:30px;height:57px;will-change:transform;z-index:1}
+.sc-cena{position:absolute;left:6px;right:6px;bottom:7px;width:calc(100% - 12px);height:84px;pointer-events:none}
+.sc-cena path,.sc-cena circle{fill:var(--sup-2);stroke:none}
+.sc-cena .sc-cruz{fill:none;stroke:var(--sup-2);stroke-width:3;stroke-linecap:round}
+.sc-cena .sc-arv path:first-child{fill:none;stroke:var(--sup-2);stroke-width:4}
+.sc-cap path:last-child{fill:var(--painel)}
+.sc-and.esq .sc-fig{transform:scaleX(-1)}
+.sc-fig{display:block;overflow:visible}
+.sc-pernas line{stroke:var(--tx2);stroke-width:1.8;stroke-linecap:round}
+.sc-manto{stroke:var(--tx3);stroke-width:.5;stroke-opacity:.6}
+.sc-braco{stroke:rgba(0,0,0,.22);stroke-width:1.4;stroke-linecap:round;fill:none}
+.sc-aur{fill:rgba(242,201,76,.22);stroke:#e2b93b;stroke-width:1.1}
+.sc-balao{position:absolute;bottom:62px;left:0;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;font-family:var(--f-serif);font-size:.82rem;padding:4px 9px;border-radius:10px;background:var(--painel);border:1px solid var(--linha);box-shadow:0 2px 8px rgba(0,0,0,.08);color:var(--tx);opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s;pointer-events:none}
+.sc-balao.on{opacity:1;transform:none}
 .ab-janela{width:120px;height:140px;color:var(--tx)}
 .sub-xp{display:none}
 
@@ -2442,6 +2456,120 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     if (ds.slice(5)==='11-01') ids = ['francisco','teresinha','antonio'];
     return ids.map(santoPorId).filter(Boolean).slice(0,3);
   }
+  var VIDAS = {
+    'francisco':'Filho de um rico comerciante de Assis, deixou tudo para viver a pobreza do Evangelho e fundou os franciscanos. Canonizado em 1228, só dois anos após a morte, pela santidade que toda a Itália já reconhecia.',
+    'bento':'Monge italiano do século VI, escreveu a Regra que organizou a vida dos mosteiros do Ocidente sob o lema "ora et labora". Venerado desde a Idade Média, é padroeiro da Europa.',
+    'teresinha':'Carmelita francesa que morreu aos 24 anos e ensinou o "pequeno caminho": fazer as pequenas coisas com grande amor. Canonizada em 1925 por Pio XI, pela fama de milagres; é Doutora da Igreja.',
+    'jose':'Carpinteiro de Nazaré, esposo de Maria e pai adotivo de Jesus, guardou a Sagrada Família em silêncio e obediência. Venerado desde a Igreja antiga, é padroeiro da Igreja e dos trabalhadores.',
+    'bosco':'Padre de Turim que acolheu meninos pobres e abandonados, educando-os com alegria, razão e fé; fundou os salesianos. Canonizado em 1934 por Pio XI.',
+    'madre':'Religiosa nascida na atual Macedônia do Norte, fundou as Missionárias da Caridade para servir os mais pobres de Calcutá. Canonizada em 2016 pelo Papa Francisco, após curas atribuídas à sua intercessão.',
+    'pio':'Frade capuchinho italiano que trazia os estigmas de Cristo e passava horas por dia no confessionário. Canonizado em 2002 por São João Paulo II.',
+    'antonio':'Frade franciscano nascido em Lisboa, grande pregador, morreu em Pádua aos 36 anos. Canonizado em 1232, menos de um ano após a morte, pela multidão de milagres; é Doutor da Igreja.',
+    'jorge':'Soldado romano que se recusou a renegar a fé e foi martirizado no início do século IV. Venerado como mártir desde os primeiros séculos.',
+    'judas':'Apóstolo de Jesus que pregou o Evangelho e morreu mártir. Venerado desde o início da Igreja, é o padroeiro das causas impossíveis.',
+    'rita':'Italiana do século XV, esposa e mãe que perdoou os assassinos do marido e depois entrou para as agostinianas. Canonizada em 1900 por Leão XIII.',
+    'luzia':'Jovem de Siracusa que consagrou a vida a Deus e foi martirizada por volta do ano 304. Venerada desde os primeiros séculos, é padroeira dos olhos.',
+    'sebastiao':'Soldado romano que animava os cristãos presos; foi flechado e depois morto por ordem do imperador Diocleciano. Mártir venerado desde o século IV.',
+    'expedito':'Comandante romano na Armênia, martirizado no início do século IV. Venerado como mártir, é padroeiro das causas urgentes.',
+    'dulce':'Freira baiana que dedicou a vida aos doentes e pobres de Salvador e fundou as Obras Sociais Irmã Dulce. Canonizada em 2019 pelo Papa Francisco, a primeira santa nascida no Brasil.',
+    'pedro':'Pescador da Galileia escolhido por Jesus como chefe dos apóstolos e primeiro Papa; morreu crucificado em Roma. Venerado desde o início da Igreja.',
+    'paulo':'Perseguidor dos cristãos que se converteu no caminho de Damasco, levou o Evangelho aos pagãos e escreveu boa parte do Novo Testamento. Morreu mártir em Roma.',
+    'agostinho':'Africano do século IV que, após uma juventude longe de Deus, se converteu pelas orações da mãe e virou bispo de Hipona. Venerado desde a Antiguidade; Doutor da Igreja e autor das Confissões.',
+    'tomas':'Frade dominicano do século XIII que uniu fé e razão na Suma Teológica. Canonizado em 1323; é Doutor da Igreja.',
+    'teresa-avila':'Carmelita espanhola do século XVI que reformou a Ordem e ensinou o caminho da oração. Canonizada em 1622; foi a primeira mulher Doutora da Igreja.',
+    'jp2':'Karol Wojtyła, papa polonês de 1978 a 2005, levou o Evangelho ao mundo inteiro e ajudou a derrubar o comunismo na Europa. Canonizado em 2014 pelo Papa Francisco.',
+    'inacio':'Militar basco que se converteu lendo a vida dos santos enquanto se recuperava de um ferimento, e fundou a Companhia de Jesus. Canonizado em 1622.',
+    'xavier':'Jesuíta companheiro de Santo Inácio, levou o Evangelho à Índia e ao Japão. Canonizado em 1622; é padroeiro das missões.',
+    'domingos':'Padre espanhol que fundou a Ordem dos Pregadores, os dominicanos, para pregar a verdade vivendo na pobreza. Canonizado em 1234.',
+    'clara':'Jovem nobre de Assis que seguiu São Francisco na pobreza e fundou as clarissas. Canonizada em 1255, dois anos após a morte.',
+    'carlo':'Adolescente italiano apaixonado pela Eucaristia, catalogou na internet os milagres eucarísticos e morreu de leucemia aos 15 anos, em 2006. Canonizado em 2025 por Leão XIV.',
+    'faustina':'Freira polonesa a quem Jesus confiou a mensagem da Divina Misericórdia: "Jesus, eu confio em vós". Canonizada em 2000 por São João Paulo II.',
+    'josemaria':'Padre espanhol que fundou o Opus Dei e ensinou que o trabalho de cada dia pode ser caminho de santidade. Canonizado em 2002 por São João Paulo II.',
+    'gianna':'Médica e mãe italiana que, grávida e doente, recusou um tratamento que poria a filha em risco e morreu após o parto. Canonizada em 2004 por São João Paulo II.',
+    'camilo':'Ex-soldado e jogador que se converteu e dedicou a vida aos doentes, fundando os camilianos. Canonizado em 1746; é padroeiro dos enfermos e dos hospitais.',
+    'luis-gonzaga':'Jovem nobre italiano que renunciou à herança para ser jesuíta e morreu aos 23 anos cuidando de doentes da peste. Canonizado em 1726; é padroeiro da juventude.',
+    'joana-darc':'Camponesa francesa que, obedecendo às vozes de santos, liderou o exército da França e foi queimada aos 19 anos. Canonizada em 1920 por Bento XV.',
+    'tomas-moro':'Chanceler da Inglaterra que se recusou a aprovar o divórcio do rei Henrique VIII e foi decapitado em 1535. Canonizado em 1935 por Pio XI; é padroeiro dos políticos.',
+    'monica':'Mãe de Santo Agostinho, rezou e chorou por anos pela conversão do filho, até vê-lo batizado. Venerada desde a Antiguidade, é padroeira das mães.',
+    'lourenco':'Diácono de Roma encarregado de ajudar os pobres, martirizado numa grelha no ano de 258. Venerado desde os primeiros séculos.',
+    'catarina-sena':'Leiga dominicana italiana do século XIV que aconselhou papas e ajudou a trazer o papado de volta a Roma. Canonizada em 1461; é Doutora da Igreja.',
+    'bernardo':'Monge cisterciense francês do século XII, fundou a abadia de Claraval e foi grande pregador e devoto de Nossa Senhora. Canonizado em 1174; é Doutor da Igreja.',
+    'afonso':'Advogado de Nápoles que virou padre, fundou os redentoristas e escreveu sobre moral e oração. Canonizado em 1839; é Doutor da Igreja.',
+    'vicente-paulo':'Padre francês que organizou a caridade aos pobres e fundou os lazaristas e as Filhas da Caridade. Canonizado em 1737.',
+    'filipe-neri':'Padre de Roma famoso pela alegria e pelo bom humor, fundou a Congregação do Oratório. Canonizado em 1622.',
+    'bernadete':'Jovem pobre de Lourdes a quem Nossa Senhora apareceu 18 vezes em 1858; depois se fez freira. Canonizada em 1933 por Pio XI.',
+    'vianney':'Pároco da pequena aldeia de Ars, na França, passava até 16 horas por dia no confessionário. Canonizado em 1925 por Pio XI; é padroeiro dos padres.',
+    'kolbe':'Frade franciscano polonês que, em Auschwitz, ofereceu a vida no lugar de um pai de família condenado. Canonizado em 1982 por São João Paulo II como mártir da caridade.',
+    'frassati':'Jovem de Turim, alpinista e cheio de alegria, servia os pobres às escondidas e morreu aos 24 anos, em 1925. Canonizado em 2025 por Leão XIV.',
+    'edith-stein':'Filósofa judia alemã que se converteu, entrou para o Carmelo e foi morta em Auschwitz em 1942. Canonizada em 1998 por São João Paulo II.',
+    'bakhita':'Sudanesa sequestrada e escravizada na infância, conheceu a fé na Itália e se fez irmã canossiana. Canonizada em 2000 por São João Paulo II.',
+    'damiao':'Padre belga que foi viver com os leprosos isolados na ilha de Molokai, no Havaí, e morreu da doença. Canonizado em 2009 por Bento XVI.',
+    'benedito':'Filho de africanos escravizados na Sicília, frade franciscano humilde e cozinheiro do convento, procurado por todos pelos seus conselhos. Canonizado em 1807.',
+    'rosa-lima':'Leiga dominicana do Peru que vivia de oração e penitência e cuidava dos pobres e doentes. Canonizada em 1671, a primeira santa das Américas.',
+    'charbel':'Monge e eremita maronita do Líbano, no século XIX, de vida de profunda oração e silêncio. Canonizado em 1977 por Paulo VI, após muitos milagres de cura.',
+    'catarina-laboure':'Freira francesa das Filhas da Caridade a quem Nossa Senhora pediu, em 1830, a Medalha Milagrosa. Canonizada em 1947 por Pio XII.',
+    'gregorio':'Papa do século VI que reorganizou a Igreja, alimentou os pobres de Roma e enviou missionários à Inglaterra. Venerado desde a morte; é Doutor da Igreja.',
+    'patricio':'Levado como escravo da Britânia para a Irlanda, voltou anos depois como bispo missionário e evangelizou o país. Venerado desde a Idade Média, é padroeiro da Irlanda.',
+    'basilio':'Bispo de Cesareia no século IV, defendeu a fé contra o arianismo e organizou a vida monástica no Oriente. Venerado desde a Antiguidade; é Doutor da Igreja.',
+    'pedro-claver':'Jesuíta espanhol que, em Cartagena, na Colômbia, cuidou de milhares de africanos escravizados que chegavam nos navios. Canonizado em 1888 por Leão XIII.',
+    'la-salle':'Padre francês que fundou os Irmãos das Escolas Cristãs e abriu escolas para as crianças pobres. Canonizado em 1900; é padroeiro dos professores.',
+    'jeronimo':'Sacerdote e estudioso do século IV que traduziu a Bíblia para o latim, a Vulgata. Venerado desde a Antiguidade; é Doutor da Igreja.',
+    'escolastica':'Irmã gêmea de São Bento, consagrou a vida a Deus e viveu num mosteiro perto de Monte Cassino. Venerada desde o século VI.',
+    'ana-joaquim':'Pais de Nossa Senhora e avós de Jesus, segundo a antiga tradição da Igreja. Venerados desde os primeiros séculos; padroeiros dos avós.',
+    'goretti':'Menina italiana morta aos 11 anos ao defender a sua pureza, que perdoou o agressor antes de morrer. Canonizada em 1950 por Pio XII.',
+    'domingos-savio':'Aluno de Dom Bosco que viveu a santidade nas pequenas coisas do dia a dia e morreu aos 14 anos. Canonizado em 1954 por Pio XII.',
+    'ines':'Jovem romana martirizada com cerca de 12 anos, no século IV, por não renunciar à fé. Venerada desde os primeiros séculos.',
+    'bras':'Bispo de Sebaste, na Armênia, que segundo a tradição salvou um menino engasgado com uma espinha; martirizado no século IV. Venerado como mártir, é padroeiro dos males da garganta.',
+    'atanasio':'Bispo de Alexandria no século IV, defendeu a divindade de Cristo contra o arianismo e foi exilado cinco vezes. Venerado desde a Antiguidade; é Doutor da Igreja.',
+    'gema':'Jovem italiana de vida mística, de muita oração e sofrimento oferecido, que morreu aos 25 anos em 1903. Canonizada em 1940 por Pio XII.',
+    'anchieta':'Jesuíta nascido nas Canárias que ajudou a fundar São Paulo e evangelizou os indígenas, o Apóstolo do Brasil. Canonizado em 2014 pelo Papa Francisco.',
+    'paulina':'Imigrante italiana em Santa Catarina que fundou as Irmãzinhas da Imaculada Conceição para servir doentes e pobres. Canonizada em 2002 por São João Paulo II, a primeira santa do Brasil.',
+    'miguel':'Arcanjo que, na Bíblia, lidera os anjos na luta contra o mal. Por ser anjo, nunca foi canonizado: a Igreja o honra desde sempre como protetor.',
+    'joao-xxiii':'Papa de 1958 a 1963, chamado de "o Papa bom", convocou o Concílio Vaticano II. Canonizado em 2014 pelo Papa Francisco.',
+    'paulo-vi':'Papa de 1963 a 1978, concluiu o Concílio Vaticano II e escreveu a encíclica Humanae Vitae. Canonizado em 2018 pelo Papa Francisco.',
+    'newman':'Padre anglicano inglês que se converteu ao catolicismo e se tornou cardeal e grande pensador da fé. Canonizado em 2019 pelo Papa Francisco.',
+    'bonifacio':'Monge inglês que evangelizou a Alemanha no século VIII e morreu mártir. Venerado desde então como o Apóstolo da Alemanha.',
+    'martin':'Pais de Santa Teresinha, viveram a santidade no casamento e na criação dos filhos. Canonizados juntos em 2015 pelo Papa Francisco, o primeiro casal canonizado junto.',
+    'pio-x':'Papa de 1903 a 1914 que incentivou a comunhão frequente e a primeira comunhão das crianças. Canonizado em 1954 por Pio XII.',
+    'nossa-senhora':'Maria de Nazaré, Mãe de Jesus e nossa Mãe, concebida sem pecado e elevada ao Céu. É a Rainha de todos os santos, honrada pela Igreja acima de todos.',
+    'edwiges':'Duquesa da Silésia no século XIII que usou a sua riqueza para socorrer os pobres e os endividados. Canonizada em 1267; é padroeira dos endividados.',
+    'margarida-maria':'Freira visitandina francesa a quem Jesus revelou a devoção ao seu Sagrado Coração. Canonizada em 1920 por Bento XV.',
+    'inacio-antioquia':'Bispo de Antioquia levado a Roma e morto pelas feras por volta do ano 107; suas cartas são tesouros da Igreja antiga. Venerado como mártir desde então.',
+    'lucas':'Médico e companheiro de São Paulo, escreveu o Evangelho de Lucas e os Atos dos Apóstolos. Venerado desde o início da Igreja.',
+    'paulo-cruz':'Padre italiano do século XVIII que fundou os passionistas para pregar a Paixão de Cristo. Canonizado em 1867.',
+    'brebeuf':'Jesuíta francês missionário entre os indígenas hurões do Canadá, martirizado em 1649. Canonizado em 1930 por Pio XI.',
+    'capistrano':'Frade franciscano italiano do século XV, grande pregador que percorreu a Europa. Canonizado em 1690; é padroeiro dos capelães militares.',
+    'claret':'Missionário espanhol, arcebispo de Santiago de Cuba e fundador dos claretianos. Canonizado em 1950 por Pio XII.',
+    'frei-galvao':'Frade franciscano paulista que fundou o Mosteiro da Luz e é lembrado pelas pílulas de papel com uma oração a Nossa Senhora. Canonizado em 2007 por Bento XVI, o primeiro santo nascido no Brasil.',
+    'simao':'Apóstolo chamado "o Zelota", pregou o Evangelho e morreu mártir. Venerado desde o início da Igreja.',
+    'martinho-porres':'Filho de um nobre espanhol e de uma mulher negra liberta, foi irmão dominicano em Lima e cuidava dos doentes e dos pobres. Canonizado em 1962 por João XXIII.',
+    'carlos-borromeu':'Arcebispo de Milão no século XVI que pôs em prática a reforma do Concílio de Trento e cuidou dos doentes da peste. Canonizado em 1610.',
+    'leao':'Papa do século V que defendeu a fé em Cristo verdadeiro Deus e verdadeiro homem e convenceu Átila a poupar Roma. Venerado desde a Antiguidade; é Doutor da Igreja.',
+    'martinho-tours':'Soldado romano que dividiu a capa com um mendigo e depois se tornou monge e bispo de Tours. Foi um dos primeiros santos venerados sem ter sido mártir.',
+    'josafa':'Arcebispo greco-católico de Polotsk que trabalhou pela unidade dos cristãos do Oriente com Roma e foi martirizado em 1623. Canonizado em 1867.',
+    'alberto':'Frade dominicano alemão do século XIII, cientista e teólogo, professor de São Tomás de Aquino. Canonizado em 1931 por Pio XI; é Doutor da Igreja.',
+    'margarida-escocia':'Rainha da Escócia no século XI que cuidava dos pobres e órfãos e renovou a vida da Igreja no reino. Canonizada em 1250.',
+    'gertrudes':'Monja alemã de Helfta no século XIII, mística e precursora da devoção ao Sagrado Coração. Chamada "a Grande", foi inscrita no calendário dos santos em 1677.',
+    'isabel-hungria':'Princesa húngara que, viúva aos 20 anos, deu tudo aos pobres e fundou um hospital, onde ela mesma cuidava dos doentes. Canonizada em 1235, quatro anos após a morte.',
+    'cecilia':'Jovem romana martirizada no século III que, segundo a tradição, cantava a Deus no coração. Venerada desde os primeiros séculos, é padroeira da música.',
+    'clemente':'Terceiro sucessor de São Pedro como Papa, escreveu uma carta à Igreja de Corinto e morreu mártir. Venerado desde o início da Igreja.',
+    'columbano':'Monge irlandês do século VI que fundou mosteiros na França, na Suíça e na Itália. Venerado desde a Idade Média.',
+    'dung-lac':'Padre vietnamita martirizado em 1839, à frente dos 117 mártires do Vietnã. Canonizado com eles em 1988 por São João Paulo II.',
+    'catarina-alexandria':'Jovem sábia de Alexandria que, segundo a tradição, venceu filósofos em debate e foi martirizada no século IV. Venerada desde a Antiguidade.',
+    'andre':'Pescador, irmão de São Pedro, foi o primeiro chamado por Jesus e morreu crucificado na Grécia. Venerado desde o início da Igreja.',
+    'joao-damasceno':'Monge de Damasco do século VIII que defendeu a veneração das imagens sagradas. Venerado desde então; é Doutor da Igreja.',
+    'nicolau':'Bispo de Mira no século IV, famoso por ajudar às escondidas os necessitados; inspirou a figura do Papai Noel. Venerado desde a Antiguidade.',
+    'ambrosio':'Governador romano aclamado bispo de Milão no século IV; batizou Santo Agostinho. Venerado desde a Antiguidade; é Doutor da Igreja.',
+    'juan-diego':'Indígena mexicano a quem Nossa Senhora de Guadalupe apareceu em 1531, deixando a sua imagem estampada no manto dele. Canonizado em 2002 por São João Paulo II.',
+    'damaso':'Papa do século IV que pediu a São Jerônimo a tradução da Bíblia e cuidou dos túmulos dos mártires. Venerado desde a Antiguidade.',
+    'joao-cruz':'Frade carmelita espanhol que reformou a Ordem ao lado de Santa Teresa e escreveu poemas místicos como a Noite Escura. Canonizado em 1726; é Doutor da Igreja.',
+    'canisio':'Jesuíta holandês que escreveu catecismos e fortaleceu a fé católica na Alemanha durante a Reforma. Canonizado e declarado Doutor da Igreja em 1925 por Pio XI.',
+    'joao-kanty':'Padre e professor da Universidade de Cracóvia no século XV, conhecido pela caridade sem medida com os pobres. Canonizado em 1767.',
+    'estevao':'Diácono da Igreja de Jerusalém e primeiro mártir cristão, apedrejado enquanto perdoava quem o matava. Venerado desde o início da Igreja.',
+    'joao-evangelista':'O discípulo amado, que recebeu Maria aos pés da cruz e escreveu o quarto Evangelho e o Apocalipse. Venerado desde o início da Igreja.',
+    'becket':'Arcebispo de Cantuária que defendeu a liberdade da Igreja contra o rei Henrique II e foi assassinado na catedral em 1170. Canonizado em 1173.',
+    'silvestre':'Papa no tempo do imperador Constantino, quando a Igreja ganhou liberdade depois das perseguições. Venerado desde a Antiguidade, um dos primeiros santos que não foram mártires.'
+  };
   function santosPresentes(){ var l = santosDoDia(hoje).slice(), v = visitaAtiva(); if (v && !l.some(function(x){ return x.id===v.id; })) l.push(v); return l; }
   var FALAS = {
     alta:['Que dia abençoado!','Obrigado pelo trabalho de hoje!','Ora et labora!','A horta está linda.','Deo gratias!','Nossa casa está crescendo!'],
@@ -3935,14 +4063,76 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   function htmlSantosCard(){
     var l = santosPresentes(), fd = santosDoDia(hoje).map(function(x){ return x.id; }), ltv = liturgia(hoje);
     var h = '<p class="sc-tit">'+L('Santos de hoje','Saints today','Santos de hoy','Sancti hodie')+'</p>';
-    if (!l.length) return h + '<p class="sc-vazio">'+(ltv.fes ? esc(ltv.fes.nome)+'. ' : '')+L('Os santos aparecem no dia deles e, de vez em quando, visitam quando alguém cumpre uma missão.','Saints show up on their feast days and sometimes visit when someone completes a mission.','Los santos aparecen en su día y, a veces, visitan cuando alguien cumple una misión.','Sancti in festis suis adveniunt.')+'</p>';
+    if (!l.length) return h + '<p class="sc-vazio">'+(ltv.fes ? esc(ltv.fes.nome)+'. ' : '')+L('Os santos aparecem no dia deles e, de vez em quando, visitam quando alguém cumpre uma missão.','Saints show up on their feast days and sometimes visit when someone completes a mission.','Los santos aparecen en su día y a veces visitan cuando alguien cumple una misión.','Sancti in festo suo apparent.')+'</p>';
+    h += '<div class="sc-palco" id="sc-palco" aria-hidden="true">'+l.map(function(x){
+      return '<div class="sc-and" data-santo="'+esc(x.id)+'"><span class="sc-balao"></span>'+svgSantinho(x)+'</div>';
+    }).join('')+'<svg class="sc-cena" viewBox="0 0 300 84" preserveAspectRatio="xMidYMax meet" aria-hidden="true">'+
+      '<g class="sc-arv"><path d="M30 76 L30 60"/><circle cx="30" cy="52" r="11"/><circle cx="22" cy="58" r="7"/><circle cx="38" cy="58" r="7"/></g>'+
+      '<g class="sc-cap"><path d="M232 76 L232 52 L250 38 L268 52 L268 76 Z"/><path d="M250 38 L250 24 M245 29 L255 29" class="sc-cruz"/><path d="M245 76 L245 63 Q250 57 255 63 L255 76"/></g></svg><i class="sc-chao"></i></div>';
     return h + l.map(function(x){
-      var nf = (x.falas||[]).length, k = 0; for (var i=0;i<(hoje+x.id).length;i++) k = (k*31 + (hoje+x.id).charCodeAt(i)) % 9973;
-      var fala = nf ? x.falas[k % nf] : '', dia = fd.indexOf(x.id)>=0, sub;
+      var dia = fd.indexOf(x.id)>=0, sub;
       if (dia) sub = hoje.slice(5)==='11-01' ? L('Todos os Santos','All Saints','Todos los Santos','Omnes Sancti') : L('Hoje é dia de festa','Feast day today','Hoy es su fiesta','Hodie festum');
       else { var ate = new Date(state.visita.ate); sub = L('Visitando até as ','Visiting until ','De visita hasta las ','Visitat usque ad ')+pad(ate.getHours())+':'+pad(ate.getMinutes()); }
-      return '<div class="sc-it"><span class="sc-av" aria-hidden="true"><i style="background:'+esc(x.habito||'#6e5034')+';box-shadow:inset 0 -6px 0 '+esc(x.faixa||x.habito||'#6e5034')+'"></i></span><div class="sc-txt"><b>'+esc(tr(nomeSantoHoje(x)))+'</b><span class="sc-sub">'+esc(sub)+'</span>'+(fala ? '<p class="sc-fala">“'+esc(tr(fala))+'”</p>' : '')+'</div></div>';
+      var vida = VIDAS[x.id] || '';
+      return '<div class="sc-it"><div class="sc-cab"><b>'+esc(tr(nomeSantoHoje(x)))+'</b><span class="sc-sub">'+esc(sub)+'</span></div>'+(vida ? '<p class="sc-vida">'+esc(vida)+'</p>' : '')+'</div>';
     }).join('');
+  }
+  function svgSantinho(x){
+    var hab = esc(x.habito||'#6e5034'), fx = x.faixa ? '<rect x="5.6" y="33" width="12.8" height="1.6" fill="'+esc(x.faixa)+'"/>' : '';
+    return '<svg class="sc-fig" viewBox="0 0 24 46" width="30" height="57">'+
+      '<g class="sc-pernas"><line class="sc-pa" x1="10" y1="37" x2="10" y2="44"/><line class="sc-pb" x1="14" y1="37" x2="14" y2="44"/></g>'+
+      '<path d="M5 38 L19 38 L16 16 L8 16 Z" fill="'+hab+'" class="sc-manto"/>'+fx+
+      '<path class="sc-braco" d="M8.5 19 L6 28" />'+
+      '<circle class="sc-aur" cx="12" cy="11" r="6.6"/><circle cx="12" cy="12" r="4" fill="var(--pele)"/></svg>';
+  }
+  /* santinhos andando no palco do cartão */
+  var palco = {pos:{}, raf:0, ult:0};
+  function palcoIniciar(){
+    var el = document.getElementById('sc-palco'); if (!el) return;
+    var reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var W = el.clientWidth || 220, ands = Array.prototype.slice.call(el.querySelectorAll('.sc-and'));
+    ands.forEach(function(a, i){
+      var id = a.getAttribute('data-santo'), p = palco.pos[id];
+      if (!p){ p = palco.pos[id] = {x: (W-30) * (ands.length>1 ? (i+.5)/ands.length : .5), alvo:null, pausa:1+i*1.5, dir:1, fase:i*2, falaT:4+i*5, fala:0}; }
+      p.fala = 0; p.falaT = Math.max(p.falaT, 2);
+      p.el = a; p.balao = a.querySelector('.sc-balao'); p.pa = a.querySelector('.sc-pa'); p.pb = a.querySelector('.sc-pb'); p.def = SANTOS.filter(function(s){ return s.id===id; })[0];
+      a.style.transform = 'translateX('+p.x.toFixed(1)+'px)'; a.classList.toggle('esq', p.dir<0);
+    });
+    if (reduz || palco.raf) return;
+    palco.ult = 0;
+    var passo = function(ts){
+      var el2 = document.getElementById('sc-palco');
+      if (!el2 || !el2.isConnected){ palco.raf = 0; return; }
+      palco.raf = requestAnimationFrame(passo);
+      if (document.hidden) { palco.ult = ts; return; }
+      var dt = palco.ult ? Math.min(.1, (ts-palco.ult)/1000) : 0; palco.ult = ts;
+      var W2 = el2.clientWidth || 220;
+      Array.prototype.forEach.call(el2.querySelectorAll('.sc-and'), function(a){
+        var p = palco.pos[a.getAttribute('data-santo')]; if (!p || p.el!==a) return;
+        var anda = false;
+        if (p.pausa>0) p.pausa -= dt;
+        else {
+          if (p.alvo==null) p.alvo = 4 + Math.random()*(W2-38);
+          var d = p.alvo - p.x, v = 16*dt;
+          if (Math.abs(d)<=v){ p.x = p.alvo; p.alvo = null; p.pausa = 1.5 + Math.random()*3.5; }
+          else { p.dir = d>0 ? 1 : -1; p.x += v*p.dir; anda = true; }
+        }
+        p.fase += anda ? dt*9 : 0;
+        var ang = anda ? Math.sin(p.fase)*22 : 0;
+        p.pa.setAttribute('transform', 'rotate('+ang.toFixed(1)+' 10 37)'); p.pb.setAttribute('transform', 'rotate('+(-ang).toFixed(1)+' 14 37)');
+        var pulo = anda ? Math.abs(Math.sin(p.fase))*1.2 : 0;
+        a.style.transform = 'translate('+p.x.toFixed(1)+'px,'+(-pulo).toFixed(1)+'px)'; a.classList.toggle('esq', p.dir<0);
+        p.falaT -= dt;
+        if (p.falaT<=0){
+          var fs = (p.def && p.def.falas) || [];
+          if (p.fala>0){ p.fala = 0; p.balao.classList.remove('on'); p.falaT = 9 + Math.random()*10; }
+          else if (fs.length){ p.balao.textContent = tr(fs[Math.floor(Math.random()*fs.length)]); p.balao.classList.add('on'); p.fala = 1; p.falaT = 4; }
+          else p.falaT = 99;
+        }
+        if (p.fala){ var bw = p.balao.offsetWidth || 100, cx = p.x + 15; p.balao.style.left = (Math.max(bw/2+2, Math.min(W2-bw/2-2, cx)) - p.x - bw/2).toFixed(1)+'px'; }
+      });
+    };
+    palco.raf = requestAnimationFrame(passo);
   }
   function renderLado(){
     var s = separar(doFiltro()), rh = reunioesDoDia(hoje).length;
@@ -3953,7 +4143,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
       '<div class="num'+(s.atras.length?' alerta':'')+'"><b>'+s.atras.length+'</b><span>'+(s.atras.length===1?'atrasada':'atrasadas')+'</span></div>'+
       '<div class="num"><b>'+rh+'</b><span>'+(rh===1?'reunião hoje':'reuniões hoje')+'</span></div>'+
       '<div class="num"><b>'+s.feitasHoje.length+'</b><span>'+(s.feitasHoje.length===1?'cumprida hoje':'cumpridas hoje')+'</span></div>';
-    document.getElementById('santos-card').innerHTML = htmlSantosCard();
+    document.getElementById('santos-card').innerHTML = htmlSantosCard(); palcoIniciar();
   }
 
   /* ---------- Lista ---------- */
