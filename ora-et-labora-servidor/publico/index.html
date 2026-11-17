@@ -1473,6 +1473,11 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 .fim-rec{color:var(--tx3);margin-right:8px}
 .fim-lista .fim-mais{background:transparent;color:var(--tx3);padding:2px 14px}
 @media (max-width:600px){.rotina-agora .acoes{margin-left:0;width:100%}}
+
+.colar-seg{justify-self:start}
+.colar-ler{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--tx2)}
+.colar-ler[hidden]{display:none}
+.btn-ata{padding:3px 10px;font-size:.78rem;white-space:nowrap}
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -1960,8 +1965,10 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   <form class="cartao largo" role="dialog" aria-modal="true" aria-labelledby="colar-tit" id="colar-form" autocomplete="off" data-sem-tr>
     <p class="rot" id="colar-rot"></p>
     <h2 id="colar-tit"></h2>
+    <div class="seg colar-seg" id="colar-seg" role="group" aria-label="O que você vai colar"><button type="button" data-colar-modo="ata" aria-pressed="true">Ata pronta</button><button type="button" data-colar-modo="transcricao" aria-pressed="false">Transcrição</button></div>
     <p class="nota" id="colar-nota" style="margin:0"></p>
     <textarea class="campo" id="colar-texto" rows="10" maxlength="400000"></textarea>
+    <label class="colar-ler" id="colar-ler-l"><input type="checkbox" id="colar-ler" checked> <span>Pedir ao Claude para separar as demandas da ata</span></label>
     <div class="acoes"><button class="btn btn-escuro btn-grande" type="submit" id="colar-ok"></button><button class="btn btn-claro btn-grande" type="button" id="colar-cancelar"></button></div>
   </form>
 </div>
@@ -4362,7 +4369,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   function fmtTempo(ms){ var s = Math.max(0, Math.floor(ms/1000)), h = Math.floor(s/3600), m = Math.floor(s%3600/60); return (h ? h+':'+pad(m) : m)+':'+pad(s%60); }
   function nomesEquipe(){ return state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return p.nome; }); }
   function ctxReuniao(r){
-    return {hoje:fmt(paraData(hoje), {weekday:'long', day:'numeric', month:'long', year:'numeric'})+' ('+hoje+')', titulo:r ? r.titulo : '',
+    return {tipo:r && r.ata && r.ata.pronta ? 'ata' : 'transcricao', hoje:fmt(paraData(hoje), {weekday:'long', day:'numeric', month:'long', year:'numeric'})+' ('+hoje+')', titulo:r ? r.titulo : '',
       participantes:r ? (r.pessoas||[]).map(function(id){ return pessoa(id).nome; }) : [], equipe:nomesEquipe(), clientes:state.tags.map(function(t){ return t.nome; })};
   }
   function carregarIa(){ if (!SERVIDOR || !logado) return Promise.resolve({}); return api('GET','/api/ia/estado').then(function(r){ iaEstado = r; return r; }).catch(function(){ return iaEstado || {}; }); }
@@ -4456,7 +4463,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     ataRid = rid; var a = r.ata, sug = a.sugestoes || [];
     document.getElementById('ata-rot').textContent = L('Reunião','Meeting','Reunión','Conventus')+' · '+dataLonga(r.data)+(a.duracao ? ' · '+fmtTempo(a.duracao) : '');
     document.getElementById('ata-tit').innerHTML = esc(r.titulo)+' · <em>'+L('demandas que surgiram','tasks that came up','tareas que surgieron','negotia orta')+'</em>';
-    document.getElementById('ata-resumo').innerHTML = (a.resumo ? '<p>'+esc(a.resumo)+'</p>' : '')+((a.decisoes||[]).length ? '<b style="font-weight:600;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3)">'+L('Decisões','Decisions','Decisiones','Decreta')+'</b><ul>'+a.decisoes.map(function(d){ return '<li>'+esc(d)+'</li>'; }).join('')+'</ul>' : '')+(a.transcricao ? '<a class="link" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+L('Ver a transcrição completa','See the full transcript','Ver la transcripción completa','Totum legere')+'</a>' : '');
+    document.getElementById('ata-resumo').innerHTML = (a.resumo ? '<p>'+esc(a.resumo)+'</p>' : '')+((a.decisoes||[]).length ? '<b style="font-weight:600;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3)">'+L('Decisões','Decisions','Decisiones','Decreta')+'</b><ul>'+a.decisoes.map(function(d){ return '<li>'+esc(d)+'</li>'; }).join('')+'</ul>' : '')+(a.transcricao ? '<a class="link" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+(a.pronta ? L('Ver a ata completa','See the full minutes','Ver el acta completa','Totum legere') : L('Ver a transcrição completa','See the full transcript','Ver la transcripción completa','Totum legere'))+'</a>' : '');
     var opsPes = function(sel){ return state.equipe.filter(function(p){ return p.nome; }).map(function(p){ return '<option value="'+esc(p.id)+'"'+(p.id===sel?' selected':'')+'>'+esc(p.nome)+'</option>'; }).join(''); };
     var opsTag = function(sel){ return '<option value="">'+L('Sem cliente','No client','Sin cliente','Sine cliente')+'</option>'+state.tags.map(function(t){ return '<option value="'+esc(t.id)+'"'+(t.id===sel?' selected':'')+'>'+esc(t.nome)+'</option>'; }).join(''); };
     document.getElementById('ata-dem').innerHTML = sug.length ? sug.map(function(d, i){
@@ -4498,26 +4505,56 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   });
   /* ---------- Colar uma transcrição pronta (do Meet, do Zoom…) ---------- */
   var colarRid = null;
-  function abrirColar(rid){
+  var colarModo = 'ata';
+  function pintarColarModo(){
+    var ata = colarModo==='ata';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-colar-modo]'), function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-colar-modo')===colarModo)); });
+    document.getElementById('colar-rot').textContent = (ata ? L('Ata','Minutes','Acta','Acta') : L('Transcrição','Transcript','Transcripción','Transcriptio'))+' · '+dataLonga((acharReuniao(colarRid)||{}).data||hoje);
+    document.getElementById('colar-nota').textContent = ata
+      ? L('Cole ou escreva a ata da reunião. Ela fica guardada na reunião; se quiser, o Claude separa as demandas para você revisar.','Paste or write the meeting minutes. They are saved with the meeting; Claude can list the tasks for you to review.','Pega o escribe el acta. Queda guardada en la reunión; Claude puede separar las tareas.','Actam pone.')
+      : L('Cole aqui a transcrição gerada pelo Meet ou pelo Zoom. O Claude lê e separa as demandas para você revisar.','Paste the transcript from Meet or Zoom. Claude reads it and lists the tasks for you to review.','Pega aquí la transcripción de Meet o Zoom. Claude la lee y separa las tareas.','Transcriptionem pone.');
+    document.getElementById('colar-texto').placeholder = ata ? L('Ex.: Alinhamento com a Dra. Ana. Decidimos subir o orçamento para R$ 80/dia. Demandas: Gustavo edita 3 reels até sexta…','E.g.: Decided to raise the budget. Tasks: …','Ej.: Decidimos… Tareas: …','') : '';
+    document.getElementById('colar-ler-l').hidden = !ata;
+    colarRotuloOk();
+  }
+  function colarRotuloOk(){ var ata = colarModo==='ata', ler = document.getElementById('colar-ler').checked; document.getElementById('colar-ok').textContent = ata ? (ler ? L('Salvar e ler as demandas','Save and find tasks','Guardar y leer','Servare et legere') : L('Salvar a ata','Save minutes','Guardar el acta','Servare')) : L('Ler as demandas','Find the tasks','Leer las tareas','Legere'); }
+  document.getElementById('colar-seg').addEventListener('click', function(e){ var b = e.target.closest('[data-colar-modo]'); if (!b) return; colarModo = b.getAttribute('data-colar-modo'); pintarColarModo(); document.getElementById('colar-texto').focus(); });
+  document.getElementById('colar-ler').addEventListener('change', colarRotuloOk);
+  function abrirColar(rid, modo){
     var r = acharReuniao(rid); if (!r) return;
+    colarModo = modo==='transcricao' ? 'transcricao' : 'ata';
     if (!SERVIDOR){ avisar(L('Funciona na versão do servidor (Railway).','Works on the server version.','Funciona en la versión del servidor.','In servitore tantum.')); return; }
     colarRid = rid;
-    document.getElementById('colar-rot').textContent = L('Transcrição','Transcript','Transcripción','Transcriptio')+' · '+dataLonga(r.data);
     document.getElementById('colar-tit').innerHTML = esc(r.titulo);
-    document.getElementById('colar-nota').textContent = L('Cole aqui a transcrição gerada pelo Meet ou pelo Zoom. O Claude lê e separa as demandas para você revisar.','Paste the transcript from Meet or Zoom. Claude reads it and lists the tasks for you to review.','Pega aquí la transcripción de Meet o Zoom. Claude la lee y separa las tareas.','Transcriptionem hic pone.');
-    document.getElementById('colar-ok').textContent = L('Ler as demandas','Find the tasks','Leer las tareas','Legere');
     document.getElementById('colar-cancelar').textContent = L('Cancelar','Cancel','Cancelar','Omittere');
+    document.getElementById('colar-ler').checked = !iaEstado || iaEstado.extracao!==false; if (!iaEstado) carregarIa();
+    pintarColarModo();
     document.getElementById('colar-texto').value = ''; document.getElementById('veu-colar').hidden = false; document.getElementById('colar-texto').focus();
   }
   document.getElementById('colar-cancelar').addEventListener('click', function(){ document.getElementById('veu-colar').hidden = true; colarRid = null; });
   document.getElementById('colar-form').addEventListener('submit', function(e){
     e.preventDefault(); var r = acharReuniao(colarRid), texto = document.getElementById('colar-texto').value.trim(); if (!r || !texto) return;
-    var b = document.getElementById('colar-ok'); b.disabled = true; b.textContent = L('Lendo…','Reading…','Leyendo…','Legitur…');
+    var b = document.getElementById('colar-ok'); b.disabled = true;
+    if (colarModo==='ata'){
+      var ler = document.getElementById('colar-ler').checked;
+      b.textContent = ler ? L('Lendo…','Reading…','Leyendo…','Legitur…') : L('Salvando…','Saving…','Guardando…','Servatur…');
+      api('POST','/api/ia/extrair',{texto:texto, contexto:ctxReuniao(r), tipo:'ata', ler:ler}).then(function(res){
+        var a = res.ata, curto = texto.length>420 ? texto.slice(0,400).replace(/\s+\S*$/,'')+'…' : texto;
+        r.ata = Object.assign({}, r.ata||{}, {transcricao:res.transcricao, pronta:true, em:new Date().toISOString(), por:eu, resumo:a && a.resumo ? a.resumo : curto, decisoes:a ? a.decisoes : [], sugestoes:a ? a.demandas : [], demandas:(r.ata && r.ata.demandas)||[]});
+        if (res.erroAta) r.ata.erro = res.erroAta; else delete r.ata.erro;
+        if (!r.feita){ r.feita = true; r.feitaEm = new Date().toISOString(); r.feitaPor = eu; }
+        salvar(); document.getElementById('veu-colar').hidden = true; colarRid = null; render();
+        if ((r.ata.sugestoes||[]).length) abrirAta(r.id);
+        else avisar(res.erroAta ? L('Ata salva. A leitura das demandas falhou; em Reuniões dá para tentar de novo.','Minutes saved. Reading the tasks failed.','Acta guardada. Falló la lectura.','Servatum.') : ler ? L('Ata salva. Nenhuma demanda encontrada nela.','Minutes saved. No tasks found.','Acta guardada. Ninguna tarea.','Servatum.') : L('Ata salva na reunião.','Minutes saved.','Acta guardada.','Servatum.'));
+      }).catch(function(err){ avisar(err.message); }).then(function(){ b.disabled = false; colarRotuloOk(); });
+      return;
+    }
+    b.textContent = L('Lendo…','Reading…','Leyendo…','Legitur…');
     api('POST','/api/ia/extrair',{texto:texto, contexto:ctxReuniao(r)}).then(function(res){
       r.ata = Object.assign({}, r.ata||{}, {transcricao:res.transcricao, em:new Date().toISOString(), por:eu, resumo:res.ata.resumo, decisoes:res.ata.decisoes, sugestoes:res.ata.demandas, demandas:(r.ata && r.ata.demandas)||[]});
       if (!r.feita){ r.feita = true; r.feitaEm = new Date().toISOString(); r.feitaPor = eu; }
       salvar(); document.getElementById('veu-colar').hidden = true; colarRid = null; render(); abrirAta(r.id);
-    }).catch(function(err){ avisar(err.message); }).then(function(){ b.disabled = false; b.textContent = L('Ler as demandas','Find the tasks','Leer las tareas','Legere'); });
+    }).catch(function(err){ avisar(err.message); }).then(function(){ b.disabled = false; colarRotuloOk(); });
   });
   function relerAta(rid, btn){
     var r = acharReuniao(rid); if (!r || !r.ata || !r.ata.transcricao) return;
@@ -4536,7 +4573,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
   document.addEventListener('click', function(e){
     var b;
     if ((b = e.target.closest('[data-gravar]'))){ e.preventDefault(); e.stopPropagation(); iniciarGravacao(b.getAttribute('data-gravar')); return; }
-    if ((b = e.target.closest('[data-colar]'))){ e.preventDefault(); e.stopPropagation(); abrirColar(b.getAttribute('data-colar')); return; }
+    if ((b = e.target.closest('[data-colar]'))){ e.preventDefault(); e.stopPropagation(); abrirColar(b.getAttribute('data-colar'), b.getAttribute('data-modo')); return; }
     if ((b = e.target.closest('[data-reler]'))){ e.preventDefault(); e.stopPropagation(); relerAta(b.getAttribute('data-reler'), b); return; }
     if ((b = e.target.closest('[data-ata]'))){ e.preventDefault(); e.stopPropagation(); abrirAta(b.getAttribute('data-ata')); return; }
     if ((b = e.target.closest('[data-ver-reuniao]'))){ e.preventDefault(); e.stopPropagation(); rhAberta = b.getAttribute('data-ver-reuniao'); vista = 'reunioes'; render(); var it = document.querySelector('[data-rh-it="'+rhAberta+'"]'); if (it) it.scrollIntoView({block:'center'}); }
@@ -4547,6 +4584,8 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     var h = '';
     if (r.ata) h += '<button class="st ata-ok" type="button" data-ver-reuniao="'+r.id+'" title="'+esc(L('Ver a ata desta reunião','See this meeting’s minutes','Ver el acta','Acta videre'))+'">'+CHECK+L('Ata','Minutes','Acta','Acta')+((r.ata.sugestoes||[]).length ? ' · '+r.ata.sugestoes.length+' '+L('a revisar','to review','por revisar','recensenda') : '')+'</button>';
     if (!SERVIDOR) return h;
+    var ag = new Date(), hm = pad(ag.getHours())+':'+pad(ag.getMinutes()), comecou = r.feita || r.data<hoje || (r.data===hoje && (r.inicio||'00:00')<=hm);
+    if (!r.ata && comecou) h += '<button class="btn btn-claro btn-p btn-ata" type="button" data-colar="'+r.id+'" data-modo="ata" title="'+esc(L('Inserir a ata pronta desta reunião','Add the minutes of this meeting','Insertar el acta','Actam inserere'))+'">'+L('+ Ata','+ Minutes','+ Acta','+ Acta')+'</button>';
     if (!r.ata || compacto!=='so-ata') h += '<button class="icone-btn" type="button" data-gravar="'+r.id+'" title="'+esc(L('Gravar esta reunião','Record this meeting','Grabar esta reunión','Excipere'))+'" aria-label="'+esc(L('Gravar esta reunião','Record this meeting','Grabar esta reunión','Excipere'))+'">'+I_REC+'</button>';
     return h;
   }
@@ -4572,8 +4611,9 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
       } else if (r.descricao) h += '<p>'+esc(r.descricao)+'</p>';
       if (a && a.erro) h += '<p class="nota-ajuste">'+L('A leitura das demandas falhou: ','Reading the tasks failed: ','Falló la lectura: ','Lectio defecit: ')+esc(a.erro)+'</p>';
       h += '<div class="rh-acoes">'+(a && a.transcricao && SERVIDOR && (a.erro || (!a.resumo && !sg.length && !dm.length)) ? '<button class="btn btn-escuro btn-p" type="button" data-reler="'+r.id+'">'+L('Ler as demandas de novo','Read the tasks again','Leer de nuevo','Iterum legere')+'</button>' : '')+(sg.length ? '<button class="btn btn-escuro btn-p" type="button" data-ata="'+r.id+'">'+L('Revisar demandas','Review tasks','Revisar tareas','Recensere')+' ('+sg.length+')</button>' : '')+
-        (a && a.transcricao ? '<a class="btn btn-claro btn-p" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+L('Transcrição','Transcript','Transcripción','Transcriptio')+'</a>' : '')+
-        (SERVIDOR ? '<button class="btn btn-claro btn-p" type="button" data-colar="'+r.id+'">'+(a ? L('Colar outra transcrição','Paste another transcript','Pegar otra transcripción','Aliam ponere') : L('Colar transcrição','Paste transcript','Pegar transcripción','Transcriptionem ponere'))+'</button>' : '')+
+        (a && a.transcricao ? '<a class="btn btn-claro btn-p" href="/api/anexos/'+encodeURIComponent(a.transcricao.id)+'" target="_blank" rel="noopener">'+(a.pronta ? L('Ata completa','Full minutes','Acta completa','Acta tota') : L('Transcrição','Transcript','Transcripción','Transcriptio'))+'</a>' : '')+
+        (SERVIDOR ? '<button class="btn btn-claro btn-p" type="button" data-colar="'+r.id+'" data-modo="ata">'+(a ? L('Inserir outra ata','Add other minutes','Insertar otra acta','Aliam actam') : L('Inserir ata pronta','Add minutes','Insertar acta','Actam inserere'))+'</button>' : '')+
+        (SERVIDOR ? '<button class="btn btn-claro btn-p" type="button" data-colar="'+r.id+'" data-modo="transcricao">'+(a ? L('Colar outra transcrição','Paste another transcript','Pegar otra transcripción','Aliam ponere') : L('Colar transcrição','Paste transcript','Pegar transcripción','Transcriptionem ponere'))+'</button>' : '')+
         '<button class="link" type="button" data-editar-reuniao="'+r.id+'">'+L('Editar reunião','Edit meeting','Editar reunión','Emendare')+'</button></div></div>';
     }
     return h+'</div>';

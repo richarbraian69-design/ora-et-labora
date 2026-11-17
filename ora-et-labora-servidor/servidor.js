@@ -464,11 +464,13 @@ async function extrairAta(texto, ctx) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Erro('A leitura das demandas não está ligada: falta a chave ANTHROPIC_API_KEY no Railway.');
   ctx = ctx && typeof ctx === 'object' ? ctx : {};
   const lista = (a) => (Array.isArray(a) ? a : []).map(x => String(x).slice(0, 60)).slice(0, 80).join(', ') || '(nenhum)';
-  const sistema = 'Você é o secretário de uma agência de marketing brasileira. Lê a transcrição de uma reunião (feita automaticamente, pode ter erros de reconhecimento de voz e não identifica quem fala) e registra a ata e as demandas. Escreva em português do Brasil. Use apenas nomes das listas dadas; se um nome ouvido for parecido com um da lista, use o da lista. Prazos relativos ("sexta", "semana que vem", "amanhã") viram datas a partir de hoje. Não crie demandas genéricas nem repetidas.';
+  const sistema = (ctx.tipo === 'ata'
+    ? 'Você é o secretário de uma agência de marketing brasileira. Lê a ata pronta de uma reunião (escrita por alguém da equipe ou gerada pelo Meet/Zoom) e registra um resumo curto, as decisões e as demandas que ela pede.'
+    : 'Você é o secretário de uma agência de marketing brasileira. Lê a transcrição de uma reunião (feita automaticamente, pode ter erros de reconhecimento de voz e não identifica quem fala) e registra a ata e as demandas.') + ' Escreva em português do Brasil. Use apenas nomes das listas dadas; se um nome ouvido for parecido com um da lista, use o da lista. Prazos relativos ("sexta", "semana que vem", "amanhã") viram datas a partir de hoje. Não crie demandas genéricas nem repetidas.';
   const usuario = 'Hoje: ' + String(ctx.hoje || '').slice(0, 60) + '\nReunião: ' + String(ctx.titulo || '').slice(0, 200) +
     '\nParticipantes: ' + lista(ctx.participantes) + '\nEquipe (responsáveis possíveis): ' + lista(ctx.equipe) + '\nClientes: ' + lista(ctx.clientes) +
     (ctx.quem ? '\nQuem gravou: ' + String(ctx.quem).slice(0, 60) + ' (quando alguém diz "eu faço", e não dá para saber quem, deixe o responsável vazio)' : '') +
-    '\n\nTranscrição:\n"""\n' + texto.slice(0, 180000) + '\n"""';
+    (ctx.tipo === 'ata' ? '\n\nAta:\n"""\n' : '\n\nTranscrição:\n"""\n') + texto.slice(0, 180000) + '\n"""';
   const r = await fetch(process.env.ORA_ANTHROPIC_URL || 'https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
@@ -519,10 +521,17 @@ app.post('/api/ia/reler', exigir, rota(async (req, res) => {
   res.json({ ata });
 }));
 app.post('/api/ia/extrair', exigir, rota(async (req, res) => {
-  const texto = String(req.body.texto || '').trim();
-  if (texto.length < 40) throw new Erro('Cole a transcrição inteira da reunião.');
-  const ctx = req.body.contexto || {};
-  const anexo = guardarTranscricao(texto, 'Transcrição · ' + (ctx.titulo || 'reunião'), req.u);
+  const texto = String(req.body.texto || '').trim(), ehAta = req.body.tipo === 'ata';
+  if (texto.length < (ehAta ? 10 : 40)) throw new Erro(ehAta ? 'Cole a ata da reunião.' : 'Cole a transcrição inteira da reunião.');
+  const ctx = Object.assign({}, req.body.contexto || {}, { tipo: ehAta ? 'ata' : 'transcricao' });
+  const anexo = guardarTranscricao(texto, (ehAta ? 'Ata · ' : 'Transcrição · ') + (ctx.titulo || 'reunião'), req.u);
+  /* ata pronta: guarda sempre; a leitura das demandas é opcional e, se falhar, a ata fica salva mesmo assim */
+  if (ehAta) {
+    if (req.body.ler === false) return res.json({ transcricao: anexo, ata: null });
+    let ata = null, erroAta = null;
+    try { ata = await extrairAta(texto, Object.assign({}, ctx, { quem: req.u.nome })); } catch (e) { erroAta = e.message; }
+    return res.json({ transcricao: anexo, ata, erroAta });
+  }
   const ata = await extrairAta(texto, Object.assign({}, ctx, { quem: req.u.nome }));
   res.json({ transcricao: anexo, ata });
 }));
