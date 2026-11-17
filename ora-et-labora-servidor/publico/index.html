@@ -3580,6 +3580,23 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     state.missoes.push(c); return c;
   }
   function precisaAprovacao(m){ return !!(m.aprovador && !m.privada && m.aprovador!==m.resp); }
+  /* O dono do app (o primeiro administrador, quem criou a equipe) aprova toda missão de outra pessoa. */
+  function donoId(){ if (!SERVIDOR) return null; for (var i=0;i<state.equipe.length;i++) if (state.equipe[i].admin) return state.equipe[i].id; return null; }
+  function aplicarAprovDono(){
+    var d = donoId(), n = 0; if (!d) return 0;
+    state.missoes.forEach(function(m){ if (m.feita || m.privada || !m.resp || m.resp===d || m.aprovador===d) return; m.aprovador = d; n++; });
+    return n;
+  }
+  function sincAprov(selResp, selAprov){
+    if (!selResp || !selAprov) return; var d = donoId(), trava = !!(d && selResp.value && selResp.value!==d);
+    if (trava){ selAprov.value = d; selAprov.disabled = true; selAprov.title = L('Missão de outra pessoa sempre passa pela aprovação de ','Missions owned by someone else always need approval from ','La misión de otra persona siempre pasa por la aprobación de ','')+pessoa(d).nome; }
+    else { selAprov.disabled = false; selAprov.title = ''; }
+  }
+  document.addEventListener('change', function(e){
+    var t = e.target; if (!t || t.tagName!=='SELECT') return;
+    if (t.id==='f-resp') sincAprov(t, document.getElementById('f-aprov'));
+    else if (t.name==='resp' && t.form && t.form.elements.aprovador) sincAprov(t, t.form.elements.aprovador);
+  });
   function nivel(xp){ var i=0; for (var k=0;k<NIVEIS.length;k++) if (xp>=NIVEIS[k].min) i=k; return {atual:NIVEIS[i], prox:NIVEIS[i+1]||null}; }
   function porData(a,b){ return a.data<b.data?-1:a.data>b.data?1:0; }
   /* Próximos dias: um grupo por dia até domingo; depois, tudo junto em "Semana que vem em diante" */
@@ -4001,7 +4018,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
         (usaTipos() ? '<label>'+L('Tipo','Type','Tipo','Genus')+'<select class="campo" name="tipo" data-sem-tr>'+opcoesTipo(rv('tipo', m.tipo||''))+'</select></label>' : '')+
         '<label>Repetir<select class="campo" name="recorrencia">'+opcoesRec(rv('recorrencia', m.recorrencia||''))+'</select></label>'+
         '<label>'+L('Onde fica','Where it lives','Dónde queda','Ubi est')+'<select class="campo" name="espaco">'+areaOps+'</select></label>'+
-        (m.privada ? '' : '<label>Aprovação<select class="campo" name="aprovador"><option value="">'+L('Não precisa de aprovação','No approval needed','No necesita aprobación','Approbatio non requiritur')+'</option>'+state.equipe.filter(function(x){ return x.nome; }).map(function(x){ return '<option value="'+esc(x.id)+'"'+(apv===x.id?' selected':'')+'>'+L('Aprovada por ','Approved by ','Aprobada por ','Approbanda a ')+esc(x.nome)+'</option>'; }).join('')+'</select></label>')+'</div>'+
+        (m.privada ? '' : '<label>Aprovação<select class="campo" name="aprovador"'+(donoId() && m.resp!==donoId() ? ' disabled title="'+esc(L('Missão de outra pessoa sempre passa pela aprovação de ','Missions owned by someone else always need approval from ','La misión de otra persona siempre pasa por la aprobación de ','')+pessoa(donoId()).nome)+'"' : '')+'><option value="">'+L('Não precisa de aprovação','No approval needed','No necesita aprobación','Approbatio non requiritur')+'</option>'+state.equipe.filter(function(x){ return x.nome; }).map(function(x){ return '<option value="'+esc(x.id)+'"'+(((donoId() && m.resp!==donoId()) ? donoId() : apv)===x.id?' selected':'')+'>'+L('Aprovada por ','Approved by ','Aprobada por ','Approbanda a ')+esc(x.nome)+'</option>'; }).join('')+'</select></label>')+'</div>'+
       (m.privada ? '' : seletorTags('m:'+m.id, m.tags, L('Cliente','Client','Cliente','Cliens')))+
       '</form>'+
       blocoSubs(m)+
@@ -4485,7 +4502,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     document.getElementById('f-peso').value = PESOS[md.peso] ? md.peso : 'media';
     document.getElementById('f-tipo').value = md.tipo || '';
     var fr = document.getElementById('f-rec'); fr.innerHTML = opcoesRec(md.recorrencia||''); fr.value = md.recorrencia || '';
-    document.getElementById('f-aprov').value = md.aprovador || '';
+    document.getElementById('f-aprov').value = md.aprovador || ''; sincAprov(document.getElementById('f-resp'), document.getElementById('f-aprov'));
     formTags = (md.tags||[]).filter(function(t){ return tagPorId(t); }); if (filtroTag && formTags.indexOf(filtroTag)<0) formTags.push(filtroTag);
     document.getElementById('f-tags').innerHTML = seletorTags('form', formTags);
     document.getElementById('f-subs').value = (md.subs||[]).map(function(s){ return s.titulo; }).join('\n');
@@ -4611,12 +4628,12 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     var ls = linhasCaptura(), r = ls.length ? lerCaptura(ls[0]) : {titulo:'', toks:[], tags:[]};
     fecharCaptura(); abrirMissao(!!r.pessoal);
     document.getElementById('f-titulo').value = r.titulo || '';
-    if (r.resp) document.getElementById('f-resp').value = r.resp;
+    if (r.resp){ document.getElementById('f-resp').value = r.resp; sincAprov(document.getElementById('f-resp'), document.getElementById('f-aprov')); }
     if (r.data!==undefined) document.getElementById('f-data').value = r.data || '';
     if (r.peso) document.getElementById('f-peso').value = r.peso;
     if (r.tipo) document.getElementById('f-tipo').value = r.tipo;
     if (r.rec){ var fr = document.getElementById('f-rec'); fr.innerHTML = opcoesRec(r.rec); fr.value = r.rec; }
-    if (r.aprov) document.getElementById('f-aprov').value = r.aprov;
+    if (r.aprov) document.getElementById('f-aprov').value = r.aprov; sincAprov(document.getElementById('f-resp'), document.getElementById('f-aprov'));
     if (r.tags && r.tags.length){ formTags = r.tags.slice(); document.getElementById('f-tags').innerHTML = seletorTags('form', formTags); }
   }
 
@@ -5713,7 +5730,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     document.getElementById('ab-eu').innerHTML = opcoesPessoas(eu);
   }
   function aplicarCorApp(){ try { var pc = (prefsEu().corApp)||'lit'; document.documentElement.setAttribute('data-lit', pc==='ouro' ? 'ouro' : (liturgia(hoje).cor||'verde')); } catch(e){} }
-  function render(){ if (vista==='cidade') vista = 'hoje'; aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); if (typeof rotinaEditorPintar==='function' && eu){ rotinaEditorPintar(); encPintar(); } setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
+  function render(){ if (vista==='cidade') vista = 'hoje'; aplicarCorApp(); if (eu && typeof focoPintar==='function') focoPintar(); if (eu && logado && typeof checarHabitos==='function') checarHabitos(); document.getElementById('app').setAttribute('data-vista', vista); if (state && state.reunioes && manterSeriesReunioes()) salvar(); if (state && state.missoes && aplicarAprovDono()) salvar(); renderNav(); aplicarNavSec(); renderLado(); renderPrincipal(); renderAbertura(); renderMassa(); renderContador(); if (typeof rotinaEditorPintar==='function' && eu){ rotinaEditorPintar(); encPintar(); } setTimeout(function(){ crescerTodas(); }, 0); var ftl = document.getElementById('f-tipo-l'); if (ftl) ftl.hidden = !usaTipos(); }
 
   /* ---------- Abertura e chegada de missões ---------- */
   var abertura = document.getElementById('abertura'), app = document.getElementById('app');
@@ -5857,7 +5874,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
     document.getElementById('f-mais').open = lsGet('ora-f-mais')==='1';
     document.getElementById('f-mais-sum').textContent = L('Mais opções · sub-missões, anexos, criativo e missão pessoal','More options · sub-missions, attachments, creative and personal mission','Más opciones · submisiones, adjuntos, creativo y misión personal','Plura · partes, adiuncta, praeconium, missio privata');
     modoPessoal(pessoal);
-    form.hidden = false; document.getElementById('f-data').value = hoje; document.getElementById('f-resp').value = filtro!=='todos' ? filtro : eu;
+    form.hidden = false; document.getElementById('f-data').value = hoje; document.getElementById('f-resp').value = filtro!=='todos' ? filtro : eu; sincAprov(document.getElementById('f-resp'), document.getElementById('f-aprov'));
     form.scrollIntoView({block:'nearest'}); document.getElementById('f-titulo').focus();
   }
   fPessoal.addEventListener('change', function(){ modoPessoal(fPessoal.checked); });

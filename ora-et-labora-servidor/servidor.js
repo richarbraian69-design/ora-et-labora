@@ -633,6 +633,8 @@ function aplicarCampos(m, b, u) {
   if (b.recorrencia !== undefined) m.recorrencia = recOk(b.recorrencia);
 }
 const PESOS_OK = new Set(['minima', 'leve', 'media', 'ardua', 'heroica']);
+// O dono (primeiro administrador) aprova toda missão de equipe cujo responsável é outra pessoa.
+function aprovDono(m) { const d = db.usuarios.find(x => x.admin); if (d && !m.privada && !m.feita && m.resp && m.resp !== d.id) m.aprovador = d.id; }
 jarvis.post('/missoes', rota((req, res) => {
   const u = req.u, b = req.body || {}, agora = new Date().toISOString();
   const m = { id: 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4), titulo: '', descricao: '', resp: u.id, data: null, peso: 'media',
@@ -640,6 +642,7 @@ jarvis.post('/missoes', rota((req, res) => {
     privada: !!b.privada, dono: b.privada ? u.id : null, area: null, criadaPor: u.id, criadaEm: agora };
   aplicarCampos(m, Object.assign({ titulo: '' }, b), u);
   if (m.privada) m.resp = u.id;
+  aprovDono(m);
   registrarHist(m, u, 'criou a missão');
   gravarMissao(m, null, u);
   res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
@@ -652,6 +655,7 @@ jarvis.patch('/missoes/:id', rota((req, res) => {
   if (m.feita) throw new Erro('Essa missão já foi cumprida; reabra pelo app se precisar mudar.');
   aplicarCampos(m, b, u);
   if (m.privada) m.resp = m.dono;
+  aprovDono(m);
   registrarHist(m, u, 'mudou ' + mudou.join(', '));
   gravarMissao(m, i, u);
   res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
