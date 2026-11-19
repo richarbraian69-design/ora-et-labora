@@ -956,6 +956,37 @@ jarvis.patch('/missoes/:id/subtarefas/:n', rota((req, res) => {
   gravarMissao(m, i, u);
   res.json(resumoMissao(m, clientesMapa(u), agoraNoFuso().data, true));
 }));
+/* Liturgia das Horas: as horas rezadas hoje e marcar/desmarcar uma, como o botão "Amém, rezei"
+   da tela (um oferecimento privado do tipo 'hora'; vale +5 de Piedade, contado pela tela). */
+const HORAS_LIT = ['laudes', 'tercia', 'sexta', 'noa', 'vesperas', 'completas'];
+function horasRezadas(u, data) {
+  return itensVisiveis('oferecimentos', u).filter(o => o && o.dono === u.id && o.tipo === 'hora' && o.data === data);
+}
+function respostaHoras(u, data) {
+  const prefs = db.itens['prefs|' + u.id], feitas = horasRezadas(u, data);
+  return { data, feitas: HORAS_LIT.filter(k => feitas.some(o => o.hora === k)),
+    versiculos: feitas.filter(o => o.versiculo).map(o => ({ hora: o.hora, versiculo: o.versiculo })),
+    lembrar: !(prefs && !prefs.apagado && prefs.dados && prefs.dados.horas === false) };
+}
+jarvis.get('/horas', rota((req, res) => {
+  const data = req.query.data ? dataOk(String(req.query.data)) : agoraNoFuso().data;
+  res.json(respostaHoras(req.u, data));
+}));
+jarvis.post('/horas', rota((req, res) => {
+  const u = req.u, b = req.body || {}, hora = String(b.hora || ''), hoje = agoraNoFuso().data;
+  if (!HORAS_LIT.includes(hora)) throw new Erro('Hora desconhecida: use ' + HORAS_LIT.join(', ') + '.');
+  const feitas = horasRezadas(u, hoje).filter(o => o.hora === hora);
+  if (b.feita === false) {
+    feitas.forEach(o => { const k = 'oferecimentos|' + o.id, i = db.itens[k]; if (i) db.itens[k] = Object.assign({}, i, { apagado: true, dados: null, seq: ++db.seq }); });
+    if (feitas.length) gravar();
+  } else if (!feitas.length) {
+    const oid = 'm' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex').slice(0, 4);
+    const o = { id: oid, dono: u.id, tipo: 'hora', hora, data: hoje, em: new Date().toISOString(), via: 'jarvis' };
+    db.itens['oferecimentos|' + oid] = { col: 'oferecimentos', id: oid, dono: u.id, privado: true, apagado: false, dados: o, seq: ++db.seq };
+    gravar();
+  }
+  res.json(respostaHoras(u, hoje));
+}));
 app.use('/api/jarvis', jarvis);
 
 app.use((req, res) => res.status(404).type('text').send('Página não encontrada.'));
