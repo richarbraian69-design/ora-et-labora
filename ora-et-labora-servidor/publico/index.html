@@ -1478,6 +1478,163 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 .colar-ler{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--tx2)}
 .colar-ler[hidden]{display:none}
 .btn-ata{padding:3px 10px;font-size:.78rem;white-space:nowrap}
+
+/* ===== Identidade: ilhas pretas (sempre escuro; laranja só na ação principal) ===== */
+:root,:root[data-theme="dark"],:root[data-theme="light"],:root[data-theme="dark"][data-lit="ouro"],:root[data-theme="dark"][data-lit="branco"],:root[data-theme="dark"][data-lit="verde"],:root[data-theme="dark"][data-lit="roxo"],:root[data-theme="dark"][data-lit="rosa"],:root[data-theme="dark"][data-lit="vermelho"],:root:not([data-theme="light"])[data-lit="ouro"],:root:not([data-theme="light"])[data-lit="branco"],:root:not([data-theme="light"])[data-lit="verde"],:root:not([data-theme="light"])[data-lit="roxo"],:root:not([data-theme="light"])[data-lit="rosa"],:root:not([data-theme="light"])[data-lit="vermelho"],:root[data-lit="ouro"],:root[data-lit="branco"],:root[data-lit="verde"],:root[data-lit="roxo"],:root[data-lit="rosa"],:root[data-lit="vermelho"]{color-scheme:dark;
+  --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;
+  --f-disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;
+  --f-serif:var(--f-ui);
+  --fundo:#18181B; --bg:#18181B; --preto:#000000;
+  --ilha:linear-gradient(180deg,#000000 0%,#050507 70%,#07080C 100%);
+  --painel:rgba(255,255,255,.065); --sup:rgba(255,255,255,.09); --sup-2:rgba(255,255,255,.14);
+  --borda:rgba(255,255,255,.09); --linha:rgba(255,255,255,.10); --trilho:#3A3A3C; --borda-red:rgba(255,255,255,.14);
+  --tx:#FFFFFF; --tx2:#A1A1A6; --tx3:#8E8E93; --btn:#FFFFFF; --btn-tx:#000000;
+  --laranja:#FF9F0A; --laranja-tx:#FFB340; --laranja-suave:rgba(255,159,10,.20);
+  --ac:#FFFFFF; --ac-tx:#FFB340; --ac-suave:rgba(255,255,255,.10); --ac-sobre:#000000;
+  --ok:#30D158; --alerta:#FF453A; --ouro:#FF9F0A;
+  --espera-bg:rgba(255,255,255,.065); --espera-tx:#FFFFFF; --ajuste-bg:rgba(255,69,58,.14); --ajuste-tx:#FF8A82; --priv-bg:rgba(255,255,255,.065);
+  --sombra:0 24px 60px rgba(0,0,0,.6);}
+.tp-tit,.nav-rotulo,.nav .nav-rot-tg,.rotulo-vista,.grupo-rot,.det-tit,.cal-sem,.graca .rot,.dia-oracao h5,.rev-area b,.cartao .rot,.ritual .rot,.angelus .rot,.filtro-pop p,.det-sec > summary,.qd-col-tit,table.pl th,.ra-rot{text-transform:none;letter-spacing:0}
+/* ===== Base: sempre escuro, uma fonte, hierarquia pelo peso ===== */
+html{font-size:15px}
+body{background:var(--fundo);color:var(--tx);font-family:var(--f-ui);margin:0;-webkit-font-smoothing:antialiased}
+.app{background:var(--fundo);box-shadow:none}
+:focus-visible{outline:2px solid var(--laranja);outline-offset:2px}
+#tema{display:none}
+.num b,.anel-dia .meio i,.qtd,.r-prazo,.hora-it,.cal-num{font-variant-numeric:tabular-nums}
+
+/* ===== Coluna da esquerda: fora da ilha, sobre o cinza-escuro ===== */
+.lateral{background:transparent;border:0;padding:16px 10px 16px 14px}
+.marca-nome{font-weight:700;letter-spacing:-.01em}
+.nav{gap:2px}
+.nav button{border-radius:999px;min-height:40px;padding:3px 10px 3px 3px;gap:10px;color:var(--tx);font-weight:500;transition:background .15s}
+.nav button > svg:first-child{box-sizing:border-box;width:34px;height:34px;padding:8px;border-radius:50%;background:var(--preto);border:1px solid var(--borda-red);color:var(--tx);flex:none;transition:background .15s,transform .12s}
+.nav button:hover{background:transparent}
+.nav button:hover > svg:first-child{background:#1C1C1E}
+.nav button:active > svg:first-child{transform:scale(.95)}
+.nav button[aria-current="true"]{background:transparent;color:var(--tx);font-weight:700}
+.nav button[aria-current="true"] > svg:first-child{background:#FFFFFF;color:#000000;border-color:#FFFFFF}
+.nav .qtd,.nav button[aria-current="true"] .qtd{color:var(--tx3);font-size:12px;font-weight:600}
+.nav .qtd.alerta,.nav button[aria-current="true"] .qtd.alerta{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--alerta);color:#fff;font-size:10px;font-weight:700;display:inline-grid;place-items:center}
+.nav-rotulo,.nav .nav-rot-tg{font-size:12px;font-weight:600;color:var(--tx2);letter-spacing:0}
+.menu-recolher{border-radius:50%;background:var(--preto);border:1px solid var(--borda-red)}
+.app.recolhido .nav button{padding:3px 0;background:transparent}
+.app.recolhido .nav button > svg:first-child{width:44px;height:44px;padding:11px}
+.app.recolhido .nav .qtd.alerta{top:0;right:2px}
+
+/* ===== A ilha: o conteúdo desce do topo, cantos só embaixo ===== */
+.principal{background:var(--ilha)!important;border:1px solid rgba(255,255,255,.08)!important;border-top:0!important;border-radius:0 0 32px 32px!important;box-shadow:var(--sombra);margin:0 14px 14px 0!important;padding:14px 20px 20px!important}
+.conteudo{gap:14px}
+
+/* ===== Títulos: sem serifa, sem tamanho grande; peso faz a hierarquia ===== */
+.rotulo-vista{font-size:1rem;font-weight:700;letter-spacing:0;text-transform:none;color:var(--tx)}
+.grupo-rot{font-size:1rem;font-weight:700;letter-spacing:0;color:var(--tx)}
+.grupo-rot .n{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--trilho);color:#fff;font-size:10px;font-weight:700;display:inline-grid;place-items:center;margin-left:8px}
+.grupo-rot.alerta{color:var(--tx)}
+.grupo-rot.alerta .n{background:var(--alerta)}
+.saudacao,.cartao h2,.forma h3,.chegada h2,.aj-tit,.reu-grupo-tit,.agenda-mes h4,.pl-mes b,.pl-vazio h3,.zoom-topo h3,.vt-topo b,.rev-nome,.ritual h3,.anel-dia b,.ab-marca,.cid-grande-topo h4,.santos-card .sc-tit,.cid-tit{font-family:var(--f-ui)!important;font-style:normal!important;font-weight:700!important;letter-spacing:-.005em}
+.cartao h2,.forma h3,.chegada h2{font-size:1.07rem!important}
+.cartao h2 em,.forma h3 em,.chegada h2 em,.agenda-mes h4 em,.saudacao em,.cid-tit em,.vazio em{font-family:inherit!important;font-style:normal!important;color:var(--tx2)}
+.santos-card .sc-tit{font-size:1rem!important}
+.num b{font-size:1.45rem;font-weight:700;letter-spacing:-.01em}
+.det-sec > summary{color:var(--tx);font-weight:700}
+.topo-txt .lit{color:var(--tx2);font-size:.87rem}
+.lit b{color:var(--tx);font-weight:600}
+/* frase do dia sem itálico nem serifa */
+.banner,.banner *{font-style:normal}
+.banner blockquote,.banner q,.banner .frase,.banner p:first-child{font-family:var(--f-ui)!important}
+
+/* ===== Quadrados: fundo translúcido, borda de 1 px, sem sombra ===== */
+.painel,.lado,.banner,.forma,.rotina-agora,.qd-card,.m-painel{background:var(--painel)!important;border:1px solid var(--borda)!important;box-shadow:none!important}
+.painel,.banner,.forma,.qd-card,.m-painel{border-radius:15px!important}
+.lado,.rotina-agora{border-radius:18px!important}
+.banner{--banner:transparent;--banner-tx:#fff;--banner-tx2:var(--tx2);--banner-prog-bg:var(--trilho);--banner-prog:#fff}
+.qd-card:hover{background:rgba(255,255,255,.10)!important;border-color:rgba(255,255,255,.20)!important}
+.linha{transition:background .15s}
+.linha:hover{background:rgba(255,255,255,.04)}
+.painel > .linha + .linha::before{background:var(--linha);opacity:1}
+.circ{border-color:rgba(255,255,255,.35)}
+.circ:hover{border-color:#fff;color:#fff}
+.circ.feita,.sel-box.on{background:#fff;border-color:#fff;color:#000}
+.anel-dia .trilho{stroke:var(--trilho)}
+.anel-dia .feito{stroke:#fff;stroke-linecap:round}
+.alegria-barra{background:var(--trilho)}
+.alegria-barra i{background:#fff}
+.linha.prioridade{box-shadow:none}
+.linha .tag,.qd-card .tag{height:auto;padding:1px 9px 1px 7px;border-radius:999px;background:var(--sup);color:var(--tx2);font-size:.8rem;font-weight:600;gap:6px}
+.linha .tag::before,.qd-card .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--t,var(--tx3));flex:none}
+.tag.cinza{background:var(--sup);color:var(--tx2)}
+.nota-rev,.nota-coment,.nota-chegou,.nota-ajustes,.dia-liberado,.nota-limpa{border-radius:15px;border:1px solid var(--borda)}
+.nota-chegou b,.nota-chegou strong{color:#fff}
+.link{color:var(--laranja-tx);text-decoration:none}
+.link:hover{text-decoration:underline}
+.r-prazo.atrasada,.r-prazo.alerta,.atrasada{color:var(--alerta)}
+
+/* ===== Campos: pílula ===== */
+.campo{background:var(--sup);border:1px solid var(--linha);border-radius:999px;color:var(--tx)}
+textarea.campo{border-radius:18px}
+.campo:focus{border-color:rgba(255,255,255,.28);outline:0}
+
+/* ===== Botões ===== */
+.btn{border-radius:999px;font-weight:600;font-size:.87rem;min-height:34px;padding:6px 15px;transition:background .15s,transform .12s}
+.btn:active{transform:scale(.97)}
+.btn-p{min-height:28px;padding:3px 12px;font-size:.83rem}
+/* discreto */
+.btn-claro{background:var(--sup);border:0;color:#fff}
+.btn-claro:hover{background:var(--sup-2)}
+/* ação forte comum: branca (como o botão de enviar) */
+.btn-escuro{background:#fff!important;color:#000!important;border:0;box-shadow:none;filter:none!important}
+.btn-escuro:hover{background:#E5E5EA!important}
+/* a única pílula laranja da tela: Novo */
+#abrir-novo{background:var(--laranja-suave)!important;color:var(--laranja)!important;font-weight:700}
+#abrir-novo:hover{background:rgba(255,159,10,.28)!important}
+/* Foco e Finalizar o dia: botões redondos de borda fina */
+.topo-acoes .btn-claro{background:var(--preto);border:1px solid var(--borda-red)}
+.topo-acoes .btn-claro:hover{background:#1C1C1E}
+.barra-dir .btn-claro{background:transparent;color:var(--tx3)}
+.barra-dir .btn-claro:hover,.barra-dir .btn-claro[aria-expanded="true"]{background:var(--sup);color:#fff}
+.icone-btn{border-radius:50%}
+/* abas em texto no lugar das cápsulas */
+.seg{background:none!important;border:0!important;padding:0;gap:16px}
+.seg button{background:none!important;box-shadow:none!important;padding:4px 0;color:var(--tx3);font-weight:600}
+.seg button[aria-pressed="true"]{color:#fff;font-weight:700}
+
+/* ===== Menus que descem e janelas ===== */
+.menu-lista,.config-pop,.card-menu,.massa-pop,.inf-pop:not([hidden]){background:linear-gradient(180deg,#000,#07080C)!important;border:1px solid var(--linha)!important;border-radius:18px!important;box-shadow:var(--sombra)!important;animation:ilhaDescer .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes ilhaDescer{from{transform:translateY(-12px);opacity:0}}
+.menu-lista button,.card-menu button,.config-pop > button{border-radius:10px}
+.menu-lista button:hover,.card-menu button:hover,.config-pop > button:hover{background:var(--sup)}
+.menu-lista button svg,.card-menu button svg{color:#fff}
+.veu{background:rgba(0,0,0,.62);backdrop-filter:none;-webkit-backdrop-filter:none}
+.cartao{background:var(--ilha);border:1px solid var(--linha);border-radius:32px;box-shadow:var(--sombra)}
+.foco-pill{background:#000;border:1px solid var(--borda-red);box-shadow:var(--sombra)}
+.toast{border-radius:999px;background:#fff;color:#000}
+.ev.reu{background:var(--sup);color:#fff;box-shadow:inset 3px 0 0 #fff}
+.cal-dia.hoje .cal-num{background:#fff;color:#000}
+.hb-dias i.c{background:#fff}
+.hb-semana button[aria-pressed="true"]{background:#fff;color:#000}
+.rotina-agora .ra-ag b{color:var(--laranja)}
+
+/* ===== Celular: a ilha ocupa a tela, botões redondos numa fileira embaixo ===== */
+@media (max-width:860px){
+  .principal{margin:0 0 12px!important;border-radius:0 0 26px 26px!important;padding:12px 14px 18px!important}
+  .lateral{padding:12px 14px 4px}
+  .barra-inf{left:0;right:0;bottom:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(24,24,27,.94);border:0;border-top:1px solid var(--linha);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .barra-inf button{color:var(--tx2);font-size:10.5px;font-weight:600;gap:4px;background:none}
+  .barra-inf button svg{box-sizing:border-box;width:40px;height:40px;padding:10px;border-radius:50%;background:#000;border:1px solid var(--borda-red);color:#fff}
+  .barra-inf button[aria-current="true"]{color:#fff}
+  .barra-inf button[aria-current="true"] svg{background:#fff;color:#000;border-color:#fff}
+  .barra-inf .inf-novo svg{background:var(--laranja-suave);color:var(--laranja);border-color:transparent;width:40px;height:40px;padding:10px}
+  .app{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .veu{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+  body:has(.veu:not([hidden])) .barra-inf{visibility:hidden}
+}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* cor litúrgica do dia vira só um pontinho no calendário */
+.cal-lit{left:auto;right:8px;top:10px;width:6px;height:6px;border-radius:50%}
+.agenda-mes h4{font-size:1.2rem!important;line-height:1.2}
+.seg + .seg{margin-left:10px}
+
 </style>
 
 <section class="abertura" id="abertura" aria-label="Abertura">
@@ -2150,7 +2307,7 @@ body:has(#veu-pausa:not([hidden])) .foco-pill{display:none}
 
   /* ---------- Tema ---------- */
   var raiz = document.documentElement;
-  var tSalvo = lsGet(KEY_TEMA); if (tSalvo==='dark' || tSalvo==='light') raiz.setAttribute('data-theme', tSalvo);
+  /* identidade das ilhas pretas: sempre escuro */ raiz.setAttribute('data-theme', 'dark');
   function temaAtual(){ var t = raiz.getAttribute('data-theme'); if (t==='dark' || t==='light') return t; return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
   var SOL = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4"/></svg>';
   var LUA = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5z"/></svg>';
