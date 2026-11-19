@@ -1560,7 +1560,14 @@ body{background:var(--fundo);color:var(--tx);font-family:var(--f-ui);margin:0;-w
 .anel-dia .feito{stroke:#fff;stroke-linecap:round}
 .alegria-barra{background:var(--trilho)}
 .alegria-barra i{background:#fff}
-.linha.prioridade{box-shadow:none}
+/* prioridades de hoje: grifadas de laranja */
+.linha.prioridade,.grupo[data-grupo-sec="prioridades"] .linha{background:rgba(255,159,10,.10)!important;box-shadow:inset 3px 0 0 var(--laranja)}
+.linha.prioridade:hover,.grupo[data-grupo-sec="prioridades"] .linha:hover{background:rgba(255,159,10,.15)!important}
+.grupo[data-grupo-sec="prioridades"] > .painel{border-color:rgba(255,159,10,.35)!important}
+.grupo[data-grupo-sec="prioridades"] .grupo-rot{color:var(--laranja)}
+.grupo[data-grupo-sec="prioridades"] .grupo-rot .n{background:var(--laranja-suave);color:var(--laranja)}
+.qd-card.prioridade{background:rgba(255,159,10,.10)!important;border-color:rgba(255,159,10,.35)!important}
+.prio-btn.on{color:var(--laranja)}
 .linha .tag,.qd-card .tag{height:auto;padding:1px 9px 1px 7px;border-radius:999px;background:var(--sup);color:var(--tx2);font-size:.8rem;font-weight:600;gap:6px}
 .linha .tag::before,.qd-card .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--t,var(--tx3));flex:none}
 .tag.cinza{background:var(--sup);color:var(--tx2)}
