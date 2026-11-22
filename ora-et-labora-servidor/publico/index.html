@@ -1560,6 +1560,14 @@ body{background:var(--fundo);color:var(--tx);font-family:var(--f-ui);margin:0;-w
 .anel-dia .feito{stroke:#fff;stroke-linecap:round}
 .alegria-barra{background:var(--trilho)}
 .alegria-barra i{background:#fff}
+.conj-faixa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--linha)}
+.conj-faixa .hora-it{border:0;border-left:1px solid var(--linha);background:transparent;font:inherit;text-align:left;cursor:pointer;color:var(--tx)}
+.conj-faixa .hora-it:first-child{border-left:0}
+.conj-faixa .hora-it:disabled{cursor:default}
+.conj-faixa .hora-it.feita{background:var(--sup)}
+.conj-cartao{display:grid;gap:8px;padding-top:10px;border-top:1px solid var(--linha)}
+.conj-cartao p{margin:0}
+.conj-cartao .btn{justify-self:start}
 /* prioridades de hoje: grifadas de laranja */
 .linha.prioridade,.grupo[data-grupo-sec="prioridades"] .linha{background:rgba(255,159,10,.10)!important;box-shadow:inset 3px 0 0 var(--laranja)}
 .linha.prioridade:hover,.grupo[data-grupo-sec="prioridades"] .linha:hover{background:rgba(255,159,10,.15)!important}
@@ -7322,7 +7330,7 @@ textarea.campo{border-radius:18px}
   function renderPessoal(){
     guardarRascunho();
     document.getElementById('priv-aviso').innerHTML = I_CADEADO+'<span>Só você vê o que está nesta área. Ninguém da equipe tem acesso.</span>';
-    var od = ofertaDoDia(), af = angelusFeitos(), ex = exameDeHoje(), hf = horasFeitas().length;
+    var od = ofertaDoDia(), af = angelusFeitos(), ex = exameDeHoje(), hf = horasFeitas().filter(function(k){ return k.indexOf('conjugal')!==0; }).length;
     /* as orações do dia numa linha só; cada item abre a sua oração */
     var ck = function(ok){ return '<span class="ck">'+(ok ? CHECK : '')+'</span>'; };
     document.getElementById('pes-status').innerHTML =
@@ -7687,10 +7695,17 @@ textarea.campo{border-radius:18px}
     {h:18, k:'vesperas', ib:'vespri', n:['Vésperas','Vespers','Vísperas','Vesperae']},
     {h:21, k:'completas', ib:'compieta', n:['Completas','Compline','Completas','Completorium']}
   ];
+  /* Oração conjugal: a esposa reza pelo marido, junto das Laudes (manhã) e das Completas (noite) */
+  var CONJ = [
+    {h:6, k:'conjugal-manha', conj:true, apos:'laudes', n:['Oração conjugal','Marital prayer','Oración conyugal','Oratio coniugalis'], q:['Manhã · com as Laudes','Morning · with Lauds','Mañana · con Laudes','Mane · cum Laudibus']},
+    {h:21, k:'conjugal-noite', conj:true, apos:'completas', n:['Oração conjugal','Marital prayer','Oración conyugal','Oratio coniugalis'], q:['Noite · com as Completas','Night · with Compline','Noche · con Completas','Nocte · cum Completorio']}
+  ];
+  function conjugalAtiva(){ var v = prefsEu().conjugal; return v===undefined ? (!SERVIDOR || eu===donoId()) : !!v; }
+  function conjDe(k){ return CONJ.filter(function(c){ return c.apos===k; })[0]; }
   var LH_PT = 'https://liturgiadashoras.online/category/horas-canonicas/', IB = 'https://www.ibreviary.com/m2/breviario.php?s=';
   function nomeHora(x){ return L(x.n[0], x.n[1], x.n[2], x.n[3]); }
   function urlHora(x){ return LANG==='pt' ? LH_PT : IB+x.ib; }
-  function horaPorChave(k){ return HORAS.filter(function(y){ return y.k===k; })[0]; }
+  function horaPorChave(k){ return HORAS.concat(CONJ).filter(function(y){ return y.k===k; })[0]; }
   function horasFeitas(){ return state.oferecimentos.filter(function(o){ return o.dono===eu && o.tipo==='hora' && o.data===hoje; }).map(function(o){ return o.hora; }); }
   function horasAtivas(){ return prefsEu().horas!==false; }
   function tituloLH(){ return L('Liturgia das Horas','Liturgy of the Hours','Liturgia de las Horas','Liturgia Horarum'); }
@@ -7711,8 +7726,13 @@ textarea.campo{border-radius:18px}
       '<div class="acoes">'+(aberta
         ? '<button class="btn btn-escuro btn-p" type="button" data-hora-feita="'+x.k+'">'+L('Amém, rezei','Amen, I prayed','Amén, recé','Amen, recitavi')+'</button><a class="btn btn-claro btn-p" href="'+url+'" target="_blank" rel="noopener">'+L('Abrir de novo','Open again','Abrir de nuevo','Iterum aperire')+'</a>'
         : '<a class="btn btn-escuro btn-p" href="'+url+'" target="_blank" rel="noopener" data-hora-abrir="'+x.k+'">'+L('Rezar','Pray','Rezar','Orare')+'</a><button class="btn btn-claro btn-p" type="button" data-hora-fechar>'+L('Agora não','Not now','Ahora no','Non nunc')+'</button>')+
-      '</div>'+(aberta ? '' : '<p class="dica-hora">'+dicaSite()+'</p>')+'</div>';
+      '</div>'+htmlConjCartao(x)+(aberta ? '' : '<p class="dica-hora">'+dicaSite()+'</p>')+'</div>';
     cartaoHora.hidden = false;
+  }
+  function htmlConjCartao(x){
+    var c = conjDe(x.k); if (!c || !conjugalAtiva() || horasFeitas().indexOf(c.k)>=0) return '';
+    return '<div class="conj-cartao"><p><b>'+esc(nomeHora(c))+'</b> · '+L('sua esposa reza por você.','your wife prays for you.','tu esposa reza por ti.','uxor tua pro te orat.')+'</p>'+
+      '<button class="btn btn-claro btn-p" type="button" data-hora-feita="'+c.k+'">'+L('Ela rezou por mim','She prayed for me','Ella rezó por mí','Pro me oravit')+'</button></div>';
   }
   function marcarHora(k){
     var x = horaPorChave(k); if (!x) return;
@@ -7720,8 +7740,9 @@ textarea.campo{border-radius:18px}
       var rec = {id:uid(), dono:eu, tipo:'hora', hora:k, data:hoje, em:new Date().toISOString()};
       state.oferecimentos.push(rec); salvar();
       avisar(L(nomeHora(x)+' rezada. +5 Piedade.', nomeHora(x)+' prayed. +5 Piety.', nomeHora(x)+' rezada. +5 Piedad.', nomeHora(x)+' recitatum. +5 Pietas.'));
-      perguntarVersiculo(rec, x);
-    } else cartaoHora.hidden = true;
+      if (x.conj){ var cc = cartaoHora.querySelector('.conj-cartao'); if (cc) cc.remove(); }
+      else perguntarVersiculo(rec, x);
+    } else if (!x.conj) cartaoHora.hidden = true;
     if (!app.hidden && vista==='pessoal') renderPessoal();
   }
   /* depois de rezar: qual versículo mais chamou atenção? */
@@ -7754,10 +7775,18 @@ textarea.campo{border-radius:18px}
       var feita = f.indexOf(x.k)>=0, cur = !feita && agora>=x.h && agora<x.h+3;
       return '<a class="hora-it'+(feita?' feita':'')+(cur?' agora':'')+'" href="'+esc(urlHora(x))+'" target="_blank" rel="noopener" data-hora-abrir="'+x.k+'">'+
         '<small>'+x.h+'h</small><b>'+esc(nomeHora(x))+'</b><span>'+(feita ? CHECK+L('Rezada','Prayed','Rezada','Recitatum') : cur ? L('Agora','Now','Ahora','Nunc') : '&nbsp;')+'</span></a>';
-    }).join('')+'</div><div class="horas-pe"><a class="link" href="'+esc(LANG==='pt' ? LH_PT : IB+'ufficio_delle_letture')+'" target="_blank" rel="noopener">'+L('Ofício das Leituras','Office of Readings','Oficio de Lectura','Officium lectionis')+'</a>'+
-      '<label class="check"><input type="checkbox" id="horas-lembrar"'+(horasAtivas()?' checked':'')+'> '+L('Lembrar em cada hora','Remind me at each hour','Recordarme en cada hora','Singulis horis monere')+'</label></div>'+
+    }).join('')+'</div>'+htmlConjFaixa(f)+'<div class="horas-pe"><a class="link" href="'+esc(LANG==='pt' ? LH_PT : IB+'ufficio_delle_letture')+'" target="_blank" rel="noopener">'+L('Ofício das Leituras','Office of Readings','Oficio de Lectura','Officium lectionis')+'</a>'+
+      '<label class="check"><input type="checkbox" id="horas-lembrar"'+(horasAtivas()?' checked':'')+'> '+L('Lembrar em cada hora','Remind me at each hour','Recordarme en cada hora','Singulis horis monere')+'</label>'+
+      '<label class="check"><input type="checkbox" id="horas-conjugal"'+(conjugalAtiva()?' checked':'')+'> '+L('Oração conjugal','Marital prayer','Oración conyugal','Oratio coniugalis')+'</label></div>'+
       htmlVersiculos()+
       '<p class="dica-hora" style="padding:0 18px 16px">'+dicaSite()+'</p></div>';
+  }
+  function htmlConjFaixa(f){
+    if (!conjugalAtiva()) return '';
+    return '<div class="conj-faixa">'+CONJ.map(function(c){
+      var feita = f.indexOf(c.k)>=0;
+      return '<button type="button" class="hora-it conj'+(feita?' feita':'')+'"'+(feita?' disabled':' data-hora-feita="'+c.k+'"')+'><small>'+c.h+'h · '+esc(L(c.q[0],c.q[1],c.q[2],c.q[3]))+'</small><b>'+esc(nomeHora(c))+'</b><span>'+(feita ? CHECK+L('Rezada','Prayed','Rezada','Recitata') : L('Sua esposa reza por você','Your wife prays for you','Tu esposa reza por ti','Uxor pro te orat'))+'</span></button>';
+    }).join('')+'</div>';
   }
   function htmlVersiculos(){
     var vs = state.oferecimentos.filter(function(o){ return o.dono===eu && o.tipo==='hora' && o.versiculo; }).sort(function(a,b){ return a.em<b.em?1:-1; }).slice(0,6);
@@ -7774,6 +7803,7 @@ textarea.campo{border-radius:18px}
   });
   document.addEventListener('change', function(e){
     if (e.target.id==='aj-ritual-on'){ prefsEu().ritual = e.target.checked; salvar(); avisar(e.target.checked ? L('Os três passos voltam amanhã cedo.','The three steps are on.','Los tres pasos están activados.','Accensum.') : L('Os três passos foram desligados.','The three steps are off.','Los tres pasos están desactivados.','Exstinctum.')); return; }
+    if (e.target.id==='horas-conjugal'){ prefsEu().conjugal = e.target.checked; salvar(); if (vista==='pessoal') renderPessoal(); return; }
     if (e.target.id==='horas-lembrar'){ prefsEu().horas = e.target.checked; salvar(); avisar(e.target.checked ? L('Lembretes das horas ligados.','Hour reminders on.','Recordatorios de las horas activados.','Monitiones horarum accensae.') : L('Lembretes das horas desligados.','Hour reminders off.','Recordatorios de las horas desactivados.','Monitiones horarum exstinctae.')); }
   });
   setInterval(checarHoras, 15000);
@@ -7791,6 +7821,7 @@ textarea.campo{border-radius:18px}
     for (var k=0;k<2;k++){
       HORAS.forEach(function(x){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(x.h,0,0,0); lista.push({t:d, nome:nomeHora(x), hora:x, h:x.h}); });
       [12].forEach(function(h){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(h,0,0,0); lista.push({t:d, nome:L('Ângelus','Angelus','Ángelus','Angelus'), h:h}); });
+      if (conjugalAtiva()) CONJ.forEach(function(c){ var d = new Date(agora); d.setDate(d.getDate()+k); d.setHours(c.h,0,0,0); lista.push({t:d, nome:nomeHora(c), h:c.h}); });
     }
     lista = lista.filter(function(o){ return o.t > agora; }).sort(function(a,b){ return a.t-b.t; });
     if (!lista.length) return null;
