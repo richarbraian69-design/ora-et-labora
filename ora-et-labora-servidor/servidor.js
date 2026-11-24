@@ -987,6 +987,64 @@ jarvis.post('/horas', rota((req, res) => {
   }
   res.json(respostaHoras(u, hoje));
 }));
+/* Trabalho focado (o botão Foco da tela): blocos de 90 min com caminhada. O estado fica nas
+   preferências da pessoa (prefs.foco), como a tela guarda, e a tela recebe pela sincronização. */
+const FOCO_MIN = 90;
+function prefsDe(u) { const i = db.itens['prefs|' + u.id]; return i && !i.apagado && i.dados ? JSON.parse(JSON.stringify(i.dados)) : {}; }
+function gravarPrefs(u, p) { db.itens['prefs|' + u.id] = { col: 'prefs', id: u.id, dono: u.id, privado: true, apagado: false, dados: p, seq: ++db.seq }; gravar(); }
+function focoMsDe(f) { if (!f) return 0; return (f.acum || 0) + (f.estado === 'foco' && f.inicio ? Date.now() - Date.parse(f.inicio) : 0); }
+function focoRegistrarEm(p, ms, completo, hoje) {
+  p.focoDias = p.focoDias || {}; const d = p.focoDias[hoje] || { min: 0, blocos: 0 };
+  d.min += Math.round(ms / 60000); if (completo) d.blocos += 1; p.focoDias[hoje] = d;
+  const ks = Object.keys(p.focoDias).sort(); while (ks.length > 120) delete p.focoDias[ks.shift()];
+}
+function respostaFoco(u) {
+  const p = prefsDe(u), f = p.foco || null, hoje = agoraNoFuso().data;
+  let missao = null;
+  if (f && f.missao) { const m = itensVisiveis('missoes', u).find(x => x && x.id === f.missao); if (m) missao = { id: m.id, titulo: m.titulo }; }
+  return { agora: new Date().toISOString(), alvoMin: FOCO_MIN,
+    foco: f ? { estado: f.estado, inicio: f.inicio || null, acum: f.acum || 0, checks: f.checks || {},
+                ms: f.estado === 'caminhada' ? Date.now() - Date.parse(f.inicio) : focoMsDe(f) } : null,
+    missao, hoje: (p.focoDias || {})[hoje] || { min: 0, blocos: 0 }, ultimoWhats: p.ultimoWhats || null };
+}
+jarvis.get('/foco', rota((req, res) => res.json(respostaFoco(req.u))));
+jarvis.post('/foco', rota((req, res) => {
+  const u = req.u, b = req.body || {}, acao = String(b.acao || ''), hoje = agoraNoFuso().data;
+  const p = prefsDe(u), f = p.foco || null, agora = new Date().toISOString();
+  if (acao === 'iniciar') {
+    let missao = b.missao ? String(b.missao) : null;
+    if (missao && !itensVisiveis('missoes', u).some(x => x && x.id === missao)) throw new Erro('Missão não encontrada.', 404);
+    if (f && f.estado === 'foco' && missao) f.missao = missao;
+    else {
+      // voltar da caminhada (ou recomeçar) mantém a missão do bloco anterior, como a tela
+      if (!missao && f && f.missao) missao = f.missao;
+      p.foco = { estado: 'foco', inicio: agora, acum: 0, missao, avisado: false };
+    }
+  } else if (acao === 'pausar') {
+    if (!f || f.estado !== 'foco') throw new Erro('Não há bloco de foco rodando.', 409);
+    f.acum = focoMsDe(f); f.estado = 'pausa'; f.inicio = null;
+  } else if (acao === 'retomar') {
+    if (!f || f.estado !== 'pausa') throw new Erro('O foco não está pausado.', 409);
+    f.estado = 'foco'; f.inicio = agora;
+  } else if (acao === 'caminhar') {
+    if (!f) throw new Erro('Não há bloco de foco.', 409);
+    if (f.estado !== 'caminhada') { const ms = focoMsDe(f); if (ms > 60000) focoRegistrarEm(p, ms, ms >= FOCO_MIN * 60000, hoje); }
+    p.foco = { estado: 'caminhada', inicio: agora, acum: 0, missao: f.missao || null, checks: {} };
+  } else if (acao === 'encerrar') {
+    if (f && f.estado !== 'caminhada') { const ms = focoMsDe(f); if (ms > 60000) focoRegistrarEm(p, ms, ms >= FOCO_MIN * 60000, hoje); }
+    p.foco = null;
+  } else if (acao === 'check') {
+    const k = String(b.item || ''), v = !!b.feito;
+    if (k !== 'caminhar' && k !== 'whats') throw new Erro('Use item "caminhar" ou "whats".');
+    if (!f || f.estado !== 'caminhada') throw new Erro('A lista é da pausa de caminhada.', 409);
+    f.checks = f.checks || {}; p.focoDias = p.focoDias || {}; const d = p.focoDias[hoje] || { min: 0, blocos: 0 };
+    if (v && !f.checks[k]) { if (k === 'whats') { d.whats = (d.whats || 0) + 1; p.ultimoWhats = agora; } else d.caminhadas = (d.caminhadas || 0) + 1; }
+    if (!v && f.checks[k]) { if (k === 'whats') d.whats = Math.max(0, (d.whats || 0) - 1); else d.caminhadas = Math.max(0, (d.caminhadas || 0) - 1); }
+    f.checks[k] = v; p.focoDias[hoje] = d;
+  } else throw new Erro('Ação do foco: iniciar, pausar, retomar, caminhar, encerrar ou check.');
+  gravarPrefs(u, p);
+  res.json(respostaFoco(u));
+}));
 app.use('/api/jarvis', jarvis);
 
 app.use((req, res) => res.status(404).type('text').send('Página não encontrada.'));
