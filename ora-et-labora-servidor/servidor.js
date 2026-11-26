@@ -682,7 +682,8 @@ jarvis.post('/missoes/:id/comentarios', rota((req, res) => {
    recorrência, aprovação e histórico. Apagar continua só no app. ── */
 function resumoReuniao(r, cli, prevista) {
   return { id: r.id, prevista: !!prevista, titulo: r.titulo, data: r.data, inicio: r.inicio || '', fim: r.fim || '', local: r.local || '', descricao: r.descricao ? String(r.descricao).slice(0, 280) : '',
-    pessoas: (r.pessoas || []).map(nomePessoa).filter(Boolean), clientes: (r.tags || []).map(t => cli[t]).filter(Boolean), feita: !!r.feita, repete: r.recorrencia || null };
+    pessoas: (r.pessoas || []).map(nomePessoa).filter(Boolean), clientes: (r.tags || []).map(t => cli[t]).filter(Boolean), feita: !!r.feita, repete: r.recorrencia || null,
+    ata: !!(r.ata && (r.ata.transcricao || r.ata.resumo)), ata_em: (r.ata && r.ata.em) || '' };
 }
 function horaOk(h, campo) { if (h === null || h === '') return ''; if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(h))) throw new Erro(campo + ' no formato HH:MM.'); return String(h); }
 function reuniaoItem(rid) {
@@ -777,6 +778,23 @@ jarvis.get('/reunioes', rota((req, res) => {
   if (busca) l = l.filter(r => normNome(r.titulo + ' ' + (r.descricao || '') + ' ' + (r.local || '')).includes(busca));
   l.sort((a, b) => (a.data + (a.inicio || '')) < (b.data + (b.inicio || '')) ? -1 : 1);
   res.json({ hoje, total: l.length, reunioes: l.slice(0, limite).map(r => resumoReuniao(r, cli, prev.has(r.id))) });
+}));
+/* a ata de uma reunião para o JARVIS (26/11): resumo, decisões, demandas e o texto da transcrição
+   (o anexo que a tela guardou ao colar ou gravar). Só leitura. */
+jarvis.get('/reunioes/:id/ata', rota((req, res) => {
+  const r = reuniaoItem(req.params.id).dados, cli = clientesMapa(req.u), a = r.ata || {};
+  let transcricao = '';
+  const anexo = a.transcricao && a.transcricao.id;
+  if (anexo && /^a[\w-]+$/.test(anexo) && db.anexos[anexo]) {
+    try { transcricao = fs.readFileSync(path.join(ANEXOS, anexo), 'utf8').slice(0, 250000); } catch (e) { transcricao = ''; }
+  }
+  const hoje = agoraNoFuso().data;
+  /* missões que já nasceram desta reunião (a tela guarda os ids em ata.demandas) e as sugestões que ficaram sem virar missão */
+  const missoes = (a.demandas || []).slice(0, 60).map(mid => { try { return resumoMissao(missaoItem(String(mid), req.u).dados, cli, hoje, true); } catch (e) { return null; } }).filter(Boolean);
+  const sugestoes = (a.sugestoes || []).slice(0, 60).filter(d => d && typeof d === 'object')
+    .map(d => ({ titulo: d.titulo || '', descricao: d.descricao || '', responsavel: d.responsavel || '', data: d.data || '', cliente: d.cliente || '', trecho: d.trecho || '' }));
+  res.json(Object.assign(resumoReuniao(r, cli), { descricao: r.descricao || '', pronta: !!a.pronta, resumo: a.resumo || '',
+    decisoes: a.decisoes || [], missoes, sugestoes, transcricao, por: a.por ? nomePessoa(a.por) || '' : '' }));
 }));
 jarvis.post('/reunioes', rota((req, res) => {
   const u = req.u, b = req.body || {};
