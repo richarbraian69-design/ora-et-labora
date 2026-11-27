@@ -593,6 +593,13 @@ function resumoMissao(m, cli, hoje, completa) {
     ultimosComentarios: (m.comentarios || []).slice(-10).map(c => ({ por: nomePessoa(c.por), em: c.em, texto: c.texto })),
     historico: (m.historico || []).slice(-10).map(h => ({ por: nomePessoa(h.por), em: h.em, t: h.t })) });
 }
+/* As prioridades que o Richar marca na tela ficam nas preferências dele (prefs.prioridades);
+   a porta conta quais missões são prioridade, para o Vorssaint grifar como a tela grifa. */
+function prioridadesDe(u) {
+  const i = db.itens['prefs|' + u.id], p = i && !i.apagado && i.dados && i.dados.prioridades;
+  return new Set(Array.isArray(p) ? p : []);
+}
+function comPrioridade(r, pri) { if (pri.has(r.id) && !r.feita) r.prioridade = true; return r; }
 const jarvis = express.Router();
 jarvis.use(exigirJarvis);
 jarvis.get('/contexto', (req, res) => {
@@ -612,12 +619,13 @@ jarvis.get('/missoes', rota((req, res) => {
   if (ate) l = l.filter(m => m.data && m.data <= ate);
   if (busca) l = l.filter(m => normNome(m.titulo + ' ' + (m.descricao || '')).includes(busca));
   l.sort((a, b) => (a.data || '9999') < (b.data || '9999') ? -1 : (a.data || '9999') > (b.data || '9999') ? 1 : 0);
-  res.json({ hoje, total: l.length, missoes: l.slice(0, limite).map(m => resumoMissao(m, cli, hoje)) });
+  const pri = prioridadesDe(u);
+  res.json({ hoje, total: l.length, missoes: l.slice(0, limite).map(m => comPrioridade(resumoMissao(m, cli, hoje), pri)) });
 }));
 jarvis.get('/resumo', (req, res) => {
   manterSeries();
   const u = req.u, hoje = agoraNoFuso().data, cli = clientesMapa(u);
-  const abertas = itensVisiveis('missoes', u).filter(m => m && !m.feita), r = m => resumoMissao(m, cli, hoje);
+  const pri = prioridadesDe(u), abertas = itensVisiveis('missoes', u).filter(m => m && !m.feita), r = m => comPrioridade(resumoMissao(m, cli, hoje), pri);
   const minhas = abertas.filter(m => (m.privada ? m.dono : m.resp) === u.id);
   res.json({ hoje, eu: u.nome,
     hojeMinhas: minhas.filter(m => m.data === hoje).map(r),
